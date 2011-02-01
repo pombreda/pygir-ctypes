@@ -26,10 +26,10 @@ if __name__ == '__main__':
 		type = func_g_base_info_get_type(info)
 		name = func_g_base_info_get_name(info)
 		
-		if PY3:
-			name = name.decode('utf-8')
+		#~ if PY3:
+			#~ name = name.decode('utf-8')
 		
-		print(info, name_GIInfoType[type], name)
+		#~ print(info, name_GIInfoType[type], name)
 		
 		#~ if name == 'main':
 			#~ print(info, name_GIInfoType[type], name)

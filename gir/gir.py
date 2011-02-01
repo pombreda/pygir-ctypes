@@ -1,14 +1,12 @@
 import os
 import sys
-
-# other imports
 from ctypes import *
 
 # dynamic libs
 libgo = CDLL('libgobject-2.0.so')
 libgir = CDLL('libgirepository-1.0.so')
 
-# util
+# ctypes utils
 def ctypes_get_func(lib, name, restype=None, *argtypes):
 	func = getattr(lib, name)
 	func.restype = restype
@@ -16,7 +14,7 @@ def ctypes_get_func(lib, name, restype=None, *argtypes):
 	return func
 
 #
-# Glib/GObject
+# Glib/GObject - C types
 #
 typedef_gboolean = c_int
 typedef_gint8 = c_byte
@@ -38,7 +36,7 @@ typedef_gulong = c_ulong
 typedef_gssize = c_long
 typedef_gsize = c_ulong
 typedef_gchar = c_char
-# NOTE: gchar_p represents 'gchar*' but not an actual typedef
+# NOTE: gchar_p represents "[const] gchar*" but not an actual typedef
 typedef_gchar_p = c_char_p
 typedef_gpointer = c_void_p
 
@@ -112,7 +110,15 @@ enum_G_SIGNAL_MATCH_UNBLOCKED = c_int(1 << 5)
 class struct_GSignalQuery(Structure): pass
 
 #
-# GIR
+# Glib/GObject - C functions
+#
+func_g_type_init = ctypes_get_func(
+	libgo,
+	'g_type_init',
+)
+
+#
+# GIRepository - C types
 #
 
 # GIBaseInfo
@@ -188,6 +194,15 @@ enum_GI_FUNCTION_IS_SETTER = c_int(1 << 3)
 enum_GI_FUNCTION_WRAPS_VFUNC = c_int(1 << 4)
 enum_GI_FUNCTION_THROWS = c_int(1 << 5)
 
+name_GIFunctionInfoFlags = {
+	1 << 0: 'enum_GI_FUNCTION_IS_METHOD',
+	1 << 1: 'enum_GI_FUNCTION_IS_CONSTRUCTOR',
+	1 << 2: 'enum_GI_FUNCTION_IS_GETTER',
+	1 << 3: 'enum_GI_FUNCTION_IS_SETTER',
+	1 << 4: 'enum_GI_FUNCTION_WRAPS_VFUNC',
+	1 << 5: 'enum_GI_FUNCTION_THROWS',
+}
+
 # GISignalInfo
 class struct_GISignalInfo(struct_GICallableInfo): pass
 
@@ -198,6 +213,12 @@ enum_GIVFuncInfoFlags = c_int
 enum_GI_VFUNC_MUST_CHAIN_UP = c_int(1 << 0)
 enum_GI_VFUNC_MUST_OVERRIDE = c_int(1 << 1)
 enum_GI_VFUNC_MUST_NOT_OVERRIDE = c_int(1 << 2)
+
+name_GIVFuncInfoFlags =  {
+	1 << 0: 'enum_GI_VFUNC_MUST_CHAIN_UP',
+	1 << 1: 'enum_GI_VFUNC_MUST_OVERRIDE',
+	1 << 2: 'enum_GI_VFUNC_MUST_NOT_OVERRIDE',
+}
 
 # GIRegisteredTypeInfo
 class struct_GIRegisteredTypeInfo(struct_GIBaseInfo): pass
@@ -228,6 +249,12 @@ enum_GIDirection = c_int
 	enum_GI_DIRECTION_INOUT,
 ) = map(c_int, range(3))
 
+name_GIDirection = [
+	'enum_GI_DIRECTION_IN',
+	'enum_GI_DIRECTION_OUT',
+	'enum_GI_DIRECTION_INOUT',
+]
+
 enum_GIScopeType = c_int
 (
 	enum_GI_SCOPE_TYPE_INVALID,
@@ -236,12 +263,25 @@ enum_GIScopeType = c_int
 	enum_GI_SCOPE_TYPE_NOTIFIED,
 ) = map(c_int, range(4))
 
+name_GIScopeType = [
+	'enum_GI_SCOPE_TYPE_INVALID',
+	'enum_GI_SCOPE_TYPE_CALL',
+	'enum_GI_SCOPE_TYPE_ASYNC',
+	'enum_GI_SCOPE_TYPE_NOTIFIED',
+]
+
 enum_GITransfer = c_int
 (
 	enum_GI_TRANSFER_NOTHING,
 	enum_GI_TRANSFER_CONTAINER,
 	enum_GI_TRANSFER_EVERYTHING,
 ) = map(c_int, range(3))
+
+name_GITransfer = [
+	'enum_GI_TRANSFER_NOTHING',
+	'enum_GI_TRANSFER_CONTAINER',
+	'enum_GI_TRANSFER_EVERYTHING',
+]
 
 # GIArgument
 class union_GIArgument(Union):
@@ -282,6 +322,11 @@ enum_GIFieldInfoFlags = c_int
 enum_GI_FIELD_IS_READABLE = c_int(1 << 0)
 enum_GI_FIELD_IS_WRITABLE = c_int(1 << 1)
 
+name_GIFieldInfoFlags = {
+	1 << 0: 'enum_GI_FIELD_IS_READABLE',
+	1 << 1: 'enum_GI_FIELD_IS_WRITABLE',
+}
+
 # GIPropertyInfo
 class struct_GIPropertyInfo(struct_GIBaseInfo): pass
 
@@ -296,28 +341,59 @@ enum_GIArrayType = c_int
 	enum_GI_ARRAY_TYPE_BYTE_ARRAY
 ) = map(c_int, range(4))
 
+name_GIArrayType = [
+	'enum_GI_ARRAY_TYPE_C',
+	'enum_GI_ARRAY_TYPE_ARRAY',
+	'enum_GI_ARRAY_TYPE_PTR_ARRAY',
+	'enum_GI_ARRAY_TYPE_BYTE_ARRAY',
+]
+
 enum_GITypeTag = c_int
-GI_TYPE_TAG_VOID = c_int(0)
-GI_TYPE_TAG_BOOLEAN = c_int(1)
-GI_TYPE_TAG_INT8 =  c_int(2)
-GI_TYPE_TAG_UINT8 =  c_int(3)
-GI_TYPE_TAG_INT16 =  c_int(4)
-GI_TYPE_TAG_UINT16 =  c_int(5)
-GI_TYPE_TAG_INT32 =  c_int(6)
-GI_TYPE_TAG_UINT32 =  c_int(7)
-GI_TYPE_TAG_INT64 =  c_int(8)
-GI_TYPE_TAG_UINT64 = c_int(9)
-GI_TYPE_TAG_FLOAT = c_int(10)
-GI_TYPE_TAG_DOUBLE = c_int(11)
-GI_TYPE_TAG_GTYPE = c_int(12)
-GI_TYPE_TAG_UTF8 = c_int(13)
-GI_TYPE_TAG_FILENAME = c_int(14)
-GI_TYPE_TAG_ARRAY = c_int(15)
-GI_TYPE_TAG_INTERFACE = c_int(16)
-GI_TYPE_TAG_GLIST = c_int(17)
-GI_TYPE_TAG_GSLIST = c_int(18)
-GI_TYPE_TAG_GHASH = c_int(19)
-GI_TYPE_TAG_ERROR = c_int(20)
+enum_GI_TYPE_TAG_VOID = c_int(0)
+enum_GI_TYPE_TAG_BOOLEAN = c_int(1)
+enum_GI_TYPE_TAG_INT8 =  c_int(2)
+enum_GI_TYPE_TAG_UINT8 =  c_int(3)
+enum_GI_TYPE_TAG_INT16 =  c_int(4)
+enum_GI_TYPE_TAG_UINT16 =  c_int(5)
+enum_GI_TYPE_TAG_INT32 =  c_int(6)
+enum_GI_TYPE_TAG_UINT32 =  c_int(7)
+enum_GI_TYPE_TAG_INT64 =  c_int(8)
+enum_GI_TYPE_TAG_UINT64 = c_int(9)
+enum_GI_TYPE_TAG_FLOAT = c_int(10)
+enum_GI_TYPE_TAG_DOUBLE = c_int(11)
+enum_GI_TYPE_TAG_GTYPE = c_int(12)
+enum_GI_TYPE_TAG_UTF8 = c_int(13)
+enum_GI_TYPE_TAG_FILENAME = c_int(14)
+enum_GI_TYPE_TAG_ARRAY = c_int(15)
+enum_GI_TYPE_TAG_INTERFACE = c_int(16)
+enum_GI_TYPE_TAG_GLIST = c_int(17)
+enum_GI_TYPE_TAG_GSLIST = c_int(18)
+enum_GI_TYPE_TAG_GHASH = c_int(19)
+enum_GI_TYPE_TAG_ERROR = c_int(20)
+
+name_GITypeTag = {
+	0: 'enum_GI_TYPE_TAG_VOID',
+	1: 'enum_GI_TYPE_TAG_BOOLEAN',
+	2: 'enum_GI_TYPE_TAG_INT8',
+	3: 'enum_GI_TYPE_TAG_UINT8',
+	4: 'enum_GI_TYPE_TAG_INT16',
+	5: 'enum_GI_TYPE_TAG_UINT16',
+	6: 'enum_GI_TYPE_TAG_INT32',
+	7: 'enum_GI_TYPE_TAG_UINT32',
+	8: 'enum_GI_TYPE_TAG_INT64',
+	9: 'enum_GI_TYPE_TAG_UINT64',
+	10: 'enum_GI_TYPE_TAG_FLOAT',
+	11: 'enum_GI_TYPE_TAG_DOUBLE',
+	12: 'enum_GI_TYPE_TAG_GTYPE',
+	13: 'enum_GI_TYPE_TAG_UTF8',
+	14: 'enum_GI_TYPE_TAG_FILENAME',
+	15: 'enum_GI_TYPE_TAG_ARRAY',
+	16: 'enum_GI_TYPE_TAG_INTERFACE',
+	17: 'enum_GI_TYPE_TAG_GLIST',
+	18: 'enum_GI_TYPE_TAG_GSLIST',
+	19: 'enum_GI_TYPE_TAG_GHASH',
+	20: 'enum_GI_TYPE_TAG_ERROR',
+}
 
 # GIRepository
 class struct_GICallbackInfo(struct_GIBaseInfo): pass
@@ -332,9 +408,20 @@ enum_GIRepositoryError = c_int
 	enum_G_IREPOSITORY_ERROR_LIBRARY_NOT_FOUND,
 ) = map(c_int, range(4))
 
+name_GIRepositoryError = [
+	'enum_G_IREPOSITORY_ERROR_TYPELIB_NOT_FOUND',
+	'enum_G_IREPOSITORY_ERROR_NAMESPACE_MISMATCH',
+	'enum_G_IREPOSITORY_ERROR_NAMESPACE_VERSION_CONFLICT',
+	'enum_G_IREPOSITORY_ERROR_LIBRARY_NOT_FOUND',
+]
+
 # GIRepositoryLoadFlags
 enum_GIRepositoryLoadFlags = c_int
 enum_G_IREPOSITORY_LOAD_FLAG_LAZY = c_int(1 << 0)
+
+name_GIRepositoryLoadFlags = {
+	1 << 0: 'enum_G_IREPOSITORY_LOAD_FLAG_LAZY',
+}
 
 # GITypelib
 class struct_GITypelib(Structure): pass
@@ -353,8 +440,23 @@ enum_GTypelibBlobType = c_int
 	enum_BLOB_TYPE_INTERFACE,
 	enum_BLOB_TYPE_CONSTANT,
 	enum_BLOB_TYPE_ERROR_DOMAIN,
-	enum_BLOB_TYPE_UNION
+	enum_BLOB_TYPE_UNION,
 ) = map(c_int, range(12))
+
+name_GTypelibBlobType = [
+	'enum_BLOB_TYPE_INVALID',
+	'enum_BLOB_TYPE_FUNCTION',
+	'enum_BLOB_TYPE_CALLBACK',
+	'enum_BLOB_TYPE_STRUCT',
+	'enum_BLOB_TYPE_BOXED',
+	'enum_BLOB_TYPE_ENUM',
+	'enum_BLOB_TYPE_FLAGS',
+	'enum_BLOB_TYPE_OBJECT',
+	'enum_BLOB_TYPE_INTERFACE',
+	'enum_BLOB_TYPE_CONSTANT',
+	'enum_BLOB_TYPE_ERROR_DOMAIN',
+	'enum_BLOB_TYPE_UNION',
+]
 
 class struct_Header(Structure): pass
 class struct_DirEntry(Structure): pass
@@ -383,27 +485,7 @@ class struct_AttributeBlob(Structure): pass
 class struct_dimensions(Structure): pass
 
 #
-# util
-#
-def giargument_from_pyobject(obj):
-	pass
-
-def pyobject_from_giargument(arg):
-	pass
-
-def giargument_release(arg):
-	pass
-
-#
-# GObject
-#
-func_g_type_init = ctypes_get_func(
-	libgo,
-	'g_type_init',
-)
-
-#
-# GIRepository
+# GIRepository - ctypes functions
 #
 func_g_irepository_get_default = ctypes_get_func(
 	libgir,
@@ -1628,6 +1710,15 @@ func_g_error_domain_info_get_codes = ctypes_get_func(
 # Low-level C classes
 #
 
+# GIArgument - C <-> Python functions
+def giargument_from_object(obj):
+	pass
+
+def object_from_giargument(arg):
+	pass
+
+def giargument_release(arg):
+	pass
 
 #
 # High-level Python classes

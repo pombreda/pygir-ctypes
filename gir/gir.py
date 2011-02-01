@@ -1,10 +1,11 @@
 import os
 import sys
 from ctypes import *
+from ctypes.util import find_library
 
 # dynamic libs
-libgo = CDLL('libgobject-2.0.so')
-libgir = CDLL('libgirepository-1.0.so')
+libgo = CDLL(find_library('gobject-2.0'))
+libgir = CDLL(find_library('girepository-1.0'))
 
 # ctypes utils
 def ctypes_get_func(lib, name, restype=None, *argtypes):

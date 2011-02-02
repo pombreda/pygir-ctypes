@@ -29,6 +29,19 @@ class Object(object):
 		self._c_obj = c_obj
 		return self
 	
+	# generic repr function for all Object derivatives
+	def __repr__(self):
+		return ''.join((
+			'<',
+			self.__class__.__name__,
+			' (',
+			self._c_obj.__class__.__name__,
+			' object at ',
+			hex(id(self._c_obj)),
+			') object at ',
+			hex(id(self)), '>'
+		))
+	
 	# generic __getattr__ for all GObject derivatives
 	# requires _c_func_prefix
 	def __getattr__(self, attr):
@@ -61,7 +74,7 @@ class GIRepository(GIObject):
 	def __init__(self):
 		_gir.g_type_init()
 		self._c_obj = _gir.g_irepository_get_default()
-
+	
 class GICallbackInfo(GIInfoObject):
 	def __init__(self):
 		pass
@@ -368,7 +381,18 @@ class GITypelib(Object):
 	def __repr__(self):
 		c_name = _gir.g_typelib_get_namespace(self._c_obj)
 		py_name = convert_c_to_python_object(c_name)
-		return ''.join(('<', py_name, ' (GITypelib object at ', hex(id(self._c_obj)) ,') object at ', hex(id(self)), '>'))
+		
+		return ''.join((
+			'<',
+			py_name,
+			' (',
+			self._c_obj.__class__.__name__,
+			' object at ',
+			hex(id(self._c_obj)),
+			') object at ',
+			hex(id(self)),
+			'>'
+		))
 
 class GTypelibBlobType(object):
 	(

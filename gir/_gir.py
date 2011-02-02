@@ -57,7 +57,7 @@ class GValue(Structure): pass
 class GParamSpec(Structure): pass
 class GParamSpecClass(Structure): pass
 
-class GParamFlags(c_int): pass
+GParamFlags = gint
 G_PARAM_READABLE = GParamFlags(1 << 0)
 G_PARAM_WRITABLE = GParamFlags(1 << 1)
 G_PARAM_CONSTRUCT = GParamFlags(1 << 2)
@@ -93,7 +93,7 @@ GSignalEmissionHook = CFUNCTYPE(
 	gpointer,
 )
 
-class GSignalFlags(c_int): pass
+GSignalFlags = gint
 G_SIGNAL_RUN_FIRST = GSignalFlags(1 << 0)
 G_SIGNAL_RUN_LAST = GSignalFlags(1 << 1)
 G_SIGNAL_RUN_CLEANUP = GSignalFlags(1 << 2)
@@ -102,7 +102,7 @@ G_SIGNAL_DETAILED = GSignalFlags(1 << 4)
 G_SIGNAL_ACTION = GSignalFlags(1 << 5)
 G_SIGNAL_NO_HOOKS = GSignalFlags(1 << 6)
 
-class GSignalMatchType(c_int): pass
+GSignalMatchType = gint
 G_SIGNAL_MATCH_ID = GSignalMatchType(1 << 0)
 G_SIGNAL_MATCH_DETAIL = GSignalMatchType(1 << 1)
 G_SIGNAL_MATCH_CLOSURE = GSignalMatchType(1 << 2)
@@ -119,7 +119,7 @@ class GIBaseInfo(Structure): pass
 
 class GIAttributeIter(Structure): pass 
 
-class GIInfoType(c_int): pass
+GIInfoType = gint
 (
 	GI_INFO_TYPE_INVALID,
 	GI_INFO_TYPE_FUNCTION,
@@ -172,14 +172,14 @@ class GICallableInfo(GIBaseInfo): pass
 # GIFunctionInfo
 class GIFunctionInfo(GICallableInfo): pass
 
-class GInvokeError(c_int): pass
+GInvokeError = gint
 (
 	G_INVOKE_ERROR_FAILED,
 	G_INVOKE_ERROR_SYMBOL_NOT_FOUND,
 	G_INVOKE_ERROR_ARGUMENT_MISMATCH
 ) = map(GInvokeError, range(3))
 
-class GIFunctionInfoFlags(c_int): pass
+GIFunctionInfoFlags = gint
 GI_FUNCTION_IS_METHOD = GIFunctionInfoFlags(1 << 0)
 GI_FUNCTION_IS_CONSTRUCTOR = GIFunctionInfoFlags(1 << 1)
 GI_FUNCTION_IS_GETTER = GIFunctionInfoFlags(1 << 2)
@@ -202,7 +202,7 @@ class GISignalInfo(GICallableInfo): pass
 # GIVFuncInfo
 class GIVFuncInfo(GICallableInfo): pass
 
-class GIVFuncInfoFlags(c_int): pass
+GIVFuncInfoFlags = gint
 GI_VFUNC_MUST_CHAIN_UP = GIVFuncInfoFlags(1 << 0)
 GI_VFUNC_MUST_OVERRIDE = GIVFuncInfoFlags(1 << 1)
 GI_VFUNC_MUST_NOT_OVERRIDE = GIVFuncInfoFlags(1 << 2)
@@ -235,7 +235,7 @@ class GIUnionInfo(GIRegisteredTypeInfo): pass
 # GIArgInfo
 class GIArgInfo(GIBaseInfo): pass
 
-class GIDirection(c_int): pass
+GIDirection = gint
 (
 	GI_DIRECTION_IN,
 	GI_DIRECTION_OUT,
@@ -248,7 +248,7 @@ name_GIDirection = [
 	'GI_DIRECTION_INOUT',
 ]
 
-class GIScopeType(c_int): pass
+GIScopeType = gint
 (
 	GI_SCOPE_TYPE_INVALID,
 	GI_SCOPE_TYPE_CALL,
@@ -263,7 +263,7 @@ name_GIScopeType = [
 	'GI_SCOPE_TYPE_NOTIFIED',
 ]
 
-class GITransfer(c_int): pass
+GITransfer = gint
 (
 	GI_TRANSFER_NOTHING,
 	GI_TRANSFER_CONTAINER,
@@ -311,7 +311,7 @@ class GIErrorDomainInfo(GIBaseInfo): pass
 # GIFieldInfo
 class GIFieldInfo(GIBaseInfo): pass
 
-class GIFieldInfoFlags(c_int): pass
+GIFieldInfoFlags = gint
 GI_FIELD_IS_READABLE = GIFieldInfoFlags(1 << 0)
 GI_FIELD_IS_WRITABLE = GIFieldInfoFlags(1 << 1)
 
@@ -326,7 +326,7 @@ class GIPropertyInfo(GIBaseInfo): pass
 # GITypeInfo
 class GITypeInfo(GIBaseInfo): pass
 
-class GIArrayType(c_int): pass
+GIArrayType = gint
 (
 	GI_ARRAY_TYPE_C,
 	GI_ARRAY_TYPE_ARRAY,
@@ -341,7 +341,7 @@ name_GIArrayType = [
 	'GI_ARRAY_TYPE_BYTE_ARRAY',
 ]
 
-class GITypeTag(c_int): pass
+GITypeTag = gint
 GI_TYPE_TAG_VOID = GITypeTag(0)
 GI_TYPE_TAG_BOOLEAN = GITypeTag(1)
 GI_TYPE_TAG_INT8 =  GITypeTag(2)
@@ -395,7 +395,7 @@ class GIRepository(GObject): pass
 class GICallbackInfo(GIBaseInfo): pass
 
 # GIRepositoryError
-class GIRepositoryError(c_int): pass
+GIRepositoryError = gint
 (
 	G_IREPOSITORY_ERROR_TYPELIB_NOT_FOUND,
 	G_IREPOSITORY_ERROR_NAMESPACE_MISMATCH,
@@ -411,7 +411,7 @@ name_GIRepositoryError = [
 ]
 
 # GIRepositoryLoadFlags
-class GIRepositoryLoadFlags(c_int): pass
+GIRepositoryLoadFlags = gint
 G_IREPOSITORY_LOAD_FLAG_LAZY = GIRepositoryLoadFlags(1 << 0)
 
 name_GIRepositoryLoadFlags = {
@@ -424,7 +424,7 @@ name_GIRepositoryLoadFlags = {
 class GITypelib(Structure): pass
 	
 # Typelib binary format
-class GTypelibBlobType(c_int): pass
+GTypelibBlobType = gint
 (
 	BLOB_TYPE_INVALID,
 	BLOB_TYPE_FUNCTION,
@@ -1718,3 +1718,5 @@ def info_print(info):
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
 	print(info, info_name, name_GIInfoType[info_type.value])
+	#~ print(info, info.contents)
+	#~ print(info)

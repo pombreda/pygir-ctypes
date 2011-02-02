@@ -4,10 +4,18 @@ import sys
 sys.path.append('..')
 from gir._gir import *
 
-if __name__ == '__main__':
+def tmp1():
 	g_type_init()
 	Gir = g_irepository_get_default()
-		
+	
+	GObject = g_irepository_require(
+		Gir,
+		gchar_p('GObject'),
+		None,
+		G_IREPOSITORY_LOAD_FLAG_LAZY,
+		None
+	)
+	
 	Gtk = g_irepository_require(
 		Gir,
 		gchar_p('Gtk'),
@@ -33,31 +41,68 @@ if __name__ == '__main__':
 	)
 	info_print(parent)
 	
-	parent = g_object_info_get_parent(
-		cast(parent, POINTER(GIObjectInfo))
-	)
-	info_print(parent)
-	
-	parent = g_object_info_get_parent(
-		cast(parent, POINTER(GIObjectInfo))
-	)
-	info_print(parent)
-	
-	parent = g_object_info_get_parent(
-		cast(parent, POINTER(GIObjectInfo))
-	)
-	info_print(parent)
-	
-	Gtk_Window_connect = g_object_info_find_method(
-		cast(parent, POINTER(GIObjectInfo)),
-		gchar_p('connect')
-	)
-	info_print(Gtk_Window_connect)
-	
-	#~ parent = g_object_info_get_parent(
+	#~ n = g_object_info_get_n_methods(
 		#~ cast(parent, POINTER(GIObjectInfo))
-	#~ )
-	#~ info_print(parent)
+	#~ ).value
+	#~ 
+	#~ for i in range(n):
+		#~ info = g_object_info_get_method(
+			#~ cast(parent, POINTER(GIObjectInfo)),
+			#~ gint(i)
+		#~ )
+		#~ info_print(info)
+	#~ print()
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	#~ n = g_object_info_get_n_methods(
+		#~ cast(parent, POINTER(GIObjectInfo))
+	#~ ).value
+	#~ 
+	#~ for i in range(n):
+		#~ info = g_object_info_get_method(
+			#~ cast(parent, POINTER(GIObjectInfo)),
+			#~ gint(i)
+		#~ )
+		#~ info_print(info)
+	#~ print()
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	n = g_object_info_get_n_methods(
+		cast(parent, POINTER(GIObjectInfo))
+	).value
+	
+	for i in range(n):
+		info = g_object_info_get_method(
+			cast(parent, POINTER(GIObjectInfo)),
+			gint(i)
+		)
+		info_print(info)
+	print()
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+		
+	#~ n = g_object_info_get_n_methods(
+		#~ cast(parent, POINTER(GIObjectInfo))
+	#~ ).value
+	#~ 
+	#~ for i in range(n):
+		#~ info = g_object_info_get_method(
+			#~ cast(parent, POINTER(GIObjectInfo)),
+			#~ gint(i)
+		#~ )
+		#~ info_print(info)
+	#~ print()
 	
 	#~ Gtk_Window_new = g_object_info_find_method(
 		#~ cast(Gtk_Window, POINTER(GIObjectInfo)),
@@ -88,3 +133,42 @@ if __name__ == '__main__':
 	#~ )
 	
 	g_typelib_free(Gtk)
+	g_typelib_free(GObject)
+
+if __name__ == '__main__':
+	g_type_init()
+	Gir = g_irepository_get_default()
+	
+	GObject = g_irepository_require(
+		Gir,
+		gchar_p('GObject'),
+		None,
+		G_IREPOSITORY_LOAD_FLAG_LAZY,
+		None
+	)
+	
+	Gtk = g_irepository_require(
+		Gir,
+		gchar_p('Gtk'),
+		None,
+		G_IREPOSITORY_LOAD_FLAG_LAZY,
+		None
+	)
+	
+	Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
+	info_print(Gtk_Window)
+	
+	Gtk_Window_new = g_object_info_find_method(
+		cast(Gtk_Window, POINTER(GIObjectInfo)),
+		gchar_p('new')
+	)
+	info_print(Gtk_Window_new)
+	
+	Gtk_Window_show = g_object_info_find_method(
+		cast(Gtk_Window, POINTER(GIObjectInfo)),
+		gchar_p('show')
+	)
+	info_print(Gtk_Window_show)
+	
+	g_typelib_free(Gtk)
+	g_typelib_free(GObject)

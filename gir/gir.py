@@ -1,17 +1,100 @@
 #
 # High-level Python API
 #
+import os
+import sys
+import ctypes
+import types
 import _gir
+
+#
+# Utils
+#
+def convert_c_to_python_object(c_obj):
+	if isinstance(c_obj, ctypes._CFuncPtr):
+		py_obj = lambda *py_args: convert_c_to_python_object(
+			c_obj(
+				*map(convert_python_to_c_object, py_args)
+			)
+		)
+	elif isinstance(c_obj, ctypes._Pointer):
+		py_class = globals()[c_obj._type_.__name__]
+		py_obj = py_class._new_with_c_obj(c_obj)
+	else:
+		raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
+	
+	return py_obj
+
+def convert_python_to_c_object(py_obj):
+	if isinstance(py_obj, type(None)):
+		c_obj = py_obj
+	elif isinstance(py_obj, bool):
+		c_obj = _gir.gboolean(py_obj)
+	elif isinstance(py_obj, int):
+		c_obj = _gir.gint(py_obj)
+	elif isinstance(py_obj, long):
+		c_obj = _gir.glong(py_obj)
+	elif isinstance(py_obj, float):
+		c_obj = _gir.gdouble(py_obj)
+	elif isinstance(py_obj, str):
+		c_obj = _gir.gchar_p(py_obj)
+	elif isinstance(py_obj, unicode):
+		c_obj = _gir.gchar_p(py_obj)
+	elif isinstance(py_obj, GIObject):
+		# FIXME:
+		raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))
+	elif isinstance(py_obj, GObject):
+		c_obj = py_obj._c_obj
+	else:
+		raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))
+	
+	return c_obj
+
+# Base class for Glib Python classes
+# uses convention that class instance should be first argument
+# of calling/invoking function
+class GObject(object):
+	# similar to __new__ but without calling __init__
+	# useful when args are not known for __new__ or/and __init__
+	@classmethod
+	def _new_without_init(cls):
+		self = super(GObject, cls).__new__(cls)
+		self._c_func_prefix = None
+		self._c_obj = None
+		return self
+	
+	# this is pygir convention for instatiating python class
+	# without calling __new__ or __init__ and storing c_obj inside
+	# python class instance with name '_c_obj'
+	@classmethod
+	def _new_with_c_obj(cls, c_obj):
+		self = cls._new_without_init()
+		self._c_obj = c_obj
+		return self
+	
+	# generic __getattr__ for all OBject derivatives
+	# requires _c_func_prefix
+	def __getattr__(self, attr):
+		c_attr = ''.join((self._c_func_prefix, attr))
+		c_value = getattr(_gir, c_attr)
+		py_value = convert_c_to_python_object(c_value)
+		return lambda *args: py_value(self, *args)
+
+# Base class for all GI*Info Python classes
+# derived from GObject but adapted for GI operations
+class GIObject(GObject):
+	pass
 
 #
 # GIRepository
 #
-class GIRepository(object):
+class GIRepository(GObject):
 	def __init__(self):
 		_gir.g_type_init()
-		self._gir = _gir.g_irepository_get_default()
+		self._c_func_prefix = 'g_irepository_'
+		self._c_obj = _gir.g_irepository_get_default()
 
-class GICallbackInfo(object):
+class GICallbackInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -41,7 +124,7 @@ class GIRepositoryLoadFlags(object):
 #
 # GIBaseInfo
 #
-class GIBaseInfo(object):
+class GIBaseInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -49,7 +132,7 @@ class GIAttributeIter(object):
 	def __init__(self):
 		pass
 
-class GIInfoType(object):
+class GIObjectType(object):
 	(
 		INVALID,
 		FUNCTION,
@@ -76,14 +159,14 @@ class GIInfoType(object):
 #
 # GICallableInfo
 #
-class GICallableInfo(object):
+class GICallableInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIFunctionInfo
 #
-class GIFunctionInfo(object):
+class GIFunctionInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -111,14 +194,14 @@ class GIFunctionInfoFlags(object):
 #
 # GISignalInfo
 #
-class GISignalInfo(object):
+class GISignalInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIVFuncInfo
 #
-class GIVFuncInfo(object):
+class GIVFuncInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -133,53 +216,53 @@ class GIVFuncInfoFlags(object):
 #
 # GIRegisteredTypeInfo
 #
-class GIRegisteredTypeInfo(object):
+class GIRegisteredTypeInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIEnumInfo
 #
-class GIEnumInfo(object):
+class GIEnumInfo(GIObject):
 	def __init__(self):
 		pass
 
-class GIValueInfo(object):
+class GIValueInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIInterfaceInfo
 #
-class GIInterfaceInfo(object):
+class GIInterfaceInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIObjectInfo
 #
-class GIObjectInfo(object):
+class GIObjectInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIStructInfo
 #
-class GIStructInfo(object):
+class GIStructInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIUnionInfo
 #
-class GIUnionInfo(object):
+class GIUnionInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIArgInfo
 #
-class GIArgInfo(object):
+class GIArgInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -224,21 +307,21 @@ class GIArgument(object):
 #
 # GIConstantInfo
 #
-class GIConstantInfo(object):
+class GIConstantInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIErrorDomainInfo
 #
-class GIErrorDomainInfo(object):
+class GIErrorDomainInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GIFieldInfo
 #
-class GIFieldInfo(object):
+class GIFieldInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -252,14 +335,14 @@ class GIFieldInfoFlags(object):
 #
 # GIPropertyInfo
 #
-class GIPropertyInfo(object):
+class GIPropertyInfo(GIObject):
 	def __init__(self):
 		pass
 
 #
 # GITypeInfo
 #
-class GITypeInfo(object):
+class GITypeInfo(GIObject):
 	def __init__(self):
 		pass
 
@@ -303,7 +386,12 @@ class GITypeTag(object):
 #
 # GITypelib
 #
-class GITypelib(object):
+
+# NOTE: GITypelib is not on C-level subclass of GObject
+# but it is used that way because of calling convenction
+# which states that instance should be first argument in function call
+# so it mimics GObject
+class GITypelib(GObject):
 	def __init__(self):
 		pass
 
@@ -323,105 +411,5 @@ class GTypelibBlobType(object):
 		UNION,
 	) = range(12)
 	
-	def __init__(self):
-		pass
-
-class Header(object):
-	def __init__(self):
-		pass
-
-class DirEntry(object):
-	def __init__(self):
-		pass
-
-class ArgBlob(object):
-	def __init__(self):
-		pass
-
-class SignatureBlob(object):
-	def __init__(self):
-		pass
-
-class CommonBlob(object):
-	def __init__(self):
-		pass
-
-class FunctionBlob(object):
-	def __init__(self):
-		pass
-
-class CallbackBlob(object):
-	def __init__(self):
-		pass
-
-class InterfaceTypeBlob(object):
-	def __init__(self):
-		pass
-
-class ParamTypeBlob(object):
-	def __init__(self):
-		pass
-
-class ErrorTypeBlob(object):
-	def __init__(self):
-		pass
-
-class ErrorDomainBlob(object):
-	def __init__(self):
-		pass
-
-class ValueBlob(object):
-	def __init__(self):
-		pass
-
-class FieldBlob(object):
-	def __init__(self):
-		pass
-
-class RegisteredTypeBlob(object):
-	def __init__(self):
-		pass
-
-class StructBlob(object):
-	def __init__(self):
-		pass
-
-class UnionBlob(object):
-	def __init__(self):
-		pass
-
-class EnumBlob(object):
-	def __init__(self):
-		pass
-
-class PropertyBlob(object):
-	def __init__(self):
-		pass
-
-class SignalBlob(object):
-	def __init__(self):
-		pass
-
-class VFuncBlob(object):
-	def __init__(self):
-		pass
-
-class ObjectBlob(object):
-	def __init__(self):
-		pass
-
-class InterfaceBlob(object):
-	def __init__(self):
-		pass
-
-class ConstantBlob(object):
-	def __init__(self):
-		pass
-
-class AttributeBlob(object):
-	def __init__(self):
-		pass
-
-class Dimensions(object):
 	def __init__(self):
 		pass

@@ -3,6 +3,7 @@
 #
 import os
 import sys
+import ctypes
 from ctypes import *
 from ctypes.util import find_library
 
@@ -1720,10 +1721,10 @@ def info_print(info):
 #
 # GIArgument - C <-> Python functions
 #
-def giargument_from_object(obj):
+def giargument_to_object(obj):
 	pass
 
-def object_from_giargument(arg):
+def object_to_giargument(arg):
 	pass
 
 def giargument_release(arg):

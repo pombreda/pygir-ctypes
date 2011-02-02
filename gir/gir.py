@@ -9,14 +9,14 @@ import _gir
 # Base class for Glib Python classes
 # uses convention that class instance should be first argument
 # of calling/invoking function
-class Object(object):
+class _Object(object):
 	_c_func_prefix = None
 	
 	# similar to __new__ but without calling __init__
 	# useful when args are not known for __new__ or/and __init__
 	@classmethod
 	def _new_without_init(cls):
-		self = super(Object, cls).__new__(cls)
+		self = super(_Object, cls).__new__(cls)
 		self._c_obj = None
 		return self
 	
@@ -29,7 +29,7 @@ class Object(object):
 		self._c_obj = c_obj
 		return self
 	
-	# generic repr function for all Object derivatives
+	# generic repr function for all _Object derivatives
 	def __repr__(self):
 		return ''.join((
 			'<',
@@ -42,7 +42,7 @@ class Object(object):
 			hex(id(self)), '>'
 		))
 	
-	# generic __getattr__ for all GObject derivatives
+	# generic __getattr__ for all _GObject derivatives
 	# requires _c_func_prefix
 	def __getattr__(self, attr):
 		c_attr = ''.join((self._c_func_prefix, attr))
@@ -50,32 +50,32 @@ class Object(object):
 		py_value = convert_c_to_python_object(c_value)
 		return lambda *args: py_value(self, *args)
 
-# Base class for all GObject derived classes in C
+# Base class for all _GObject derived classes in C
 # but used as Python classes
-class GObject(Object):
+class _GObject(_Object):
 	pass
 
 # Base class for all GI/GIR Python classes
-# derived from GObject but adapted for GI/GIR operations
-class GIObject(GObject):
+# derived from _GObject but adapted for GI/GIR operations
+class _GIObject(_GObject):
 	pass
 
 # Base class for all GI*Info Python classes
-# derived from Object - None Glib Object classes
-class GIInfoObject(Object):
+# derived from _Object - None Glib _Object classes
+class _GIInfoObject(_Object):
 	pass
 
 #
 # GIRepository
 #
-class GIRepository(GIObject):
+class GIRepository(_GIObject):
 	_c_func_prefix = 'g_irepository_'
 	
 	def __init__(self):
 		_gir.g_type_init()
 		self._c_obj = _gir.g_irepository_get_default()
 	
-class GICallbackInfo(GIInfoObject):
+class GICallbackInfo(_GIInfoObject):
 	def __init__(self):
 		pass
 
@@ -99,7 +99,7 @@ class GIRepositoryLoadFlags(object):
 #
 # GIBaseInfo
 #
-class GIBaseInfo(GIInfoObject):
+class GIBaseInfo(_GIInfoObject):
 	_c_func_prefix = 'g_base_info_'
 	
 	def __init__(self):
@@ -109,7 +109,7 @@ class GIAttributeIter(object):
 	def __init__(self):
 		pass
 
-class GIObjectType(object):
+class _GIObjectType(object):
 	(
 		INVALID,
 		FUNCTION,
@@ -136,7 +136,7 @@ class GIObjectType(object):
 #
 # GICallableInfo
 #
-class GICallableInfo(GIInfoObject):
+class GICallableInfo(_GIInfoObject):
 	_c_func_prefix = 'g_callable_info_'
 	
 	def __init__(self):
@@ -145,7 +145,7 @@ class GICallableInfo(GIInfoObject):
 #
 # GIFunctionInfo
 #
-class GIFunctionInfo(GIInfoObject):
+class GIFunctionInfo(_GIInfoObject):
 	_c_func_prefix = 'g_function_info_'
 	
 	def __init__(self):
@@ -169,7 +169,7 @@ class GIFunctionInfoFlags(object):
 #
 # GISignalInfo
 #
-class GISignalInfo(GIInfoObject):
+class GISignalInfo(_GIInfoObject):
 	_c_func_prefix = 'g_signal_info_'
 	
 	def __init__(self):
@@ -178,7 +178,7 @@ class GISignalInfo(GIInfoObject):
 #
 # GIVFuncInfo
 #
-class GIVFuncInfo(GIInfoObject):
+class GIVFuncInfo(_GIInfoObject):
 	_c_func_prefix = 'g_vfunc_info_'
 	
 	def __init__(self):
@@ -192,7 +192,7 @@ class GIVFuncInfoFlags(object):
 #
 # GIRegisteredTypeInfo
 #
-class GIRegisteredTypeInfo(GIInfoObject):
+class GIRegisteredTypeInfo(_GIInfoObject):
 	_c_func_prefix = 'g_registered_type_info_'
 	
 	def __init__(self):
@@ -201,13 +201,13 @@ class GIRegisteredTypeInfo(GIInfoObject):
 #
 # GIEnumInfo
 #
-class GIEnumInfo(GIInfoObject):
+class GIEnumInfo(_GIInfoObject):
 	_c_func_prefix = 'g_enum_info_'
 	
 	def __init__(self):
 		pass
 
-class GIValueInfo(GIInfoObject):
+class GIValueInfo(_GIInfoObject):
 	_c_func_prefix = 'g_value_info_'
 	
 	def __init__(self):
@@ -216,16 +216,16 @@ class GIValueInfo(GIInfoObject):
 #
 # GIInterfaceInfo
 #
-class GIInterfaceInfo(GIInfoObject):
+class GIInterfaceInfo(_GIInfoObject):
 	_c_func_prefix = 'g_interface_info_'
 	
 	def __init__(self):
 		pass
 
 #
-# GIObjectInfo
+# _GIObjectInfo
 #
-class GIObjectInfo(GIInfoObject):
+class _GIObjectInfo(_GIInfoObject):
 	_c_func_prefix = 'g_object_info_'
 	
 	def __init__(self):
@@ -234,7 +234,7 @@ class GIObjectInfo(GIInfoObject):
 #
 # GIStructInfo
 #
-class GIStructInfo(GIInfoObject):
+class GIStructInfo(_GIInfoObject):
 	_c_func_prefix = 'g_struct_info_'
 	
 	def __init__(self):
@@ -243,7 +243,7 @@ class GIStructInfo(GIInfoObject):
 #
 # GIUnionInfo
 #
-class GIUnionInfo(GIInfoObject):
+class GIUnionInfo(_GIInfoObject):
 	_c_func_prefix = 'g_union_info_'
 	
 	def __init__(self):
@@ -252,7 +252,7 @@ class GIUnionInfo(GIInfoObject):
 #
 # GIArgInfo
 #
-class GIArgInfo(GIInfoObject):
+class GIArgInfo(_GIInfoObject):
 	_c_func_prefix = 'g_arg_info_'
 	
 	def __init__(self):
@@ -290,7 +290,7 @@ class GIArgument(object):
 #
 # GIConstantInfo
 #
-class GIConstantInfo(GIInfoObject):
+class GIConstantInfo(_GIInfoObject):
 	_c_func_prefix = 'g_constant_info_'
 	
 	def __init__(self):
@@ -299,7 +299,7 @@ class GIConstantInfo(GIInfoObject):
 #
 # GIErrorDomainInfo
 #
-class GIErrorDomainInfo(GIInfoObject):
+class GIErrorDomainInfo(_GIInfoObject):
 	_c_func_prefix = 'g_error_domain_info_'
 	
 	def __init__(self):
@@ -308,7 +308,7 @@ class GIErrorDomainInfo(GIInfoObject):
 #
 # GIFieldInfo
 #
-class GIFieldInfo(GIInfoObject):
+class GIFieldInfo(_GIInfoObject):
 	_c_func_prefix = 'g_field_info_'
 	
 	def __init__(self):
@@ -321,7 +321,7 @@ class GIFieldInfoFlags(object):
 #
 # GIPropertyInfo
 #
-class GIPropertyInfo(GIInfoObject):
+class GIPropertyInfo(_GIInfoObject):
 	_c_func_prefix = 'g_property_info_'
 	
 	def __init__(self):
@@ -330,7 +330,7 @@ class GIPropertyInfo(GIInfoObject):
 #
 # GITypeInfo
 #
-class GITypeInfo(GIInfoObject):
+class GITypeInfo(_GIInfoObject):
 	_c_func_prefix = 'g_type_info_'
 	
 	def __init__(self):
@@ -371,11 +371,11 @@ class GITypeTag(object):
 # GITypelib
 #
 
-# NOTE: GITypelib is not on C-level subclass of GObject
+# NOTE: GITypelib is not on C-level subclass of _GObject
 # but it is used that way because of calling convenction
 # which states that instance should be first argument in function call
-# so it mimics GObject
-class GITypelib(Object):
+# so it mimics _GObject
+class GITypelib(_Object):
 	_c_func_prefix = 'g_typelib_'
 	
 	def __repr__(self):
@@ -393,6 +393,14 @@ class GITypelib(Object):
 			hex(id(self)),
 			'>'
 		))
+	
+	def __getattr__(self, attr):
+		c_gir = _gir.g_irepository_get_default()
+		c_name = _gir.g_typelib_get_namespace(self._c_obj)
+		c_attr = _gir.gchar_p(attr)
+		c_info = _gir.g_irepository_find_by_name(c_gir, c_name, c_attr)
+		py_info = convert_c_to_python_object(c_info)
+		return py_info
 
 class GTypelibBlobType(object):
 	(
@@ -467,13 +475,13 @@ def convert_python_to_c_object(py_obj):
 		c_obj = _gir.gchar_p(py_obj)
 	elif isinstance(py_obj, unicode):
 		c_obj = _gir.gchar_p(py_obj)
-	elif isinstance(py_obj, GIInfoObject):
+	elif isinstance(py_obj, _GIInfoObject):
 		c_obj = py_obj._c_obj
-	elif isinstance(py_obj, GIObject):
+	elif isinstance(py_obj, _GIObject):
 		c_obj = py_obj._c_obj
-	elif isinstance(py_obj, GObject):
+	elif isinstance(py_obj, _GObject):
 		c_obj = py_obj._c_obj
-	elif isinstance(py_obj, Object):
+	elif isinstance(py_obj, _Object):
 		c_obj = py_obj._c_obj
 	else:
 		raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))

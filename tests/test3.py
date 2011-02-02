@@ -147,6 +147,8 @@ if __name__ == '__main__':
 		None
 	)
 	
+	
+	
 	Gtk = g_irepository_require(
 		Gir,
 		gchar_p('Gtk'),
@@ -155,20 +157,20 @@ if __name__ == '__main__':
 		None
 	)
 	
-	Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
-	info_print(Gtk_Window)
-	
-	Gtk_Window_new = g_object_info_find_method(
-		cast(Gtk_Window, POINTER(GIObjectInfo)),
-		gchar_p('new')
-	)
-	info_print(Gtk_Window_new)
-	
-	Gtk_Window_show = g_object_info_find_method(
-		cast(Gtk_Window, POINTER(GIObjectInfo)),
-		gchar_p('show')
-	)
-	info_print(Gtk_Window_show)
-	
-	g_typelib_free(Gtk)
-	g_typelib_free(GObject)
+	#~ Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
+	#~ info_print(Gtk_Window)
+	#~ 
+	#~ Gtk_Window_new = g_object_info_find_method(
+		#~ cast(Gtk_Window, POINTER(GIObjectInfo)),
+		#~ gchar_p('new')
+	#~ )
+	#~ info_print(Gtk_Window_new)
+	#~ 
+	#~ Gtk_Window_show = g_object_info_find_method(
+		#~ cast(Gtk_Window, POINTER(GIObjectInfo)),
+		#~ gchar_p('show')
+	#~ )
+	#~ info_print(Gtk_Window_show)
+	#~ 
+	#~ g_typelib_free(Gtk)
+	#~ g_typelib_free(GObject)

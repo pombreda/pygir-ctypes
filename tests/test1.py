@@ -1,42 +1,21 @@
+# print all possible infos that are fetched from repository
 import os
 import sys
 sys.path.append('..')
-from gir import *
-
-# version
-version_info = tuple(sys.version_info)
-
-if version_info[0] == 2:
-	PY2, PY3 = True, False
-elif version_info[0] == 3:
-	PY2, PY3 = False, True
-else:
-	print('Not supported Python version: %s' % sys.version)
-	sys.exit(1)
+from gir._gir import *
 
 if __name__ == '__main__':
-	func_g_type_init()
-	_gir = func_g_irepository_get_default()
+	g_type_init()
+	gir = g_irepository_get_default()
 	
-	_Gtk = func_g_irepository_require(_gir, c_char_p('Gtk'), None, enum_G_IREPOSITORY_LOAD_FLAG_LAZY, None)
-	n_infos = func_g_irepository_get_n_infos(_gir, c_char_p('Gtk'))
+	Gtk = g_irepository_require(gir, gchar_p('Gtk'), None, G_IREPOSITORY_LOAD_FLAG_LAZY, None)
+	n_infos = g_irepository_get_n_infos(gir, gchar_p('Gtk'))
 	
 	for i in range(n_infos):
-		info = func_g_irepository_get_info(_gir, c_char_p('Gtk'), c_int(i))
-		type = func_g_base_info_get_type(info)
-		name = func_g_base_info_get_name(info)
+		info = g_irepository_get_info(gir, gchar_p('Gtk'), gint(i))
+		type = g_base_info_get_type(info)
+		name = g_base_info_get_name(info)
 		
-		#~ if PY3:
-			#~ name = name.decode('utf-8')
+		print(info, name_GIInfoType[type], name)
 		
-		#~ print(info, name_GIInfoType[type], name)
-		
-		#~ if name == 'main':
-			#~ print(info, name_GIInfoType[type], name)
-			#~ r = union_GIArgument()
-			#~ 
-			#~ func_g_function_info_invoke(cast(info, POINTER(struct_GIFunctionInfo)), None, 0, None, 0, pointer(r), None)
-			#~ 
-			#~ print(r)
-	
-	func_g_typelib_free(_Gtk)
+	g_typelib_free(Gtk)

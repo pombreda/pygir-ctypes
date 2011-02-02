@@ -1717,15 +1717,3 @@ def info_print(info):
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
 	print(info, info_name, name_GIInfoType[info_type])
-
-#
-# GIArgument - C <-> Python functions
-#
-def giargument_to_object(obj):
-	pass
-
-def object_to_giargument(arg):
-	pass
-
-def giargument_release(arg):
-	pass

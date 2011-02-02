@@ -40,10 +40,9 @@ glong = c_long
 gulong = c_ulong
 gssize = c_long
 gsize = c_ulong
-gchar = c_char
-# NOTE: gchar_p represents "[const] gchar*" but not an actual typedef
-gchar_p = c_char_p
-gpointer = c_void_p
+class gchar(c_char): pass
+class gchar_p(c_char_p): pass	# represents "[const] gchar*"
+class gpointer(c_void_p): pass
 
 class GObject(Structure): pass
 GType = c_int
@@ -700,7 +699,7 @@ g_typelib_symbol = ctypes_get_func(
 g_typelib_get_namespace = ctypes_get_func(
 	libgir,
 	'g_typelib_get_namespace',
-	c_char_p,
+	gchar_p,
 	POINTER(GITypelib),
 )
 

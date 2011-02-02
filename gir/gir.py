@@ -16,7 +16,7 @@ class Object(object):
 	# useful when args are not known for __new__ or/and __init__
 	@classmethod
 	def _new_without_init(cls):
-		self = super(GObject, cls).__new__(cls)
+		self = super(Object, cls).__new__(cls)
 		self._c_obj = None
 		return self
 	
@@ -77,17 +77,11 @@ class GIRepositoryError(object):
 		LIBRARY_NOT_FOUND,
 	) = range(4)
 
-	def __init__(self):
-		pass
-
 #
 # GIRepositoryLoadFlags
 #
 class GIRepositoryLoadFlags(object):
 	LAZY = 1 << 0
-	
-	def __init__(self):
-		pass
 
 #
 # GIBaseInfo
@@ -150,9 +144,6 @@ class GInvokeError(object):
 		SYMBOL_NOT_FOUND,
 		ARGUMENT_MISMATCH
 	) = range(3)
-	
-	def __init__(self):
-		pass
 
 class GIFunctionInfoFlags(object):
 	IS_METHOD = 1 << 0
@@ -161,9 +152,6 @@ class GIFunctionInfoFlags(object):
 	IS_SETTER = 1 << 3
 	WRAPS_VFUNC = 1 << 4
 	THROWS = 1 << 5
-	
-	def __init__(self):
-		pass
 
 #
 # GISignalInfo
@@ -187,9 +175,6 @@ class GIVFuncInfoFlags(object):
 	MUST_CHAIN_UP = 1 << 0
 	MUST_OVERRIDE = 1 << 1
 	MUST_NOT_OVERRIDE = 1 << 2
-	
-	def __init__(self):
-		pass
 
 #
 # GIRegisteredTypeInfo
@@ -266,9 +251,6 @@ class GIDirection(object):
 		OUT,
 		INOUT,
 	) = range(3)
-	
-	def __init__(self):
-		pass
 
 class GIScopeType(object):
 	(
@@ -278,18 +260,12 @@ class GIScopeType(object):
 		NOTIFIED,
 	) = range(4)
 
-	def __init__(self):
-		pass
-
 class GITransfer(object):
 	(
 		NOTHING,
 		CONTAINER,
 		EVERYTHING,
 	) = range(3)
-	
-	def __init__(self):
-		pass
 
 #
 # GIArgument
@@ -328,9 +304,6 @@ class GIFieldInfo(GIInfoObject):
 class GIFieldInfoFlags(object):
 	IS_READABLE = 1 << 0
 	IS_WRITABLE = 1 << 1
-	
-	def __init__(self):
-		pass
 
 #
 # GIPropertyInfo
@@ -357,9 +330,6 @@ class GIArrayType(object):
 		PTR_ARRAY,
 		BYTE_ARRAY
 	) = range(4)
-	
-	def __init__(self):
-		pass
 
 class GITypeTag(object):
 	VOID = 0
@@ -383,9 +353,6 @@ class GITypeTag(object):
 	GSLIST = 18
 	GHASH = 19
 	ERROR = 20
-	
-	def __init__(self):
-		pass
 
 #
 # GITypelib
@@ -395,9 +362,13 @@ class GITypeTag(object):
 # but it is used that way because of calling convenction
 # which states that instance should be first argument in function call
 # so it mimics GObject
-class GITypelib(GObject):
-	def __init__(self):
-		pass
+class GITypelib(Object):
+	_c_func_prefix = 'g_typelib_'
+	
+	def __repr__(self):
+		c_name = _gir.g_typelib_get_namespace(self._c_obj)
+		py_name = convert_c_to_python_object(c_name)
+		return ''.join(('<', py_name, ' (GITypelib object at ', hex(id(self._c_obj)) ,') object at ', hex(id(self)), '>'))
 
 class GTypelibBlobType(object):
 	(
@@ -414,9 +385,6 @@ class GTypelibBlobType(object):
 		ERROR_DOMAIN,
 		UNION,
 	) = range(12)
-	
-	def __init__(self):
-		pass
 
 # Conversion from C to Python
 # depends on ctypes, convert_python_to_c_object, _new_with_c_obj
@@ -430,6 +398,29 @@ def convert_c_to_python_object(c_obj):
 	elif isinstance(c_obj, ctypes._Pointer):
 		py_class = globals()[c_obj._type_.__name__]
 		py_obj = py_class._new_with_c_obj(c_obj)
+	elif isinstance(c_obj, _gir.gboolean):
+		py_obj = bool(c_obj.value)
+	elif isinstance(c_obj, _gir.gint8) or \
+		isinstance(c_obj, _gir.guint8) or \
+		isinstance(c_obj, _gir.gint16) or \
+		isinstance(c_obj, _gir.guint16) or \
+		isinstance(c_obj, _gir.gint32) or \
+		isinstance(c_obj, _gir.guint32) or \
+		isinstance(c_obj, _gir.gint64) or \
+		isinstance(c_obj, _gir.guint64) or \
+		isinstance(c_obj, _gir.gshort) or \
+		isinstance(c_obj, _gir.gushort) or \
+		isinstance(c_obj, _gir.gint) or \
+		isinstance(c_obj, _gir.guint) or \
+		isinstance(c_obj, _gir.glong) or \
+		isinstance(c_obj, _gir.gulong) or \
+		isinstance(c_obj, _gir.gssize) or \
+		isinstance(c_obj, _gir.gsize) or \
+		isinstance(c_obj, _gir.gpointer):
+			py_obj = c_obj.value
+	elif isinstance(c_obj, _gir.gchar) or \
+		isinstance(c_obj, _gir.gchar_p):
+			py_obj = c_obj.value
 	else:
 		raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
 	

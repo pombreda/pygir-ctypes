@@ -18,7 +18,7 @@ def ctypes_get_func(lib, name, restype=None, *argtypes):
 	return func
 
 #
-# Glib/GObject - C types
+# Glib/GObject
 #
 gboolean = c_int
 gint8 = c_byte
@@ -113,19 +113,14 @@ G_SIGNAL_MATCH_UNBLOCKED = c_int(1 << 5)
 
 class GSignalQuery(Structure): pass
 
-#
-# Glib/GObject - C functions
-#
 g_type_init = ctypes_get_func(
 	libgo,
 	'g_type_init',
 )
 
 #
-# GIRepository - C types
-#
-
 # GIBaseInfo
+#
 class GIBaseInfo(Structure): pass
 
 class GIAttributeIter(Structure): pass 
@@ -399,7 +394,9 @@ name_GITypeTag = {
 	20: 'GI_TYPE_TAG_ERROR',
 }
 
+#
 # GIRepository
+#
 class GIRepository(GObject): pass
 class GICallbackInfo(GIBaseInfo): pass
 
@@ -427,7 +424,9 @@ name_GIRepositoryLoadFlags = {
 	1 << 0: 'G_IREPOSITORY_LOAD_FLAG_LAZY',
 }
 
+#
 # GITypelib
+#
 class GITypelib(Structure): pass
 	
 # Typelib binary format
@@ -489,7 +488,7 @@ class AttributeBlob(Structure): pass
 class dimensions(Structure): pass
 
 #
-# GIRepository - ctypes functions
+# GIRepository
 #
 g_irepository_get_default = ctypes_get_func(
 	libgir,

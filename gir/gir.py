@@ -4,6 +4,41 @@
 import _gir
 
 #
+# GIRepository
+#
+class GIRepository(object):
+	def __init__(self):
+		_gir.g_type_init()
+		self._gir = _gir.g_irepository_get_default()
+
+class GICallbackInfo(object):
+	def __init__(self):
+		pass
+
+#
+# GIRepositoryError
+#
+class GIRepositoryError(object):
+	(
+		TYPELIB_NOT_FOUND,
+		NAMESPACE_MISMATCH,
+		NAMESPACE_VERSION_CONFLICT,
+		LIBRARY_NOT_FOUND,
+	) = range(4)
+
+	def __init__(self):
+		pass
+
+#
+# GIRepositoryLoadFlags
+#
+class GIRepositoryLoadFlags(object):
+	LAZY = 1 << 0
+	
+	def __init__(self):
+		pass
+
+#
 # GIBaseInfo
 #
 class GIBaseInfo(object):
@@ -16,26 +51,26 @@ class GIAttributeIter(object):
 
 class GIInfoType(object):
 	(
-		GI_INFO_TYPE_INVALID,
-		GI_INFO_TYPE_FUNCTION,
-		GI_INFO_TYPE_CALLBACK,
-		GI_INFO_TYPE_STRUCT,
-		GI_INFO_TYPE_BOXED,
-		GI_INFO_TYPE_ENUM,
-		GI_INFO_TYPE_FLAGS,
-		GI_INFO_TYPE_OBJECT,
-		GI_INFO_TYPE_INTERFACE,
-		GI_INFO_TYPE_CONSTANT,
-		GI_INFO_TYPE_ERROR_DOMAIN,
-		GI_INFO_TYPE_UNION,
-		GI_INFO_TYPE_VALUE,
-		GI_INFO_TYPE_SIGNAL,
-		GI_INFO_TYPE_VFUNC,
-		GI_INFO_TYPE_PROPERTY,
-		GI_INFO_TYPE_FIELD,
-		GI_INFO_TYPE_ARG,
-		GI_INFO_TYPE_TYPE,
-		GI_INFO_TYPE_UNRESOLVED
+		INVALID,
+		FUNCTION,
+		CALLBACK,
+		STRUCT,
+		BOXED,
+		ENUM,
+		FLAGS,
+		OBJECT,
+		INTERFACE,
+		CONSTANT,
+		ERROR_DOMAIN,
+		UNION,
+		VALUE,
+		SIGNAL,
+		VFUNC,
+		PROPERTY,
+		FIELD,
+		ARG,
+		TYPE,
+		UNRESOLVED
 	) = range(20)
 
 #
@@ -54,21 +89,21 @@ class GIFunctionInfo(object):
 
 class GInvokeError(object):
 	(
-		G_INVOKE_ERROR_FAILED,
-		G_INVOKE_ERROR_SYMBOL_NOT_FOUND,
-		G_INVOKE_ERROR_ARGUMENT_MISMATCH
+		FAILED,
+		SYMBOL_NOT_FOUND,
+		ARGUMENT_MISMATCH
 	) = range(3)
 	
 	def __init__(self):
 		pass
 
 class GIFunctionInfoFlags(object):
-	GI_FUNCTION_IS_METHOD = 1 << 0
-	GI_FUNCTION_IS_CONSTRUCTOR = 1 << 1
-	GI_FUNCTION_IS_GETTER = 1 << 2
-	GI_FUNCTION_IS_SETTER = 1 << 3
-	GI_FUNCTION_WRAPS_VFUNC = 1 << 4
-	GI_FUNCTION_THROWS = 1 << 5
+	IS_METHOD = 1 << 0
+	IS_CONSTRUCTOR = 1 << 1
+	IS_GETTER = 1 << 2
+	IS_SETTER = 1 << 3
+	WRAPS_VFUNC = 1 << 4
+	THROWS = 1 << 5
 	
 	def __init__(self):
 		pass
@@ -88,9 +123,9 @@ class GIVFuncInfo(object):
 		pass
 
 class GIVFuncInfoFlags(object):
-	GI_VFUNC_MUST_CHAIN_UP = 1 << 0
-	GI_VFUNC_MUST_OVERRIDE = 1 << 1
-	GI_VFUNC_MUST_NOT_OVERRIDE = 1 << 2
+	MUST_CHAIN_UP = 1 << 0
+	MUST_OVERRIDE = 1 << 1
+	MUST_NOT_OVERRIDE = 1 << 2
 	
 	def __init__(self):
 		pass
@@ -150,9 +185,9 @@ class GIArgInfo(object):
 
 class GIDirection(object):
 	(
-		GI_DIRECTION_IN,
-		GI_DIRECTION_OUT,
-		GI_DIRECTION_INOUT,
+		IN,
+		OUT,
+		INOUT,
 	) = range(3)
 	
 	def __init__(self):
@@ -160,10 +195,10 @@ class GIDirection(object):
 
 class GIScopeType(object):
 	(
-		GI_SCOPE_TYPE_INVALID,
-		GI_SCOPE_TYPE_CALL,
-		GI_SCOPE_TYPE_ASYNC,
-		GI_SCOPE_TYPE_NOTIFIED,
+		INVALID,
+		CALL,
+		ASYNC,
+		NOTIFIED,
 	) = range(4)
 
 	def __init__(self):
@@ -171,9 +206,9 @@ class GIScopeType(object):
 
 class GITransfer(object):
 	(
-		GI_TRANSFER_NOTHING,
-		GI_TRANSFER_CONTAINER,
-		GI_TRANSFER_EVERYTHING,
+		NOTHING,
+		CONTAINER,
+		EVERYTHING,
 	) = range(3)
 	
 	def __init__(self):
@@ -208,8 +243,8 @@ class GIFieldInfo(object):
 		pass
 
 class GIFieldInfoFlags(object):
-	GI_FIELD_IS_READABLE = 1 << 0
-	GI_FIELD_IS_WRITABLE = 1 << 1
+	IS_READABLE = 1 << 0
+	IS_WRITABLE = 1 << 1
 	
 	def __init__(self):
 		pass
@@ -230,71 +265,37 @@ class GITypeInfo(object):
 
 class GIArrayType(object):
 	(
-		GI_ARRAY_TYPE_C,
-		GI_ARRAY_TYPE_ARRAY,
-		GI_ARRAY_TYPE_PTR_ARRAY,
-		GI_ARRAY_TYPE_BYTE_ARRAY
+		C,
+		ARRAY,
+		PTR_ARRAY,
+		BYTE_ARRAY
 	) = range(4)
 	
 	def __init__(self):
 		pass
 
 class GITypeTag(object):
-	GI_TYPE_TAG_VOID = 0
-	GI_TYPE_TAG_BOOLEAN = 1
-	GI_TYPE_TAG_INT8 =  2
-	GI_TYPE_TAG_UINT8 =  3
-	GI_TYPE_TAG_INT16 =  4
-	GI_TYPE_TAG_UINT16 =  5
-	GI_TYPE_TAG_INT32 =  6
-	GI_TYPE_TAG_UINT32 =  7
-	GI_TYPE_TAG_INT64 =  8
-	GI_TYPE_TAG_UINT64 = 9
-	GI_TYPE_TAG_FLOAT = 10
-	GI_TYPE_TAG_DOUBLE = 11
-	GI_TYPE_TAG_GTYPE = 12
-	GI_TYPE_TAG_UTF8 = 13
-	GI_TYPE_TAG_FILENAME = 14
-	GI_TYPE_TAG_ARRAY = 15
-	GI_TYPE_TAG_INTERFACE = 16
-	GI_TYPE_TAG_GLIST = 17
-	GI_TYPE_TAG_GSLIST = 18
-	GI_TYPE_TAG_GHASH = 19
-	GI_TYPE_TAG_ERROR = 20
-	
-	def __init__(self):
-		pass
-
-#
-# GIRepository
-#
-class GIRepository(object):
-	def __init__(self):
-		pass
-
-class GICallbackInfo(object):
-	def __init__(self):
-		pass
-
-#
-# GIRepositoryError
-#
-class GIRepositoryError(object):
-	(
-		G_IREPOSITORY_ERROR_TYPELIB_NOT_FOUND,
-		G_IREPOSITORY_ERROR_NAMESPACE_MISMATCH,
-		G_IREPOSITORY_ERROR_NAMESPACE_VERSION_CONFLICT,
-		G_IREPOSITORY_ERROR_LIBRARY_NOT_FOUND,
-	) = range(4)
-
-	def __init__(self):
-		pass
-
-#
-# GIRepositoryLoadFlags
-#
-class GIRepositoryLoadFlags(object):
-	G_IREPOSITORY_LOAD_FLAG_LAZY = 1 << 0
+	VOID = 0
+	BOOLEAN = 1
+	INT8 =  2
+	UINT8 =  3
+	INT16 =  4
+	UINT16 =  5
+	INT32 =  6
+	UINT32 =  7
+	INT64 =  8
+	UINT64 = 9
+	FLOAT = 10
+	DOUBLE = 11
+	GTYPE = 12
+	UTF8 = 13
+	FILENAME = 14
+	ARRAY = 15
+	INTERFACE = 16
+	GLIST = 17
+	GSLIST = 18
+	GHASH = 19
+	ERROR = 20
 	
 	def __init__(self):
 		pass
@@ -308,18 +309,18 @@ class GITypelib(object):
 
 class GTypelibBlobType(object):
 	(
-		BLOB_TYPE_INVALID,
-		BLOB_TYPE_FUNCTION,
-		BLOB_TYPE_CALLBACK,
-		BLOB_TYPE_STRUCT,
-		BLOB_TYPE_BOXED,
-		BLOB_TYPE_ENUM,
-		BLOB_TYPE_FLAGS,
-		BLOB_TYPE_OBJECT,
-		BLOB_TYPE_INTERFACE,
-		BLOB_TYPE_CONSTANT,
-		BLOB_TYPE_ERROR_DOMAIN,
-		BLOB_TYPE_UNION,
+		INVALID,
+		FUNCTION,
+		CALLBACK,
+		STRUCT,
+		BOXED,
+		ENUM,
+		FLAGS,
+		OBJECT,
+		INTERFACE,
+		CONSTANT,
+		ERROR_DOMAIN,
+		UNION,
 	) = range(12)
 	
 	def __init__(self):

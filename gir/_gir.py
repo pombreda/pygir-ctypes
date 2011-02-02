@@ -19,56 +19,55 @@ def ctypes_get_func(lib, name, restype=None, *argtypes):
 	return func
 
 #
-# Glib/GObject
+# GObject
 #
-gboolean = c_int
-gint8 = c_byte
-guint8 = c_ubyte
-gint16 = c_short
-guint16 = c_ushort
-gint32 = c_int
-guint32 = c_uint
-gint64 = c_longlong
-guint64 = c_ulonglong
-gfloat = c_float
-gdouble = c_double
-gshort = c_short
-gushort = c_ushort
-gint = c_int
-guint = c_uint
-glong = c_long
-gulong = c_ulong
-gssize = c_long
-gsize = c_ulong
-class gchar(c_char): pass
+class gboolean(c_int): pass
+class gint8(c_byte): pass
+class guint8(c_ubyte): pass
+class gint16(c_short): pass
+class guint16(c_ushort): pass
+class gint32(c_int): pass
+class guint32(c_uint): pass
+class gint64(c_longlong): pass
+class guint64(c_ulonglong): pass
+class gfloat(c_float): pass
+class gdouble(c_double): pass
+class gshort(c_short): pass
+class gushort(c_ushort): pass
+class gint(c_int): pass
+class guint(c_uint): pass
+class glong(c_long): pass
+class gulong(c_ulong): pass
+class gssize(c_long): pass
+class gsize(c_ulong): pass
+class gchar(c_char): pass		# represents "[const] gchar"
 class gchar_p(c_char_p): pass	# represents "[const] gchar*"
 class gpointer(c_void_p): pass
 
 class GObject(Structure): pass
-GType = c_int
+class GType(gsize): pass
 class GError(Structure): pass
 class GList(Structure): pass
 class GSList(Structure): pass
 class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass
 class GValue(Structure): pass
-GType = gsize
 
 # GParam
 class GParamSpec(Structure): pass
 class GParamSpecClass(Structure): pass
 
-GParamFlags = c_int
-G_PARAM_READABLE = c_int(1 << 0)
-G_PARAM_WRITABLE = c_int(1 << 1)
-G_PARAM_CONSTRUCT = c_int(1 << 2)
-G_PARAM_CONSTRUCT_ONLY = c_int(1 << 3)
-G_PARAM_LAX_VALIDATION = c_int(1 << 4)
-G_PARAM_STATIC_NAME = c_int(1 << 5)
+class GParamFlags(c_int): pass
+G_PARAM_READABLE = GParamFlags(1 << 0)
+G_PARAM_WRITABLE = GParamFlags(1 << 1)
+G_PARAM_CONSTRUCT = GParamFlags(1 << 2)
+G_PARAM_CONSTRUCT_ONLY = GParamFlags(1 << 3)
+G_PARAM_LAX_VALIDATION = GParamFlags(1 << 4)
+G_PARAM_STATIC_NAME = GParamFlags(1 << 5)
 G_PARAM_PRIVATE = G_PARAM_STATIC_NAME
-G_PARAM_STATIC_NICK = c_int(1 << 6)
-G_PARAM_STATIC_BLURB = c_int(1 << 7)
-G_PARAM_DEPRECATED = c_int(1 << 31)
+G_PARAM_STATIC_NICK = GParamFlags(1 << 6)
+G_PARAM_STATIC_BLURB = GParamFlags(1 << 7)
+G_PARAM_DEPRECATED = GParamFlags(1 << 31)
 
 # GCClosure
 class GClosure(Structure): pass
@@ -94,29 +93,24 @@ GSignalEmissionHook = CFUNCTYPE(
 	gpointer,
 )
 
-GSignalFlags = c_int
-G_SIGNAL_RUN_FIRST = c_int(1 << 0)
-G_SIGNAL_RUN_LAST = c_int(1 << 1)
-G_SIGNAL_RUN_CLEANUP = c_int(1 << 2)
-G_SIGNAL_NO_RECURSE = c_int(1 << 3)
-G_SIGNAL_DETAILED = c_int(1 << 4)
-G_SIGNAL_ACTION = c_int(1 << 5)
-G_SIGNAL_NO_HOOKS = c_int(1 << 6)
+class GSignalFlags(c_int): pass
+G_SIGNAL_RUN_FIRST = GSignalFlags(1 << 0)
+G_SIGNAL_RUN_LAST = GSignalFlags(1 << 1)
+G_SIGNAL_RUN_CLEANUP = GSignalFlags(1 << 2)
+G_SIGNAL_NO_RECURSE = GSignalFlags(1 << 3)
+G_SIGNAL_DETAILED = GSignalFlags(1 << 4)
+G_SIGNAL_ACTION = GSignalFlags(1 << 5)
+G_SIGNAL_NO_HOOKS = GSignalFlags(1 << 6)
 
-GSignalMatchType = c_int
-G_SIGNAL_MATCH_ID = c_int(1 << 0)
-G_SIGNAL_MATCH_DETAIL = c_int(1 << 1)
-G_SIGNAL_MATCH_CLOSURE = c_int(1 << 2)
-G_SIGNAL_MATCH_FUNC = c_int(1 << 3)
-G_SIGNAL_MATCH_DATA = c_int(1 << 4)
-G_SIGNAL_MATCH_UNBLOCKED = c_int(1 << 5)
+class GSignalMatchType(c_int): pass
+G_SIGNAL_MATCH_ID = GSignalMatchType(1 << 0)
+G_SIGNAL_MATCH_DETAIL = GSignalMatchType(1 << 1)
+G_SIGNAL_MATCH_CLOSURE = GSignalMatchType(1 << 2)
+G_SIGNAL_MATCH_FUNC = GSignalMatchType(1 << 3)
+G_SIGNAL_MATCH_DATA = GSignalMatchType(1 << 4)
+G_SIGNAL_MATCH_UNBLOCKED = GSignalMatchType(1 << 5)
 
 class GSignalQuery(Structure): pass
-
-g_type_init = ctypes_get_func(
-	libgo,
-	'g_type_init',
-)
 
 #
 # GIBaseInfo
@@ -125,7 +119,7 @@ class GIBaseInfo(Structure): pass
 
 class GIAttributeIter(Structure): pass 
 
-GIInfoType = c_int
+class GIInfoType(c_int): pass
 (
 	GI_INFO_TYPE_INVALID,
 	GI_INFO_TYPE_FUNCTION,
@@ -147,7 +141,7 @@ GIInfoType = c_int
 	GI_INFO_TYPE_ARG,
 	GI_INFO_TYPE_TYPE,
 	GI_INFO_TYPE_UNRESOLVED
-) = map(c_int, range(20))
+) = map(GIInfoType, range(20))
 
 name_GIInfoType = (
 	'GI_INFO_TYPE_INVALID',
@@ -178,20 +172,20 @@ class GICallableInfo(GIBaseInfo): pass
 # GIFunctionInfo
 class GIFunctionInfo(GICallableInfo): pass
 
-GInvokeError = c_int
+class GInvokeError(c_int): pass
 (
 	G_INVOKE_ERROR_FAILED,
 	G_INVOKE_ERROR_SYMBOL_NOT_FOUND,
 	G_INVOKE_ERROR_ARGUMENT_MISMATCH
-) = map(c_int, range(3))
+) = map(GInvokeError, range(3))
 
-GIFunctionInfoFlags = c_int
-GI_FUNCTION_IS_METHOD = c_int(1 << 0)
-GI_FUNCTION_IS_CONSTRUCTOR = c_int(1 << 1)
-GI_FUNCTION_IS_GETTER = c_int(1 << 2)
-GI_FUNCTION_IS_SETTER = c_int(1 << 3)
-GI_FUNCTION_WRAPS_VFUNC = c_int(1 << 4)
-GI_FUNCTION_THROWS = c_int(1 << 5)
+class GIFunctionInfoFlags(c_int): pass
+GI_FUNCTION_IS_METHOD = GIFunctionInfoFlags(1 << 0)
+GI_FUNCTION_IS_CONSTRUCTOR = GIFunctionInfoFlags(1 << 1)
+GI_FUNCTION_IS_GETTER = GIFunctionInfoFlags(1 << 2)
+GI_FUNCTION_IS_SETTER = GIFunctionInfoFlags(1 << 3)
+GI_FUNCTION_WRAPS_VFUNC = GIFunctionInfoFlags(1 << 4)
+GI_FUNCTION_THROWS = GIFunctionInfoFlags(1 << 5)
 
 name_GIFunctionInfoFlags = {
 	1 << 0: 'GI_FUNCTION_IS_METHOD',
@@ -208,10 +202,10 @@ class GISignalInfo(GICallableInfo): pass
 # GIVFuncInfo
 class GIVFuncInfo(GICallableInfo): pass
 
-GIVFuncInfoFlags = c_int
-GI_VFUNC_MUST_CHAIN_UP = c_int(1 << 0)
-GI_VFUNC_MUST_OVERRIDE = c_int(1 << 1)
-GI_VFUNC_MUST_NOT_OVERRIDE = c_int(1 << 2)
+class GIVFuncInfoFlags(c_int): pass
+GI_VFUNC_MUST_CHAIN_UP = GIVFuncInfoFlags(1 << 0)
+GI_VFUNC_MUST_OVERRIDE = GIVFuncInfoFlags(1 << 1)
+GI_VFUNC_MUST_NOT_OVERRIDE = GIVFuncInfoFlags(1 << 2)
 
 name_GIVFuncInfoFlags =  {
 	1 << 0: 'GI_VFUNC_MUST_CHAIN_UP',
@@ -241,12 +235,12 @@ class GIUnionInfo(GIRegisteredTypeInfo): pass
 # GIArgInfo
 class GIArgInfo(GIBaseInfo): pass
 
-GIDirection = c_int
+class GIDirection(c_int): pass
 (
 	GI_DIRECTION_IN,
 	GI_DIRECTION_OUT,
 	GI_DIRECTION_INOUT,
-) = map(c_int, range(3))
+) = map(GIDirection, range(3))
 
 name_GIDirection = [
 	'GI_DIRECTION_IN',
@@ -254,13 +248,13 @@ name_GIDirection = [
 	'GI_DIRECTION_INOUT',
 ]
 
-GIScopeType = c_int
+class GIScopeType(c_int): pass
 (
 	GI_SCOPE_TYPE_INVALID,
 	GI_SCOPE_TYPE_CALL,
 	GI_SCOPE_TYPE_ASYNC,
 	GI_SCOPE_TYPE_NOTIFIED,
-) = map(c_int, range(4))
+) = map(GIScopeType, range(4))
 
 name_GIScopeType = [
 	'GI_SCOPE_TYPE_INVALID',
@@ -269,12 +263,12 @@ name_GIScopeType = [
 	'GI_SCOPE_TYPE_NOTIFIED',
 ]
 
-GITransfer = c_int
+class GITransfer(c_int): pass
 (
 	GI_TRANSFER_NOTHING,
 	GI_TRANSFER_CONTAINER,
 	GI_TRANSFER_EVERYTHING,
-) = map(c_int, range(3))
+) = map(GITransfer, range(3))
 
 name_GITransfer = [
 	'GI_TRANSFER_NOTHING',
@@ -317,9 +311,9 @@ class GIErrorDomainInfo(GIBaseInfo): pass
 # GIFieldInfo
 class GIFieldInfo(GIBaseInfo): pass
 
-GIFieldInfoFlags = c_int
-GI_FIELD_IS_READABLE = c_int(1 << 0)
-GI_FIELD_IS_WRITABLE = c_int(1 << 1)
+class GIFieldInfoFlags(c_int): pass
+GI_FIELD_IS_READABLE = GIFieldInfoFlags(1 << 0)
+GI_FIELD_IS_WRITABLE = GIFieldInfoFlags(1 << 1)
 
 name_GIFieldInfoFlags = {
 	1 << 0: 'GI_FIELD_IS_READABLE',
@@ -332,13 +326,13 @@ class GIPropertyInfo(GIBaseInfo): pass
 # GITypeInfo
 class GITypeInfo(GIBaseInfo): pass
 
-GIArrayType = c_int
+class GIArrayType(c_int): pass
 (
 	GI_ARRAY_TYPE_C,
 	GI_ARRAY_TYPE_ARRAY,
 	GI_ARRAY_TYPE_PTR_ARRAY,
 	GI_ARRAY_TYPE_BYTE_ARRAY
-) = map(c_int, range(4))
+) = map(GIArrayType, range(4))
 
 name_GIArrayType = [
 	'GI_ARRAY_TYPE_C',
@@ -347,28 +341,28 @@ name_GIArrayType = [
 	'GI_ARRAY_TYPE_BYTE_ARRAY',
 ]
 
-GITypeTag = c_int
-GI_TYPE_TAG_VOID = c_int(0)
-GI_TYPE_TAG_BOOLEAN = c_int(1)
-GI_TYPE_TAG_INT8 =  c_int(2)
-GI_TYPE_TAG_UINT8 =  c_int(3)
-GI_TYPE_TAG_INT16 =  c_int(4)
-GI_TYPE_TAG_UINT16 =  c_int(5)
-GI_TYPE_TAG_INT32 =  c_int(6)
-GI_TYPE_TAG_UINT32 =  c_int(7)
-GI_TYPE_TAG_INT64 =  c_int(8)
-GI_TYPE_TAG_UINT64 = c_int(9)
-GI_TYPE_TAG_FLOAT = c_int(10)
-GI_TYPE_TAG_DOUBLE = c_int(11)
-GI_TYPE_TAG_GTYPE = c_int(12)
-GI_TYPE_TAG_UTF8 = c_int(13)
-GI_TYPE_TAG_FILENAME = c_int(14)
-GI_TYPE_TAG_ARRAY = c_int(15)
-GI_TYPE_TAG_INTERFACE = c_int(16)
-GI_TYPE_TAG_GLIST = c_int(17)
-GI_TYPE_TAG_GSLIST = c_int(18)
-GI_TYPE_TAG_GHASH = c_int(19)
-GI_TYPE_TAG_ERROR = c_int(20)
+class GITypeTag(c_int): pass
+GI_TYPE_TAG_VOID = GITypeTag(0)
+GI_TYPE_TAG_BOOLEAN = GITypeTag(1)
+GI_TYPE_TAG_INT8 =  GITypeTag(2)
+GI_TYPE_TAG_UINT8 =  GITypeTag(3)
+GI_TYPE_TAG_INT16 =  GITypeTag(4)
+GI_TYPE_TAG_UINT16 =  GITypeTag(5)
+GI_TYPE_TAG_INT32 =  GITypeTag(6)
+GI_TYPE_TAG_UINT32 =  GITypeTag(7)
+GI_TYPE_TAG_INT64 =  GITypeTag(8)
+GI_TYPE_TAG_UINT64 = GITypeTag(9)
+GI_TYPE_TAG_FLOAT = GITypeTag(10)
+GI_TYPE_TAG_DOUBLE = GITypeTag(11)
+GI_TYPE_TAG_GTYPE = GITypeTag(12)
+GI_TYPE_TAG_UTF8 = GITypeTag(13)
+GI_TYPE_TAG_FILENAME = GITypeTag(14)
+GI_TYPE_TAG_ARRAY = GITypeTag(15)
+GI_TYPE_TAG_INTERFACE = GITypeTag(16)
+GI_TYPE_TAG_GLIST = GITypeTag(17)
+GI_TYPE_TAG_GSLIST = GITypeTag(18)
+GI_TYPE_TAG_GHASH = GITypeTag(19)
+GI_TYPE_TAG_ERROR = GITypeTag(20)
 
 name_GITypeTag = {
 	0: 'GI_TYPE_TAG_VOID',
@@ -401,13 +395,13 @@ class GIRepository(GObject): pass
 class GICallbackInfo(GIBaseInfo): pass
 
 # GIRepositoryError
-GIRepositoryError = c_int
+class GIRepositoryError(c_int): pass
 (
 	G_IREPOSITORY_ERROR_TYPELIB_NOT_FOUND,
 	G_IREPOSITORY_ERROR_NAMESPACE_MISMATCH,
 	G_IREPOSITORY_ERROR_NAMESPACE_VERSION_CONFLICT,
 	G_IREPOSITORY_ERROR_LIBRARY_NOT_FOUND,
-) = map(c_int, range(4))
+) = map(GIRepositoryError, range(4))
 
 name_GIRepositoryError = [
 	'G_IREPOSITORY_ERROR_TYPELIB_NOT_FOUND',
@@ -417,8 +411,8 @@ name_GIRepositoryError = [
 ]
 
 # GIRepositoryLoadFlags
-GIRepositoryLoadFlags = c_int
-G_IREPOSITORY_LOAD_FLAG_LAZY = c_int(1 << 0)
+class GIRepositoryLoadFlags(c_int): pass
+G_IREPOSITORY_LOAD_FLAG_LAZY = GIRepositoryLoadFlags(1 << 0)
 
 name_GIRepositoryLoadFlags = {
 	1 << 0: 'G_IREPOSITORY_LOAD_FLAG_LAZY',
@@ -430,7 +424,7 @@ name_GIRepositoryLoadFlags = {
 class GITypelib(Structure): pass
 	
 # Typelib binary format
-GTypelibBlobType = c_int
+class GTypelibBlobType(c_int): pass
 (
 	BLOB_TYPE_INVALID,
 	BLOB_TYPE_FUNCTION,
@@ -444,7 +438,7 @@ GTypelibBlobType = c_int
 	BLOB_TYPE_CONSTANT,
 	BLOB_TYPE_ERROR_DOMAIN,
 	BLOB_TYPE_UNION,
-) = map(c_int, range(12))
+) = map(GTypelibBlobType, range(12))
 
 name_GTypelibBlobType = [
 	'BLOB_TYPE_INVALID',
@@ -486,6 +480,14 @@ class InterfaceBlob(Structure): pass
 class ConstantBlob(Structure): pass
 class AttributeBlob(Structure): pass
 class dimensions(Structure): pass
+
+#
+# GObject
+#
+g_type_init = ctypes_get_func(
+	libgo,
+	'g_type_init',
+)
 
 #
 # GIRepository
@@ -1715,4 +1717,4 @@ def info_print(info):
 	info = cast(info, POINTER(GIBaseInfo))
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
-	print(info, info_name, name_GIInfoType[info_type])
+	print(info, info_name, name_GIInfoType[info_type.value])

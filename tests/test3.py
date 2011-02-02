@@ -16,8 +16,8 @@ if __name__ == '__main__':
 		None
 	)
 	
-	#~ Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
-	#~ info_print(Gtk_Window)
+	Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
+	info_print(Gtk_Window)
 	
 	#~ n_interfaces = g_object_info_get_n_interfaces(cast(Gtk_Window, POINTER(GIObjectInfo)))
 	#~ 
@@ -27,27 +27,33 @@ if __name__ == '__main__':
 			#~ gint(i),
 		#~ )
 		#~ # info_print(interface)
-	#~ 
-	#~ parent = g_object_info_get_parent(
-		#~ cast(Gtk_Window, POINTER(GIObjectInfo))
-	#~ )
-	#~ info_print(parent)
-	#~ 
-	#~ parent = g_object_info_get_parent(
-		#~ cast(parent, POINTER(GIObjectInfo))
-	#~ )
-	#~ info_print(parent)
-	#~ 
-	#~ parent = g_object_info_get_parent(
-		#~ cast(parent, POINTER(GIObjectInfo))
-	#~ )
-	#~ info_print(parent)
-	#~ 
-	#~ parent = g_object_info_get_parent(
-		#~ cast(parent, POINTER(GIObjectInfo))
-	#~ )
-	#~ info_print(parent)
-	#~ 
+	
+	parent = g_object_info_get_parent(
+		cast(Gtk_Window, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	parent = g_object_info_get_parent(
+		cast(parent, POINTER(GIObjectInfo))
+	)
+	info_print(parent)
+	
+	Gtk_Window_connect = g_object_info_find_method(
+		cast(parent, POINTER(GIObjectInfo)),
+		gchar_p('connect')
+	)
+	info_print(Gtk_Window_connect)
+	
 	#~ parent = g_object_info_get_parent(
 		#~ cast(parent, POINTER(GIObjectInfo))
 	#~ )

@@ -6,10 +6,17 @@ from gir._gir import *
 
 if __name__ == '__main__':
 	g_type_init()
-	gir = g_irepository_get_default()
+	Gir = g_irepository_get_default()
 	
-	Gtk = g_irepository_require(gir, gchar_p('Gtk'), None, G_IREPOSITORY_LOAD_FLAG_LAZY, None)
-	Gtk_main = g_irepository_find_by_name(gir, gchar_p('Gtk'), gchar_p('main'))
+	Gtk = g_irepository_require(
+		Gir,
+		gchar_p('Gtk'),
+		None,
+		G_IREPOSITORY_LOAD_FLAG_LAZY,
+		None
+	)
+	
+	Gtk_main = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('main'))
 	
 	in_args = GIArgument()
 	out_args = GIArgument()

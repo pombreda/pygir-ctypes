@@ -502,7 +502,7 @@ g_irepository_prepend_search_path = ctypes_get_func(
 	libgir,
 	'g_irepository_prepend_search_path',
 	None,
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_search_path = ctypes_get_func(
@@ -514,7 +514,7 @@ g_irepository_get_search_path = ctypes_get_func(
 g_irepository_load_typelib = ctypes_get_func(
 	libgir,
 	'g_irepository_load_typelib',
-	c_char_p,
+	gchar_p,
 	POINTER(GIRepository),
 	POINTER(GITypelib),
 	GIRepositoryLoadFlags,
@@ -524,10 +524,10 @@ g_irepository_load_typelib = ctypes_get_func(
 g_irepository_is_registered = ctypes_get_func(
 	libgir,
 	'g_irepository_is_registered',
-	c_int,
+	gint,
 	POINTER(GIRepository),
-	c_char_p,
-	c_char_p,
+	gchar_p,
+	gchar_p,
 )
 
 g_irepository_find_by_name = ctypes_get_func(
@@ -535,8 +535,8 @@ g_irepository_find_by_name = ctypes_get_func(
 	'g_irepository_find_by_name',
 	POINTER(GIBaseInfo),
 	POINTER(GIRepository),
-	c_char_p,
-	c_char_p,
+	gchar_p,
+	gchar_p,
 )
 
 g_irepository_require = ctypes_get_func(
@@ -544,8 +544,8 @@ g_irepository_require = ctypes_get_func(
 	'g_irepository_require',
 	POINTER(GITypelib),
 	POINTER(GIRepository),
-	c_char_p,
-	c_char_p,
+	gchar_p,
+	gchar_p,
 	GIRepositoryLoadFlags,
 	POINTER(POINTER(GError)),
 )
@@ -555,9 +555,9 @@ g_irepository_require_private = ctypes_get_func(
 	'g_irepository_require_private',
 	POINTER(GITypelib),
 	POINTER(GIRepository),
-	c_char_p,
-	c_char_p,
-	c_char_p,
+	gchar_p,
+	gchar_p,
+	gchar_p,
 	GIRepositoryLoadFlags,
 	POINTER(POINTER(GError)),
 )
@@ -565,15 +565,15 @@ g_irepository_require_private = ctypes_get_func(
 g_irepository_get_dependencies = ctypes_get_func(
 	libgir,
 	'g_irepository_get_dependencies',
-	POINTER(c_char_p),
+	POINTER(gchar_p),
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_loaded_namespaces = ctypes_get_func(
 	libgir,
 	'g_irepository_get_loaded_namespaces',
-	POINTER(c_char_p),
+	POINTER(gchar_p),
 	POINTER(GIRepository),
 )
 
@@ -588,9 +588,9 @@ g_irepository_find_by_gtype = ctypes_get_func(
 g_irepository_get_n_infos = ctypes_get_func(
 	libgir,
 	'g_irepository_get_n_infos',
-	c_int,
+	gint,
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_info = ctypes_get_func(
@@ -598,32 +598,32 @@ g_irepository_get_info = ctypes_get_func(
 	'g_irepository_get_info',
 	POINTER(GIBaseInfo),
 	POINTER(GIRepository),
-	c_char_p,
-	c_int,
+	gchar_p,
+	gint,
 )
 
 g_irepository_get_typelib_path = ctypes_get_func(
 	libgir,
 	'g_irepository_get_typelib_path',
-	c_char_p,
+	gchar_p,
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_shared_library = ctypes_get_func(
 	libgir,
 	'g_irepository_get_shared_library',
-	c_char_p,
+	gchar_p,
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_version = ctypes_get_func(
 	libgir,
 	'g_irepository_get_version',
-	c_char_p,
+	gchar_p,
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_get_option_group = ctypes_get_func(
@@ -635,16 +635,16 @@ g_irepository_get_option_group = ctypes_get_func(
 g_irepository_get_c_prefix = ctypes_get_func(
 	libgir,
 	'g_irepository_get_c_prefix',
-	c_char_p,
+	gchar_p,
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_irepository_dump = ctypes_get_func(
 	libgir,
 	'g_irepository_dump',
-	c_int,
-	c_char_p,
+	gint,
+	gchar_p,
 	POINTER(POINTER(GError)),
 )
 
@@ -653,15 +653,15 @@ g_irepository_enumerate_versions = ctypes_get_func(
 	'g_irepository_enumerate_versions',
 	POINTER(GList),
 	POINTER(GIRepository),
-	c_char_p,
+	gchar_p,
 )
 
 g_typelib_new_from_memory = ctypes_get_func(
 	libgir,
 	'g_typelib_new_from_memory',
 	POINTER(GITypelib),
-	POINTER(c_ubyte),
-	c_ulong,
+	POINTER(guint8),
+	gulong,
 	POINTER(POINTER(GError)),
 )
 
@@ -669,8 +669,8 @@ g_typelib_new_from_const_memory = ctypes_get_func(
 	libgir,
 	'g_typelib_new_from_const_memory',
 	POINTER(GITypelib),
-	POINTER(c_ubyte),
-	c_ulong,
+	POINTER(guint8),
+	gulong,
 	POINTER(POINTER(GError)),
 )
 
@@ -692,10 +692,10 @@ g_typelib_free = ctypes_get_func(
 g_typelib_symbol = ctypes_get_func(
 	libgir,
 	'g_typelib_symbol',
-	c_int,
+	gint,
 	POINTER(GITypelib),
-	c_char_p,
-	c_void_p,
+	gchar_p,
+	gpointer,
 )
 
 g_typelib_get_namespace = ctypes_get_func(
@@ -711,7 +711,7 @@ g_typelib_get_namespace = ctypes_get_func(
 g_info_type_to_string = ctypes_get_func(
 	libgir,
 	'g_info_type_to_string',
-	c_char_p,
+	gchar_p,
 	GIInfoType,
 )
 
@@ -739,40 +739,40 @@ g_base_info_get_type = ctypes_get_func(
 g_base_info_get_name = ctypes_get_func(
 	libgir,
 	'g_base_info_get_name',
-	c_char_p,
+	gchar_p,
 	POINTER(GIBaseInfo),
 )
 
 g_base_info_get_namespace = ctypes_get_func(
 	libgir,
 	'g_base_info_get_namespace',
-	c_char_p,
+	gchar_p,
 	POINTER(GIBaseInfo),
 )
 
 g_base_info_is_deprecated = ctypes_get_func(
 	libgir,
 	'g_base_info_is_deprecated',
-	c_int,
+	gint,
 	POINTER(GIBaseInfo),
 )
 
 g_base_info_get_attribute = ctypes_get_func(
 	libgir,
 	'g_base_info_get_attribute',
-	c_char_p,
+	gchar_p,
 	POINTER(GIBaseInfo),
-	c_char_p,
+	gchar_p,
 )
 
 g_base_info_iterate_attributes = ctypes_get_func(
 	libgir,
 	'g_base_info_iterate_attributes',
-	c_int,
+	gint,
 	POINTER(GIBaseInfo),
 	POINTER(GIAttributeIter),
-	c_char_p,
-	c_char_p,
+	gchar_p,
+	gchar_p,
 )
 
 g_base_info_get_container = ctypes_get_func(
@@ -792,7 +792,7 @@ g_base_info_get_typelib = ctypes_get_func(
 g_base_info_equal = ctypes_get_func(
 	libgir,
 	'g_base_info_equal',
-	c_int,
+	gint,
 	POINTER(GIBaseInfo),
 	POINTER(GIBaseInfo),
 )
@@ -803,7 +803,7 @@ g_base_info_equal = ctypes_get_func(
 g_function_info_get_symbol = ctypes_get_func(
 	libgir,
 	'g_function_info_get_symbol',
-	c_char_p,
+	gchar_p,
 	POINTER(GIFunctionInfo),
 )
 
@@ -831,12 +831,12 @@ g_function_info_get_vfunc = ctypes_get_func(
 g_function_info_invoke = ctypes_get_func(
 	libgir,
 	'g_function_info_invoke',
-	c_int,
+	gint,
 	POINTER(GIFunctionInfo),
 	POINTER(GIArgument),
-	c_int,
+	gint,
 	POINTER(GIArgument),
-	c_int,
+	gint,
 	POINTER(GIArgument),
 	POINTER(POINTER(GError)),
 )
@@ -861,32 +861,32 @@ g_callable_info_get_caller_owns = ctypes_get_func(
 g_callable_info_may_return_null = ctypes_get_func(
 	libgir,
 	'g_callable_info_may_return_null',
-	c_int,
+	gint,
 	POINTER(GICallableInfo),
 )
 
 g_callable_info_get_return_attribute = ctypes_get_func(
 	libgir,
 	'g_callable_info_get_return_attribute',
-	c_char_p,
+	gchar_p,
 	POINTER(GICallableInfo),
-	c_char_p,
+	gchar_p,
 )
 
 g_callable_info_iterate_return_attributes = ctypes_get_func(
 	libgir,
 	'g_callable_info_iterate_return_attributes',
-	c_char_p,
+	gchar_p,
 	POINTER(GICallableInfo),
 	POINTER(GIAttributeIter),
-	POINTER(c_char_p),
-	POINTER(c_char_p),
+	POINTER(gchar_p),
+	POINTER(gchar_p),
 )
 
 g_callable_info_get_n_args = ctypes_get_func(
 	libgir,
 	'g_callable_info_get_n_args',
-	c_int,
+	gint,
 	POINTER(GICallableInfo),
 )
 
@@ -895,7 +895,7 @@ g_callable_info_get_arg = ctypes_get_func(
 	'g_callable_info_get_arg',
 	POINTER(GIArgInfo),
 	POINTER(GICallableInfo),
-	c_int,
+	gint,
 )
 
 g_callable_info_load_arg = ctypes_get_func(
@@ -903,7 +903,7 @@ g_callable_info_load_arg = ctypes_get_func(
 	'g_callable_info_load_arg',
 	None,
 	POINTER(GICallableInfo),
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
@@ -928,28 +928,28 @@ g_arg_info_get_direction = ctypes_get_func(
 g_arg_info_is_caller_allocates = ctypes_get_func(
 	libgir,
 	'g_arg_info_is_caller_allocates',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_is_return_value = ctypes_get_func(
 	libgir,
 	'g_arg_info_is_return_value',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_is_optional = ctypes_get_func(
 	libgir,
 	'g_arg_info_is_optional',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_may_be_null = ctypes_get_func(
 	libgir,
 	'g_arg_info_may_be_null',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
@@ -970,14 +970,14 @@ g_arg_info_get_scope = ctypes_get_func(
 g_arg_info_get_closure = ctypes_get_func(
 	libgir,
 	'g_arg_info_get_closure',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_get_destroy = ctypes_get_func(
 	libgir,
 	'g_arg_info_get_destroy',
-	c_int,
+	gint,
 	POINTER(GIArgInfo),
 )
 
@@ -1002,7 +1002,7 @@ g_arg_info_get_type = ctypes_get_func(
 g_struct_info_get_n_fields = ctypes_get_func(
 	libgir,
 	'g_struct_info_get_n_fields',
-	c_int,
+	gint,
 	POINTER(GIStructInfo),
 )
 
@@ -1011,13 +1011,13 @@ g_struct_info_get_field = ctypes_get_func(
 	'g_struct_info_get_field',
 	POINTER(GIFieldInfo),
 	POINTER(GIStructInfo),
-	c_int,
+	gint,
 )
 
 g_struct_info_get_n_methods = ctypes_get_func(
 	libgir,
 	'g_struct_info_get_n_methods',
-	c_int,
+	gint,
 	POINTER(GIStructInfo),
 )
 
@@ -1026,7 +1026,7 @@ g_struct_info_get_method = ctypes_get_func(
 	'g_struct_info_get_method',
 	POINTER(GIFunctionInfo),
 	POINTER(GIStructInfo),
-	c_int,
+	gint,
 )
 
 g_struct_info_find_method = ctypes_get_func(
@@ -1034,7 +1034,7 @@ g_struct_info_find_method = ctypes_get_func(
 	'g_struct_info_find_method',
 	POINTER(GIFunctionInfo),
 	POINTER(GIStructInfo),
-	c_char_p,
+	gchar_p,
 )
 
 g_struct_info_get_size = ctypes_get_func(

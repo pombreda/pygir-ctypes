@@ -1,3 +1,6 @@
+#
+# Low-Level C API
+#
 import os
 import sys
 from ctypes import *
@@ -397,8 +400,8 @@ name_GITypeTag = {
 }
 
 # GIRepository
-class GICallbackInfo(GIBaseInfo): pass
 class GIRepository(GObject): pass
+class GICallbackInfo(GIBaseInfo): pass
 
 # GIRepositoryError
 GIRepositoryError = c_int
@@ -1706,3 +1709,23 @@ g_error_domain_info_get_codes = ctypes_get_func(
 	POINTER(GIInterfaceInfo),
 	POINTER(GIErrorDomainInfo),
 )
+
+# NOTE: extra functions that are not defined by C GIR API
+# but used for runtime debug
+def info_print(info):
+	info = cast(info, POINTER(GIBaseInfo))
+	info_name = g_base_info_get_name(info)
+	info_type = g_base_info_get_type(info)
+	print(info, info_name, name_GIInfoType[info_type])
+
+#
+# GIArgument - C <-> Python functions
+#
+def giargument_from_object(obj):
+	pass
+
+def object_from_giargument(arg):
+	pass
+
+def giargument_release(arg):
+	pass

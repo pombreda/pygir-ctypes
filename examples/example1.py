@@ -16,4 +16,3 @@ if __name__ == '__main__':
 	print(Gtk)
 	
 	print(Gtk.Window)
-	

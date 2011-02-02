@@ -79,9 +79,6 @@ class GICallbackInfo(_GIInfoObject):
 	def __init__(self):
 		pass
 
-#
-# GIRepositoryError
-#
 class GIRepositoryError(object):
 	(
 		TYPELIB_NOT_FOUND,
@@ -90,11 +87,83 @@ class GIRepositoryError(object):
 		LIBRARY_NOT_FOUND,
 	) = range(4)
 
-#
-# GIRepositoryLoadFlags
-#
 class GIRepositoryLoadFlags(object):
 	LAZY = 1 << 0
+
+#
+# GITypelib
+#
+
+# NOTE: GITypelib is not on C-level subclass of _GObject
+# but it is used that way because of calling convenction
+# which states that instance should be first argument in function call
+# so it mimics _GObject
+#
+# responsible for class creation
+class GITypelib(_Object):
+	_c_func_prefix = 'g_typelib_'
+	
+	def __repr__(self):
+		c_name = _gir.g_typelib_get_namespace(self._c_obj)
+		py_name = convert_c_to_python_object(c_name)
+		
+		return ''.join((
+			'<',
+			py_name,
+			' (',
+			self._c_obj.__class__.__name__,
+			' object at ',
+			hex(id(self._c_obj)),
+			') object at ',
+			hex(id(self)),
+			'>'
+		))
+	
+	
+	def __getattr__(self, attr):
+		c_gir = _gir.g_irepository_get_default()
+		c_name = _gir.g_typelib_get_namespace(self._c_obj)
+		c_attr = _gir.gchar_p(attr)
+		c_info = _gir.g_irepository_find_by_name(c_gir, c_name, c_attr)
+		
+		c_info_type = _gir.gibaseinfo_get_type(c_info)
+		c_casted_info = ctypes.cast(c_info, ctypes.POINTER(c_info_type))
+		
+		if c_info_type == _gir.GIObjectInfo:
+			c_info_class = _gir.g_object_info_get_class_struct(c_casted_info)
+			c_casted_info_class = ctypes.cast(c_info, ctypes.POINTER(_gir.GIBaseInfo))
+			c_casted_info_class_name = _gir.g_base_info_get_name(c_casted_info_class)
+			
+			py_class_name = c_casted_info_class_name.value
+			py_class = type(
+				py_class_name,
+				(_GObject,),
+				{}
+			)
+			
+			return py_class
+		elif c_info_type == _gir.GIFunctionInfo:
+			py_func = lambda *args: None
+			return py_func
+		else:
+			py_info = convert_c_to_python_object(c_casted_info)
+			return py_info
+
+class GTypelibBlobType(object):
+	(
+		INVALID,
+		FUNCTION,
+		CALLBACK,
+		STRUCT,
+		BOXED,
+		ENUM,
+		FLAGS,
+		OBJECT,
+		INTERFACE,
+		CONSTANT,
+		ERROR_DOMAIN,
+		UNION,
+	) = range(12)
 
 #
 # GIBaseInfo
@@ -225,7 +294,7 @@ class GIInterfaceInfo(_GIInfoObject):
 #
 # _GIObjectInfo
 #
-class _GIObjectInfo(_GIInfoObject):
+class GIObjectInfo(_GIInfoObject):
 	_c_func_prefix = 'g_object_info_'
 	
 	def __init__(self):
@@ -366,57 +435,6 @@ class GITypeTag(object):
 	GSLIST = 18
 	GHASH = 19
 	ERROR = 20
-
-#
-# GITypelib
-#
-
-# NOTE: GITypelib is not on C-level subclass of _GObject
-# but it is used that way because of calling convenction
-# which states that instance should be first argument in function call
-# so it mimics _GObject
-class GITypelib(_Object):
-	_c_func_prefix = 'g_typelib_'
-	
-	def __repr__(self):
-		c_name = _gir.g_typelib_get_namespace(self._c_obj)
-		py_name = convert_c_to_python_object(c_name)
-		
-		return ''.join((
-			'<',
-			py_name,
-			' (',
-			self._c_obj.__class__.__name__,
-			' object at ',
-			hex(id(self._c_obj)),
-			') object at ',
-			hex(id(self)),
-			'>'
-		))
-	
-	def __getattr__(self, attr):
-		c_gir = _gir.g_irepository_get_default()
-		c_name = _gir.g_typelib_get_namespace(self._c_obj)
-		c_attr = _gir.gchar_p(attr)
-		c_info = _gir.g_irepository_find_by_name(c_gir, c_name, c_attr)
-		py_info = convert_c_to_python_object(c_info)
-		return py_info
-
-class GTypelibBlobType(object):
-	(
-		INVALID,
-		FUNCTION,
-		CALLBACK,
-		STRUCT,
-		BOXED,
-		ENUM,
-		FLAGS,
-		OBJECT,
-		INTERFACE,
-		CONSTANT,
-		ERROR_DOMAIN,
-		UNION,
-	) = range(12)
 
 # Conversion from C to Python
 # depends on ctypes, convert_python_to_c_object, _new_with_c_obj

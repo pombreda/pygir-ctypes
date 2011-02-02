@@ -3,7 +3,7 @@
 #
 import os
 import sys
-import ctypes
+#~ import ctypes
 from ctypes import *
 from ctypes.util import find_library
 
@@ -1717,6 +1717,34 @@ def info_print(info):
 	info = cast(info, POINTER(GIBaseInfo))
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
-	print(info, info_name, name_GIInfoType[info_type.value])
+	print(info, info_name.value, name_GIInfoType[info_type.value])
 	#~ print(info, info.contents)
 	#~ print(info)
+
+# return corresponding GI*Info class/struct
+# gets and converts GIInfoType (gint) to GI*Info
+def gibaseinfo_get_type(info):
+	GIInfoType_to_GIInfo = {
+		GI_INFO_TYPE_INVALID.value: GIBaseInfo,
+		GI_INFO_TYPE_FUNCTION.value: GIFunctionInfo,
+		GI_INFO_TYPE_CALLBACK.value: GICallbackInfo,
+		GI_INFO_TYPE_STRUCT.value: GIStructInfo,
+		GI_INFO_TYPE_BOXED.value: GIBaseInfo,
+		GI_INFO_TYPE_ENUM.value: GIEnumInfo,
+		GI_INFO_TYPE_FLAGS.value: GIBaseInfo,
+		GI_INFO_TYPE_OBJECT.value: GIObjectInfo,
+		GI_INFO_TYPE_INTERFACE.value: GIInterfaceInfo,
+		GI_INFO_TYPE_CONSTANT.value: GIConstantInfo,
+		GI_INFO_TYPE_ERROR_DOMAIN.value: GIErrorDomainInfo,
+		GI_INFO_TYPE_UNION.value: GIUnionInfo,
+		GI_INFO_TYPE_VALUE.value: GIValueInfo,
+		GI_INFO_TYPE_SIGNAL.value: GISignalInfo,
+		GI_INFO_TYPE_VFUNC.value: GIVFuncInfo,
+		GI_INFO_TYPE_PROPERTY.value: GIPropertyInfo,
+		GI_INFO_TYPE_FIELD.value: GIFieldInfo,
+		GI_INFO_TYPE_ARG.value: GIArgInfo,
+		GI_INFO_TYPE_TYPE.value: GITypeInfo,
+		GI_INFO_TYPE_UNRESOLVED.value: GIBaseInfo,
+	}
+	
+	return GIInfoType_to_GIInfo[g_base_info_get_type(info).value]

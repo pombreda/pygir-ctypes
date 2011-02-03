@@ -45,7 +45,16 @@ class gpointer(c_void_p): pass
 
 class GObject(Structure): pass
 class GType(gsize): pass
-class GError(Structure): pass
+
+class GQuark(guint32): pass
+
+class GError(Structure):
+	_fields_ = [
+		('domain', GQuark),
+		('code', gint),
+		('message', gchar_p),
+	]
+	
 class GList(Structure): pass
 class GSList(Structure): pass
 class GOptionGroup(Structure): pass

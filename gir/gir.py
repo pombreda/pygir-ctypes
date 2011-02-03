@@ -12,6 +12,11 @@ elif list(sys.version_info)[0] == 3:
 	PY2, PY3 = False, True
 
 #
+# Base GIR exception class for low-level Python
+#
+class GIRError(Exception): pass
+
+#
 # Base classes for low-level Python classes
 #
 class _Object(object):
@@ -369,16 +374,33 @@ class GIFunctionInfo(GICallableInfo):
 	_c_prefix = 'g_function_info_'
 	
 	def __call__(self, *args, **kwargs):
+		# py_return_type_interface
+		py_return_type_info = self.get_return_type()
+		py_return_type_tag = py_return_type_info.get_tag()
+		
+		if py_return_type_tag == GITypeTag.INTERFACE:
+			# if class (Gtk.Widget)
+			py_return_type_interface_base_info = py_return_type_info.get_interface()
+			py_return_type_interface_info = py_return_type_interface_base_info.cast_to_python_object(
+				globals()[
+					_gir.info_get_type(
+						py_return_type_interface_base_info._c_obj
+					).__name__
+				]
+			)
+		else:
+			py_return_type_interface = None
+		
 		c_obj = self._c_obj
-		
-		py_type_info = self.get_return_type()
-		print(py_type_info)
-		print(py_type_info.get_tag)
-		
 		c_in_args = _gir.GIArgument()
 		c_out_args = _gir.GIArgument()
 		c_return_value = _gir.GIArgument()
+		c_error = ctypes.cast(
+			ctypes.c_void_p(),
+			ctypes.POINTER(_gir.GError)
+		)
 		
+		# call function
 		_gir.g_function_info_invoke(
 			c_obj,
 			ctypes.pointer(c_in_args),
@@ -386,8 +408,18 @@ class GIFunctionInfo(GICallableInfo):
 			ctypes.pointer(c_out_args),
 			0,
 			ctypes.pointer(c_return_value),
-			None
+			ctypes.pointer(c_error)
 		)
+		
+		# FIXME: there may be better way to find if error was set?!
+		#
+		# raise error if GError message was set
+		if c_error.contents.message.value:
+			raise GIRError(c_error.contents.message.value)
+		
+		# return values as GIArgument
+		py_return_value = GIArgument._new_with_c_obj(c_return_value)
+		return py_return_value
 
 class GInvokeError(object):
 	_c_class = _gir.GInvokeError

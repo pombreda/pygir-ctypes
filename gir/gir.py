@@ -110,8 +110,10 @@ class GITypelib(_Object):
 		
 		return ''.join((
 			'<',
+			self.__class__.__name__,
+			' "',
 			py_name,
-			' (',
+			'" (',
 			self._c_obj.__class__.__name__,
 			' object at ',
 			hex(id(self._c_obj)),

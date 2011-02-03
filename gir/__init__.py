@@ -1,1 +1,1 @@
-from gir import *
+from .gir import *

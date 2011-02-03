@@ -4,7 +4,12 @@
 import os
 import sys
 import ctypes
-import _gir
+from . import _gir
+
+if list(sys.version_info)[0] == 2:
+	PY2, PY3 = True, False
+elif list(sys.version_info)[0] == 3:
+	PY2, PY3 = False, True
 
 #
 # Base classes for low-level Python classes
@@ -91,7 +96,10 @@ class _Object(object):
 				py_obj = c_obj.value
 		elif isinstance(c_obj, _gir.gchar) or \
 			isinstance(c_obj, _gir.gchar_p):
-				py_obj = c_obj.value
+				if PY2:
+					py_obj = c_obj.value
+				elif PY3:
+					py_obj = c_obj.value.decode('utf-8')
 		else:
 			raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
 		
@@ -107,14 +115,16 @@ class _Object(object):
 			c_obj = _gir.gboolean(py_obj)
 		elif isinstance(py_obj, int):
 			c_obj = _gir.gint(py_obj)
-		elif isinstance(py_obj, long):
+		elif PY2 and isinstance(py_obj, long):
 			c_obj = _gir.glong(py_obj)
 		elif isinstance(py_obj, float):
 			c_obj = _gir.gdouble(py_obj)
+		elif PY3 and isinstance(py_obj, bytes):
+			c_obj = _gir.gchar_p(py_obj)
 		elif isinstance(py_obj, str):
-			c_obj = _gir.gchar_p(py_obj)
-		elif isinstance(py_obj, unicode):
-			c_obj = _gir.gchar_p(py_obj)
+			c_obj = _gir.gchar_p(py_obj.encode('utf-8'))
+		elif PY2 and isinstance(py_obj, unicode):
+			c_obj = _gir.gchar_p(py_obj.encode('utf-8'))
 		elif isinstance(py_obj, _GIInfoObject):
 			c_obj = py_obj._c_obj
 		elif isinstance(py_obj, _GObject):
@@ -229,7 +239,7 @@ class GITypelib(_Object):
 			hex(id(self._c_obj)),
 			') object at ',
 			hex(id(self)),
-			'>'
+			'>',
 		))
 	
 	def __getattr__(self, attr):

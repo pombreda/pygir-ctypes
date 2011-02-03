@@ -204,10 +204,9 @@ class _GIInfoObject(_Object):
 			# avoid self.__class__ and 'object' classes
 			for cls in self.__class__.__mro__[1:-1]:
 				try:
-					py_o = self.cast_python_to_python(self, cls)
 					mod_attr = ''.join((cls._c_prefix, attr))
 					c_value = getattr(_gir, mod_attr)
-					py_value = py_o.convert_c_to_python_object(
+					py_value = self.convert_c_to_python_object(
 						c_value,
 						func_name=mod_attr,
 					)
@@ -364,6 +363,9 @@ class GIFunctionInfo(GICallableInfo):
 	
 	def __call__(self, *args, **kwargs):
 		c_obj = self._c_obj
+		
+		print(self.get_return_type())
+		
 		c_in_args = _gir.GIArgument()
 		c_out_args = _gir.GIArgument()
 		c_return_value = _gir.GIArgument()
@@ -431,6 +433,16 @@ class GIRegisteredTypeInfo(GIBaseInfo):
 class GIEnumInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIEnumInfo
 	_c_prefix = 'g_enum_info_'
+	
+	def find_value(self, name):
+		# extra method not found in GIEnumInfo,
+		# but makes easy access to enum values
+		for i in range(self.get_n_values()):
+			value = self.get_value(i)
+			if value.get_name() == name:
+				return value
+		else:
+			raise ValueError('missing value "%s"' % name)
 
 class GIValueInfo(GIBaseInfo):
 	_c_class = _gir.GIValueInfo

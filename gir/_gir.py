@@ -217,7 +217,7 @@ class GIRegisteredTypeInfo(GIBaseInfo): pass
 
 # GIEnumInfo
 class GIEnumInfo(GIRegisteredTypeInfo): pass
-class GIValueInfo(Structure): pass
+class GIValueInfo(GIBaseInfo): pass
 
 # GIInterfaceInfo
 class GIInterfaceInfo(GIRegisteredTypeInfo): pass

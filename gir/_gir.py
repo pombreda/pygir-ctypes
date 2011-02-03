@@ -996,6 +996,88 @@ g_arg_info_get_type = ctypes_get_func(
 )
 
 #
+# GITypeInfo
+#
+g_type_tag_to_string = ctypes_get_func(
+	libgir,
+	'g_type_tag_to_string',
+	gchar_p,
+	GITypeTag,
+)
+
+g_type_info_is_pointer = ctypes_get_func(
+	libgir,
+	'g_type_info_is_pointer',
+	gboolean,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_tag = ctypes_get_func(
+	libgir,
+	'g_type_info_get_tag',
+	GITypeTag,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_param_type = ctypes_get_func(
+	libgir,
+	'g_type_info_get_param_type',
+	POINTER(GITypeInfo),
+	POINTER(GITypeInfo),
+	gint
+)
+
+g_type_info_get_interface = ctypes_get_func(
+	libgir,
+	'g_type_info_get_interface',
+	POINTER(GIBaseInfo),
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_array_length = ctypes_get_func(
+	libgir,
+	'g_type_info_get_array_length',
+	gint,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_array_fixed_size = ctypes_get_func(
+	libgir,
+	'g_type_info_get_array_fixed_size',
+	gint,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_is_zero_terminated = ctypes_get_func(
+	libgir,
+	'g_type_info_is_zero_terminated',
+	gboolean,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_n_error_domains = ctypes_get_func(
+	libgir,
+	'g_type_info_get_n_error_domains',
+	gint,
+	POINTER(GITypeInfo),
+)
+
+g_type_info_get_error_domain = ctypes_get_func(
+	libgir,
+	'g_type_info_get_error_domain',
+	POINTER(GIErrorDomainInfo),
+	POINTER(GITypeInfo),
+	gint,
+)
+
+g_type_info_get_array_type = ctypes_get_func(
+	libgir,
+	'g_type_info_get_array_type',
+	GIArrayType,
+	POINTER(GITypeInfo),
+)
+
+#
 # GIStructInfo
 #
 g_struct_info_get_n_fields = ctypes_get_func(

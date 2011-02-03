@@ -371,9 +371,9 @@ class GIFunctionInfo(GICallableInfo):
 	def __call__(self, *args, **kwargs):
 		c_obj = self._c_obj
 		
-		print(self.get_return_type())
-		#~ print(self.cast_to_python_object(GICallableInfo).get_return_type())
-		#~ print(_gir.g_callable_info_get_return_type(self._c_obj))
+		py_type_info = self.get_return_type()
+		print(py_type_info)
+		print(py_type_info.get_tag)
 		
 		c_in_args = _gir.GIArgument()
 		c_out_args = _gir.GIArgument()

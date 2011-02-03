@@ -66,15 +66,21 @@ class _Object(object):
 		# object conversion from c to python
 		if isinstance(c_obj, ctypes._CFuncPtr):
 			# wrap c function and bind self._c_obj
-			py_obj = lambda *py_args: \
-				self.convert_c_to_python_object(
-					c_obj(
-						self._c_obj,
-						*map(self.convert_python_to_c_object, py_args)
-					) if bind_self else c_obj(
-						*map(self.convert_python_to_c_object, py_args)
+			if bind_self:
+				py_obj = lambda *py_args: \
+					self.convert_c_to_python_object(
+						c_obj(
+							self._c_obj,
+							*map(self.convert_python_to_c_object, py_args)
+						)
 					)
-				)
+			else:
+				py_obj = lambda *py_args: \
+					self.convert_c_to_python_object(
+						c_obj(
+							*map(self.convert_python_to_c_object, py_args)
+						)
+					)
 			
 			# set function name instead of '<lambda>'
 			if PY2:
@@ -149,6 +155,13 @@ class _Object(object):
 			raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))
 		
 		return c_obj
+	
+	def cast_python_to_python(self, py_obj, py_class):
+		py_o = py_class._new_with_c_obj(
+			ctypes.cast(py_obj._c_obj, ctypes.POINTER(py_class._c_class))
+		)
+		
+		return py_o
 
 class _GObject(_Object):
 	# Base class for all GObject derived classes in C
@@ -174,11 +187,12 @@ class _GIInfoObject(_Object):
 			hex(id(self._c_obj)),
 			') object at ',
 			hex(id(self)),
-			'>'
+			'>',
 		))
 	
 	def __getattr__(self, attr):
 		try:
+			# search instance first
 			mod_attr = ''.join((self._c_prefix, attr))
 			c_value = getattr(_gir, mod_attr)
 			py_value = self.convert_c_to_python_object(
@@ -187,11 +201,13 @@ class _GIInfoObject(_Object):
 			)
 			return py_value
 		except AttributeError:
-			for cls in self.__class__.__mro__[1:]:
+			# avoid self.__class__ and 'object' classes
+			for cls in self.__class__.__mro__[1:-1]:
 				try:
+					py_o = self.cast_python_to_python(self, cls)
 					mod_attr = ''.join((cls._c_prefix, attr))
 					c_value = getattr(_gir, mod_attr)
-					py_value = self.convert_c_to_python_object(
+					py_value = py_o.convert_c_to_python_object(
 						c_value,
 						func_name=mod_attr,
 					)
@@ -416,7 +432,7 @@ class GIEnumInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIEnumInfo
 	_c_prefix = 'g_enum_info_'
 
-class GIValueInfo(_GIInfoObject):
+class GIValueInfo(GIBaseInfo):
 	_c_class = _gir.GIValueInfo
 	_c_prefix = 'g_value_info_'
 

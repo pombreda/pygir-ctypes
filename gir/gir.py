@@ -153,8 +153,23 @@ class _GIInfoObject(_Object):
 			'>'
 		))
 	
-	#~ def __getattr__(self, attr):
-		#~ pass
+	def __getattr__(self, attr):
+		try:
+			c_attr = ''.join((self._c_prefix, attr))
+			c_value = getattr(_gir, c_attr)
+			py_value = self.convert_c_to_python_object(c_value)
+			return py_value
+		except AttributeError:
+			for cls in self.__class__.__mro__[1:]:
+				try:
+					c_attr = ''.join((cls._c_prefix, attr))
+					c_value = getattr(_gir, c_attr)
+					py_value = self.convert_c_to_python_object(c_value)
+					return py_value
+				except AttributeError:
+					pass
+			else:
+				raise AttributeError('could not find attribute %s' % attr)
 
 #
 # GIRepository
@@ -364,18 +379,12 @@ class GIInterfaceInfo(GIRegisteredTypeInfo):
 	_c_prefix = 'g_interface_info_'
 
 #
-# _GIObjectInfo
+# GIObjectInfo
 #
 class GIObjectInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIObjectInfo
 	_c_prefix = 'g_object_info_'
 	
-	#~ def __getattr__(self, attr):
-		#~ try:
-			#~ 
-		#~ except AttributeError:
-			#~ return GIRegisteredTypeInfo.__getattr__(self, attr)
-
 #
 # GIStructInfo
 #

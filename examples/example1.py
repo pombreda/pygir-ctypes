@@ -18,4 +18,5 @@ if __name__ == '__main__':
 	print(Gtk.Window)
 	print(Gtk.Window.get_parent)
 	print(Gtk.Window.get_parent())
-	#~ print(Gtk.Window.get_name)
+	print(Gtk.Window.get_name())
+	print(Gtk.Window.get_parent().get_name())

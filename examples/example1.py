@@ -15,10 +15,11 @@ if __name__ == '__main__':
 	Gtk = Gir.require('Gtk', None, GIRepositoryLoadFlags.LAZY, None)
 	print(Gtk)
 	
-	print(Gtk.Window)
-	print(Gtk.Window.get_parent)
-	print(Gtk.Window.get_parent())
-	print(Gtk.Window.get_name())
-	print(Gtk.Window.get_parent().get_name())
+	#~ print(Gtk.Window)
+	#~ print(Gtk.Window.get_parent)
+	#~ print(Gtk.Window.get_parent())
+	#~ print(Gtk.Window.get_name())
+	#~ print(Gtk.Window.get_parent().get_name())
 	
-	print()
+	print(Gtk.main)
+	Gtk.main()

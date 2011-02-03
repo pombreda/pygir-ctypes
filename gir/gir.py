@@ -62,19 +62,20 @@ class _Object(object):
 		
 		return py_value
 	
-	def convert_c_to_python_object(self, c_obj, self_is_first_arg=True, func_name=''):
+	def convert_c_to_python_object(self, c_obj, bind_self=True, func_name=''):
 		# object conversion from c to python
 		if isinstance(c_obj, ctypes._CFuncPtr):
+			# wrap c function and bind self._c_obj
 			py_obj = lambda *py_args: \
 				self.convert_c_to_python_object(
 					c_obj(
 						self._c_obj,
 						*map(self.convert_python_to_c_object, py_args)
-					) if self_is_first_arg else c_obj(
+					) if bind_self else c_obj(
 						*map(self.convert_python_to_c_object, py_args)
 					)
 				)
-			py_obj.func_name = func_name
+			
 			# set function name instead of '<lambda>'
 			if PY2:
 				py_obj.func_name = ''.join(('"', func_name, '"'))
@@ -334,6 +335,9 @@ class GIInfoType(object):
 class GICallableInfo(GIBaseInfo):
 	_c_class = _gir.GICallableInfo
 	_c_prefix = 'g_callable_info_'
+	
+	def __call__(self, *args, **kwargs):
+		raise NotImplementedError('')
 
 #
 # GIFunctionInfo
@@ -341,6 +345,22 @@ class GICallableInfo(GIBaseInfo):
 class GIFunctionInfo(GICallableInfo):
 	_c_class = _gir.GIFunctionInfo
 	_c_prefix = 'g_function_info_'
+	
+	def __call__(self, *args, **kwargs):
+		c_obj = self._c_obj
+		c_in_args = _gir.GIArgument()
+		c_out_args = _gir.GIArgument()
+		c_return_value = _gir.GIArgument()
+		
+		_gir.g_function_info_invoke(
+			c_obj,
+			ctypes.pointer(c_in_args),
+			0,
+			ctypes.pointer(c_out_args),
+			0,
+			ctypes.pointer(c_return_value),
+			None
+		)
 
 class GInvokeError(object):
 	_c_class = _gir.GInvokeError

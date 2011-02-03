@@ -6,32 +6,34 @@ import sys
 import ctypes
 import _gir
 
-# Base class for low-level Python classes
-# uses convention that class instance should be first argument
-# of calling/invoking function
+#
+# Base classes for low-level Python classes
+#
 class _Object(object):
+	# uses convention that functiona name starts with prefix,
+	# and class instance should be first argument of called function
 	_c_class = None
 	_c_prefix = None
 	
-	# similar to __new__ but without calling __init__
-	# useful when args are not known for __new__ or/and __init__
 	@classmethod
 	def _new_without_init(cls):
+		# similar to __new__ but without calling __init__
+		# useful when args are not known for __new__ or/and __init__
 		self = super(_Object, cls).__new__(cls)
 		self._c_obj = None
 		return self
 	
-	# this is pygir convention for instatiating python class
-	# without calling __new__ or __init__ and storing c_obj inside
-	# python class instance with name '_c_obj'
 	@classmethod
 	def _new_with_c_obj(cls, c_obj):
+		# this is pygir convention for instatiating python class
+		# without calling __new__ or __init__ and storing c_obj inside
+		# python class instance with name '_c_obj'
 		self = cls._new_without_init()
 		self._c_obj = c_obj
 		return self
 	
-	# generic repr function for all _Object derivatives
 	def __repr__(self):
+		# generic repr function for all _Object derivatives
 		return ''.join((
 			'<',
 			self.__class__.__name__,
@@ -43,25 +45,99 @@ class _Object(object):
 			hex(id(self)), '>'
 		))
 	
-	# generic __getattr__ for all _GObject derivatives
-	# requires _c_prefix
 	def __getattr__(self, attr):
+		# generic __getattr__ for all _GObject derivatives
 		c_attr = ''.join((self._c_prefix, attr))
 		c_value = getattr(_gir, c_attr)
-		py_value = convert_c_to_python_object(c_value)
-		return lambda *args: py_value(self, *args)
+		py_value = self.convert_c_to_python_object(c_value)
+		return py_value
+	
+	def convert_c_to_python_object(self, c_obj, self_is_first_arg=True):
+		# Conversion from C to Python
+		# depends on ctypes, convert_python_to_c_object, _new_with_c_obj
+		
+		if isinstance(c_obj, ctypes._CFuncPtr):
+			py_obj = lambda *py_args: \
+				self.convert_c_to_python_object(
+					c_obj(
+						self._c_obj,
+						*map(self.convert_python_to_c_object, py_args)
+					) if self_is_first_arg else c_obj(
+						*map(self.convert_python_to_c_object, py_args)
+					)
+				)
+		elif isinstance(c_obj, ctypes._Pointer):
+			py_class = globals()[c_obj._type_.__name__]
+			py_obj = py_class._new_with_c_obj(c_obj)
+		elif isinstance(c_obj, _gir.gboolean):
+			py_obj = bool(c_obj.value)
+		elif isinstance(c_obj, _gir.gint8) or \
+			isinstance(c_obj, _gir.guint8) or \
+			isinstance(c_obj, _gir.gint16) or \
+			isinstance(c_obj, _gir.guint16) or \
+			isinstance(c_obj, _gir.gint32) or \
+			isinstance(c_obj, _gir.guint32) or \
+			isinstance(c_obj, _gir.gint64) or \
+			isinstance(c_obj, _gir.guint64) or \
+			isinstance(c_obj, _gir.gshort) or \
+			isinstance(c_obj, _gir.gushort) or \
+			isinstance(c_obj, _gir.gint) or \
+			isinstance(c_obj, _gir.guint) or \
+			isinstance(c_obj, _gir.glong) or \
+			isinstance(c_obj, _gir.gulong) or \
+			isinstance(c_obj, _gir.gssize) or \
+			isinstance(c_obj, _gir.gsize) or \
+			isinstance(c_obj, _gir.gpointer):
+				py_obj = c_obj.value
+		elif isinstance(c_obj, _gir.gchar) or \
+			isinstance(c_obj, _gir.gchar_p):
+				py_obj = c_obj.value
+		else:
+			raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
+		
+		return py_obj
 
-# Base class for all GObject derived classes in C
-# but used low-level Python class
+	def convert_python_to_c_object(self, py_obj):
+		# Conversion from Python to C
+		# depends on _gir, _c_obj convention
+		
+		if isinstance(py_obj, type(None)):
+			c_obj = py_obj
+		elif isinstance(py_obj, bool):
+			c_obj = _gir.gboolean(py_obj)
+		elif isinstance(py_obj, int):
+			c_obj = _gir.gint(py_obj)
+		elif isinstance(py_obj, long):
+			c_obj = _gir.glong(py_obj)
+		elif isinstance(py_obj, float):
+			c_obj = _gir.gdouble(py_obj)
+		elif isinstance(py_obj, str):
+			c_obj = _gir.gchar_p(py_obj)
+		elif isinstance(py_obj, unicode):
+			c_obj = _gir.gchar_p(py_obj)
+		elif isinstance(py_obj, _GIInfoObject):
+			c_obj = py_obj._c_obj
+		elif isinstance(py_obj, _GObject):
+			c_obj = py_obj._c_obj
+		elif isinstance(py_obj, _Object):
+			c_obj = py_obj._c_obj
+		else:
+			raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))
+		
+		return c_obj
+
 class _GObject(_Object):
+	# Base class for all GObject derived classes in C
+	# but used low-level Python class
 	pass
 
-# Base class for all GI*Info Python classes
-# None GObject classes
 class _GIInfoObject(_Object):
+	# Base class for all GI*Info Python classes
+	# None GObject classes
+	
 	def __repr__(self):
 		c_name = _gir.info_get_name(self._c_obj)
-		py_name = convert_c_to_python_object(c_name)
+		py_name = self.convert_c_to_python_object(c_name)
 		
 		return ''.join((
 			'<',
@@ -76,6 +152,9 @@ class _GIInfoObject(_Object):
 			hex(id(self)),
 			'>'
 		))
+	
+	#~ def __getattr__(self, attr):
+		#~ pass
 
 #
 # GIRepository
@@ -110,19 +189,19 @@ class GIRepositoryLoadFlags(object):
 # GITypelib
 #
 
-# NOTE: GITypelib is not on C-level subclass of _GObject
-# but it is used that way because of calling convenction
-# which states that instance should be first argument in function call
-# so it mimics _GObject
-#
-# responsible for class creation
 class GITypelib(_Object):
+	# NOTE: GITypelib is not on C-level subclass of _GObject
+	# but it is used that way because of calling convenction
+	# which states that instance should be first argument in function call
+	# so it mimics _GObject
+	#
+	# responsible for class creation
 	_c_class = _gir.GITypelib
 	_c_prefix = 'g_typelib_'
 	
 	def __repr__(self):
 		c_name = _gir.g_typelib_get_namespace(self._c_obj)
-		py_name = convert_c_to_python_object(c_name)
+		py_name = self.convert_c_to_python_object(c_name)
 		
 		return ''.join((
 			'<',
@@ -147,7 +226,7 @@ class GITypelib(_Object):
 		c_info_type = _gir.info_get_type(c_info)
 		c_casted_info = ctypes.cast(c_info, ctypes.POINTER(c_info_type))
 		
-		py_info = convert_c_to_python_object(c_casted_info)
+		py_info = self.convert_c_to_python_object(c_casted_info)
 		return py_info
 
 class GTypelibBlobType(object):
@@ -175,8 +254,9 @@ class GIBaseInfo(_GIInfoObject):
 	_c_class = _gir.GIBaseInfo
 	_c_prefix = 'g_base_info_'
 
-class GIAttributeIter(_Object):
+class GIAttributeIter(_GIInfoObject):
 	_c_class = _gir.GIAttributeIter
+	_c_prefix = None
 
 class GIInfoType(object):
 	_c_class = _gir.GIInfoType
@@ -207,14 +287,14 @@ class GIInfoType(object):
 #
 # GICallableInfo
 #
-class GICallableInfo(_GIInfoObject):
+class GICallableInfo(GIBaseInfo):
 	_c_class = _gir.GICallableInfo
 	_c_prefix = 'g_callable_info_'
 
 #
 # GIFunctionInfo
 #
-class GIFunctionInfo(_GIInfoObject):
+class GIFunctionInfo(GICallableInfo):
 	_c_class = _gir.GIFunctionInfo
 	_c_prefix = 'g_function_info_'
 
@@ -240,14 +320,14 @@ class GIFunctionInfoFlags(object):
 #
 # GISignalInfo
 #
-class GISignalInfo(_GIInfoObject):
+class GISignalInfo(GICallableInfo):
 	_c_class = _gir.GISignalInfo
 	_c_prefix = 'g_signal_info_'
 
 #
 # GIVFuncInfo
 #
-class GIVFuncInfo(_GIInfoObject):
+class GIVFuncInfo(GICallableInfo):
 	_c_class = _gir.GIVFuncInfo
 	_c_prefix = 'g_vfunc_info_'
 
@@ -261,14 +341,14 @@ class GIVFuncInfoFlags(object):
 #
 # GIRegisteredTypeInfo
 #
-class GIRegisteredTypeInfo(_GIInfoObject):
+class GIRegisteredTypeInfo(GIBaseInfo):
 	_c_class = _gir.GIRegisteredTypeInfo
 	_c_prefix = 'g_registered_type_info_'
 
 #
 # GIEnumInfo
 #
-class GIEnumInfo(_GIInfoObject):
+class GIEnumInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIEnumInfo
 	_c_prefix = 'g_enum_info_'
 
@@ -279,35 +359,41 @@ class GIValueInfo(_GIInfoObject):
 #
 # GIInterfaceInfo
 #
-class GIInterfaceInfo(_GIInfoObject):
+class GIInterfaceInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIInterfaceInfo
 	_c_prefix = 'g_interface_info_'
 
 #
 # _GIObjectInfo
 #
-class GIObjectInfo(_GIInfoObject):
+class GIObjectInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIObjectInfo
 	_c_prefix = 'g_object_info_'
+	
+	#~ def __getattr__(self, attr):
+		#~ try:
+			#~ 
+		#~ except AttributeError:
+			#~ return GIRegisteredTypeInfo.__getattr__(self, attr)
 
 #
 # GIStructInfo
 #
-class GIStructInfo(_GIInfoObject):
+class GIStructInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIStructInfo
 	_c_prefix = 'g_struct_info_'
 
 #
 # GIUnionInfo
 #
-class GIUnionInfo(_GIInfoObject):
+class GIUnionInfo(GIRegisteredTypeInfo):
 	_c_class = _gir.GIUnionInfo
 	_c_prefix = 'g_union_info_'
 
 #
 # GIArgInfo
 #
-class GIArgInfo(_GIInfoObject):
+class GIArgInfo(GIBaseInfo):
 	_c_class = _gir.GIArgInfo
 	_c_prefix = 'g_arg_info_'
 
@@ -348,21 +434,21 @@ class GIArgument(_Object):
 #
 # GIConstantInfo
 #
-class GIConstantInfo(_GIInfoObject):
+class GIConstantInfo(GIBaseInfo):
 	_c_class = _gir.GIConstantInfo
 	_c_prefix = 'g_constant_info_'
 
 #
 # GIErrorDomainInfo
 #
-class GIErrorDomainInfo(_GIInfoObject):
+class GIErrorDomainInfo(GIBaseInfo):
 	_c_class = _gir.GIErrorDomainInfo
 	_c_prefix = 'g_error_domain_info_'
 
 #
 # GIFieldInfo
 #
-class GIFieldInfo(_GIInfoObject):
+class GIFieldInfo(GIBaseInfo):
 	_c_class = _gir.GIFieldInfo
 	_c_prefix = 'g_field_info_'
 
@@ -375,14 +461,14 @@ class GIFieldInfoFlags(object):
 #
 # GIPropertyInfo
 #
-class GIPropertyInfo(_GIInfoObject):
+class GIPropertyInfo(GIBaseInfo):
 	_c_class = _gir.GIPropertyInfo
 	_c_prefix = 'g_property_info_'
 	
 #
 # GITypeInfo
 #
-class GITypeInfo(_GIInfoObject):
+class GITypeInfo(GIBaseInfo):
 	_c_class = _gir.GITypeInfo
 	_c_prefix = 'g_type_info_'
 
@@ -420,71 +506,3 @@ class GITypeTag(object):
 	GSLIST = 18
 	GHASH = 19
 	ERROR = 20
-
-# Conversion from C to Python
-# depends on ctypes, convert_python_to_c_object, _new_with_c_obj
-def convert_c_to_python_object(c_obj):
-	if isinstance(c_obj, ctypes._CFuncPtr):
-		py_obj = lambda *py_args: convert_c_to_python_object(
-			c_obj(
-				*map(convert_python_to_c_object, py_args)
-			)
-		)
-	elif isinstance(c_obj, ctypes._Pointer):
-		py_class = globals()[c_obj._type_.__name__]
-		py_obj = py_class._new_with_c_obj(c_obj)
-	elif isinstance(c_obj, _gir.gboolean):
-		py_obj = bool(c_obj.value)
-	elif isinstance(c_obj, _gir.gint8) or \
-		isinstance(c_obj, _gir.guint8) or \
-		isinstance(c_obj, _gir.gint16) or \
-		isinstance(c_obj, _gir.guint16) or \
-		isinstance(c_obj, _gir.gint32) or \
-		isinstance(c_obj, _gir.guint32) or \
-		isinstance(c_obj, _gir.gint64) or \
-		isinstance(c_obj, _gir.guint64) or \
-		isinstance(c_obj, _gir.gshort) or \
-		isinstance(c_obj, _gir.gushort) or \
-		isinstance(c_obj, _gir.gint) or \
-		isinstance(c_obj, _gir.guint) or \
-		isinstance(c_obj, _gir.glong) or \
-		isinstance(c_obj, _gir.gulong) or \
-		isinstance(c_obj, _gir.gssize) or \
-		isinstance(c_obj, _gir.gsize) or \
-		isinstance(c_obj, _gir.gpointer):
-			py_obj = c_obj.value
-	elif isinstance(c_obj, _gir.gchar) or \
-		isinstance(c_obj, _gir.gchar_p):
-			py_obj = c_obj.value
-	else:
-		raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
-	
-	return py_obj
-
-# Conversion from Python to C
-# depends on _gir, _c_obj convention
-def convert_python_to_c_object(py_obj):
-	if isinstance(py_obj, type(None)):
-		c_obj = py_obj
-	elif isinstance(py_obj, bool):
-		c_obj = _gir.gboolean(py_obj)
-	elif isinstance(py_obj, int):
-		c_obj = _gir.gint(py_obj)
-	elif isinstance(py_obj, long):
-		c_obj = _gir.glong(py_obj)
-	elif isinstance(py_obj, float):
-		c_obj = _gir.gdouble(py_obj)
-	elif isinstance(py_obj, str):
-		c_obj = _gir.gchar_p(py_obj)
-	elif isinstance(py_obj, unicode):
-		c_obj = _gir.gchar_p(py_obj)
-	elif isinstance(py_obj, _GIInfoObject):
-		c_obj = py_obj._c_obj
-	elif isinstance(py_obj, _GObject):
-		c_obj = py_obj._c_obj
-	elif isinstance(py_obj, _Object):
-		c_obj = py_obj._c_obj
-	else:
-		raise TypeError('cannot convert Python to C object: %s' % repr(py_obj))
-	
-	return c_obj

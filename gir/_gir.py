@@ -1710,17 +1710,19 @@ g_error_domain_info_get_codes = ctypes_get_func(
 	POINTER(GIErrorDomainInfo),
 )
 
+#
 # NOTE: extra functions that are not defined by C GIR API
-# but used for runtime debug
+#
 def info_print(info):
+	# used at runtime for debugging
 	info = cast(info, POINTER(GIBaseInfo))
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
 	print(info, info_name.value, name_GIInfoType[info_type.value])
 
-# return corresponding GI*Info class/struct
-# gets and converts GIInfoType (gint) to GI*Info
 def info_get_type(info):
+	# return corresponding GI*Info class/struct
+	# gets and converts GIInfoType (gint) to GI*Info
 	GIInfoType_to_GIInfo = {
 		GI_INFO_TYPE_INVALID.value: GIBaseInfo,
 		GI_INFO_TYPE_FUNCTION.value: GIFunctionInfo,
@@ -1749,6 +1751,7 @@ def info_get_type(info):
 	return GIInfoType_to_GIInfo[info_type.value]
 
 def info_get_name(info):
+	# return name of GI*Info as gchar_p
 	info = cast(info, POINTER(GIBaseInfo))
 	info_name = g_base_info_get_name(info)
 	return info_name

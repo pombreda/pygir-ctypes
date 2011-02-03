@@ -3,7 +3,6 @@
 #
 import os
 import sys
-#~ import ctypes
 from ctypes import *
 from ctypes.util import find_library
 
@@ -1718,12 +1717,10 @@ def info_print(info):
 	info_name = g_base_info_get_name(info)
 	info_type = g_base_info_get_type(info)
 	print(info, info_name.value, name_GIInfoType[info_type.value])
-	#~ print(info, info.contents)
-	#~ print(info)
 
 # return corresponding GI*Info class/struct
 # gets and converts GIInfoType (gint) to GI*Info
-def gibaseinfo_get_type(info):
+def info_get_type(info):
 	GIInfoType_to_GIInfo = {
 		GI_INFO_TYPE_INVALID.value: GIBaseInfo,
 		GI_INFO_TYPE_FUNCTION.value: GIFunctionInfo,
@@ -1747,4 +1744,6 @@ def gibaseinfo_get_type(info):
 		GI_INFO_TYPE_UNRESOLVED.value: GIBaseInfo,
 	}
 	
-	return GIInfoType_to_GIInfo[g_base_info_get_type(info).value]
+	info = cast(info, POINTER(GIBaseInfo))
+	info_type = g_base_info_get_type(info)
+	return GIInfoType_to_GIInfo[info_type.value]

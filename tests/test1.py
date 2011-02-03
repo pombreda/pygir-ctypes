@@ -18,7 +18,7 @@ if __name__ == '__main__':
 	
 	n_infos = g_irepository_get_n_infos(Gir, gchar_p('GObject'))
 	
-	for i in range(n_infos):
+	for i in range(n_infos.value):
 		info = g_irepository_get_info(Gir, gchar_p('GObject'), gint(i))
 		info_print(info)
 	print()
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 	
 	n_infos = g_irepository_get_n_infos(Gir, gchar_p('Gtk'))
 	
-	for i in range(n_infos):
+	for i in range(n_infos.value):
 		info = g_irepository_get_info(Gir, gchar_p('Gtk'), gint(i))
 		#~ info_print(info)
 		

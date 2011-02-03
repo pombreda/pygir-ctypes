@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.append('..')
-from gir import GIRepository, GIRepositoryLoadFlags
+from gir import *
 
 if __name__ == '__main__':
 	Gir = GIRepository()

@@ -156,7 +156,14 @@ class _Object(object):
 		
 		return c_obj
 	
-	def cast_python_to_python(self, py_obj, py_class):
+	def cast_to_python_object(self, py_class):
+		py_obj = py_class._new_with_c_obj(
+			ctypes.cast(self._c_obj, ctypes.POINTER(py_class._c_class))
+		)
+		
+		return py_obj
+	
+	def cast_python_to_python_object(self, py_obj, py_class):
 		py_o = py_class._new_with_c_obj(
 			ctypes.cast(py_obj._c_obj, ctypes.POINTER(py_class._c_class))
 		)
@@ -365,6 +372,8 @@ class GIFunctionInfo(GICallableInfo):
 		c_obj = self._c_obj
 		
 		print(self.get_return_type())
+		#~ print(self.cast_to_python_object(GICallableInfo).get_return_type())
+		#~ print(_gir.g_callable_info_get_return_type(self._c_obj))
 		
 		c_in_args = _gir.GIArgument()
 		c_out_args = _gir.GIArgument()
@@ -386,7 +395,7 @@ class GInvokeError(object):
 	(
 		FAILED,
 		SYMBOL_NOT_FOUND,
-		ARGUMENT_MISMATCH
+		ARGUMENT_MISMATCH,
 	) = range(3)
 
 class GIFunctionInfoFlags(object):
@@ -557,6 +566,19 @@ class GIPropertyInfo(GIBaseInfo):
 class GITypeInfo(GIBaseInfo):
 	_c_class = _gir.GITypeInfo
 	_c_prefix = 'g_type_info_'
+	
+	def __repr__(self):
+		return ''.join((
+			'<',
+			self.__class__.__name__,
+			' (',
+			self._c_obj.__class__.__name__,
+			' object at ',
+			hex(id(self._c_obj)),
+			') object at ',
+			hex(id(self)),
+			'>',
+		))
 
 class GIArrayType(object):
 	_c_class = _gir.GIArrayType

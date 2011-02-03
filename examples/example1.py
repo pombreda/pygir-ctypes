@@ -31,5 +31,5 @@ if __name__ == '__main__':
 	#~ print(Gtk.Widget.find_method('show'))
 	#~ print(Gtk.Widget.find_method('destroy'))
 	
-	#~ w = Gtk.Window.find_method('new')(Gtk.WindowType.find_value('toplevel'))
-	#~ print(w)
+	w = Gtk.Window.find_method('new')(Gtk.WindowType.find_value('toplevel'))
+	print(w)

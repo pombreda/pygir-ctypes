@@ -59,7 +59,23 @@ class _GObject(_Object):
 # Base class for all GI*Info Python classes
 # None GObject classes
 class _GIInfoObject(_Object):
-	pass
+	def __repr__(self):
+		c_name = _gir.info_get_name(self._c_obj)
+		py_name = convert_c_to_python_object(c_name)
+		
+		return ''.join((
+			'<',
+			self.__class__.__name__,
+			' "',
+			py_name,
+			'" (',
+			self._c_obj.__class__.__name__,
+			' object at ',
+			hex(id(self._c_obj)),
+			') object at ',
+			hex(id(self)),
+			'>'
+		))
 
 #
 # GIRepository

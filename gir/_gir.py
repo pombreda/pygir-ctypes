@@ -1747,3 +1747,8 @@ def info_get_type(info):
 	info = cast(info, POINTER(GIBaseInfo))
 	info_type = g_base_info_get_type(info)
 	return GIInfoType_to_GIInfo[info_type.value]
+
+def info_get_name(info):
+	info = cast(info, POINTER(GIBaseInfo))
+	info_name = g_base_info_get_name(info)
+	return info_name

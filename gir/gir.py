@@ -52,15 +52,18 @@ class _Object(object):
 	
 	def __getattr__(self, attr):
 		# generic __getattr__ for all _GObject derivatives
-		c_attr = ''.join((self._c_prefix, attr))
-		c_value = getattr(_gir, c_attr)
-		py_value = self.convert_c_to_python_object(c_value)
+		mod_attr = ''.join((self._c_prefix, attr))
+		c_value = getattr(_gir, mod_attr)
+		
+		py_value = self.convert_c_to_python_object(
+			c_value,
+			func_name=mod_attr,
+		)
+		
 		return py_value
 	
-	def convert_c_to_python_object(self, c_obj, self_is_first_arg=True):
-		# Conversion from C to Python
-		# depends on ctypes, convert_python_to_c_object, _new_with_c_obj
-		
+	def convert_c_to_python_object(self, c_obj, self_is_first_arg=True, func_name=''):
+		# object conversion from c to python
 		if isinstance(c_obj, ctypes._CFuncPtr):
 			py_obj = lambda *py_args: \
 				self.convert_c_to_python_object(
@@ -71,6 +74,14 @@ class _Object(object):
 						*map(self.convert_python_to_c_object, py_args)
 					)
 				)
+			py_obj.func_name = func_name
+			# set function name instead of '<lambda>'
+			if PY2:
+				py_obj.func_name = ''.join(('"', func_name, '"'))
+			elif PY3:
+				py_obj.__name__ = ''.join(('"', func_name, '"'))
+			else:
+				raise RuntimeError('unsupported python version')
 		elif isinstance(c_obj, ctypes._Pointer):
 			py_class = globals()[c_obj._type_.__name__]
 			py_obj = py_class._new_with_c_obj(c_obj)
@@ -100,6 +111,8 @@ class _Object(object):
 					py_obj = c_obj.value
 				elif PY3:
 					py_obj = c_obj.value.decode('utf-8')
+				else:
+					raise RuntimeError('unsupported python version')
 		else:
 			raise TypeError('cannot convert C to Python object: %s' % repr(c_obj))
 		
@@ -165,16 +178,22 @@ class _GIInfoObject(_Object):
 	
 	def __getattr__(self, attr):
 		try:
-			c_attr = ''.join((self._c_prefix, attr))
-			c_value = getattr(_gir, c_attr)
-			py_value = self.convert_c_to_python_object(c_value)
+			mod_attr = ''.join((self._c_prefix, attr))
+			c_value = getattr(_gir, mod_attr)
+			py_value = self.convert_c_to_python_object(
+				c_value,
+				func_name=mod_attr,
+			)
 			return py_value
 		except AttributeError:
 			for cls in self.__class__.__mro__[1:]:
 				try:
-					c_attr = ''.join((cls._c_prefix, attr))
-					c_value = getattr(_gir, c_attr)
-					py_value = self.convert_c_to_python_object(c_value)
+					mod_attr = ''.join((cls._c_prefix, attr))
+					c_value = getattr(_gir, mod_attr)
+					py_value = self.convert_c_to_python_object(
+						c_value,
+						func_name=mod_attr,
+					)
 					return py_value
 				except AttributeError:
 					pass

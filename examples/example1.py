@@ -33,3 +33,11 @@ if __name__ == '__main__':
 	
 	w = Gtk.Window.find_method('new')(Gtk.WindowType.find_value('toplevel'))
 	print(w)
+	r = Gtk.Widget.find_method('show')(w)
+	print(r)
+	#~ Gtk.main()
+	
+	#~ print(Gtk.WindowType)
+	#~ print(Gtk.WindowType.get_type_name())
+	#~ print(Gtk.WindowType.get_type_init())
+	#~ print(Gtk.WindowType.get_g_type())

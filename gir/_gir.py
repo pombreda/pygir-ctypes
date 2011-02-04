@@ -18,7 +18,7 @@ def ctypes_get_func(lib, name, restype=None, *argtypes):
 	return func
 
 #
-# GObject
+# Glib
 #
 class gboolean(c_int): pass
 class gint8(c_byte): pass
@@ -43,23 +43,60 @@ class gchar(c_char): pass		# represents "[const] gchar"
 class gchar_p(c_char_p): pass	# represents "[const] gchar*"
 class gpointer(c_void_p): pass
 
-class GObject(Structure): pass
-class GType(gsize): pass
-
 class GQuark(guint32): pass
-
 class GError(Structure):
 	_fields_ = [
 		('domain', GQuark),
 		('code', gint),
 		('message', gchar_p),
 	]
-	
 class GList(Structure): pass
 class GSList(Structure): pass
 class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass
+class GData(GQuark): pass
+
+# GType
+class GType(gsize): pass
 class GValue(Structure): pass
+class GTypeCValue(Union): pass
+class GTypePlugin(Structure): pass
+class GTypeClass(Structure):
+	_fields_ = [
+		('g_type', GType),
+	]
+class GTypeInterface(Structure):
+	_fields_ = [
+		('g_type', GType),
+		('g_instance_type', GType),
+	]
+class GTypeInstance(Structure):
+	_fields_ = [
+		('g_class', POINTER(GTypeClass)),
+	]
+class GTypeInfo(Union): pass
+class GTypeFundamentalInfo(Union): pass
+class GInterfaceInfo(Union): pass
+class GTypeValueTable(Union): pass
+class GTypeQuery(Structure):
+	_fields_ = [
+		('type', GType),
+		('type_name', gchar_p),
+		('class_size', guint),
+		('instance_size', guint),
+	]
+
+# GObject
+class GObject(Structure):
+	_fields_ = [
+		('g_type_instance', GTypeInstance),
+		('ref_count', guint),
+		('qdata', POINTER(GData)),
+	]
+class GObjectClass(Structure): pass
+class GInitiallyUnowned(Structure): pass
+class GInitiallyUnownedClass(Structure): pass
+class GObjectConstructParam(Structure): pass
 
 # GParam
 class GParamSpec(Structure): pass
@@ -123,7 +160,19 @@ class GSignalQuery(Structure): pass
 #
 # GIBaseInfo
 #
-class GIBaseInfo(Structure): pass
+class _GIBaseInfoStub(Structure):
+	_fields_ = [
+		('dummy1', gint32),
+		('dummy2', gint32),
+		('dummy3', gpointer),
+		('dummy4', gpointer),
+		('dummy5', gpointer),
+		('dummy6', guint32),
+		('dummy7', guint32),
+		('padding', gpointer * 4),
+	]
+
+class GIBaseInfo(_GIBaseInfoStub): pass
 
 class GIAttributeIter(Structure): pass 
 
@@ -306,7 +355,7 @@ class GIArgument(Union):
 		('v_ulong', gulong),
 		('v_ssize', gssize),
 		('v_size', gsize),
-		('v_string', gchar),
+		('v_string', gchar_p),
 		('v_pointer', gpointer),
 	]
 
@@ -996,9 +1045,9 @@ g_arg_info_get_type = ctypes_get_func(
 	POINTER(GIArgInfo),
 )
 
-g_arg_info_get_type = ctypes_get_func(
+g_arg_info_load_type = ctypes_get_func(
 	libgir,
-	'g_arg_info_get_type',
+	'g_arg_info_load_type',
 	None,
 	POINTER(GIArgInfo),
 	POINTER(GITypeInfo),

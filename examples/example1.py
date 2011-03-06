@@ -1,43 +1,15 @@
-import os
 import sys
 sys.path.append('..')
-from gir import *
+
+import gir
 
 if __name__ == '__main__':
-	Gir = GIRepository()
-	GObject = Gir.require('GObject', None, GIRepositoryLoadFlags.LAZY, None)
-	Gtk = Gir.require('Gtk', None, GIRepositoryLoadFlags.LAZY, None)
+	rep = gir.GIRepository()
+	Gtk = rep.require('Gtk', '2.0')
+	GObject = rep.require('GObject', '2.0')
+	GLib = rep.require('GLib', '2.0')
 	
-	#~ print(GObject.signal_connect_closure)
-	#~ print(Gtk.Window)
-	#~ print(Gtk.Window.get_parent)
-	#~ print(Gtk.Window.get_parent())
-	#~ print(Gtk.Window.get_name())
-	#~ print(Gtk.Window.get_parent().get_name())
-	#~ print(Gtk.main)
-	#~ Gtk.main()
+	print(Gtk.main)
 	
-	#~ print(Gtk.Window)
-	#~ print(Gtk.Window.get_name)
-	#~ print(Gtk.Window.get_name())
-	#~ print(Gtk.WindowType)
-	#~ print(Gtk.WindowType.get_name())
-	#~ print(Gtk.WindowType.get_n_values())
-	#~ print(Gtk.WindowType.get_value(0))
-	#~ print(Gtk.WindowType.get_value(0).get_name)
-	#~ print(Gtk.WindowType.get_value(0).get_name())
-	#~ print(Gtk.WindowType.find_value('toplevel'))
-	#~ print(Gtk.Window.find_method('new'))
-	#~ print(Gtk.Widget.find_method('show'))
-	#~ print(Gtk.Widget.find_method('destroy'))
-	
-	w = Gtk.Window.find_method('new')(Gtk.WindowType.find_value('toplevel'))
-	print(w)
-	r = Gtk.Widget.find_method('show')(w)
-	print(r)
-	#~ Gtk.main()
-	
-	#~ print(Gtk.WindowType)
-	#~ print(Gtk.WindowType.get_type_name())
-	#~ print(Gtk.WindowType.get_type_init())
-	#~ print(Gtk.WindowType.get_g_type())
+	Gtk.init()
+	Gtk.main()

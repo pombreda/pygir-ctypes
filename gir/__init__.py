@@ -1,1 +1,1 @@
-from .gir import *
+from .girepository import *

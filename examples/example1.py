@@ -5,11 +5,10 @@ import gir
 
 if __name__ == '__main__':
 	rep = gir.GIRepository()
-	Gtk = rep.require('Gtk', '2.0')
-	GObject = rep.require('GObject', '2.0')
-	GLib = rep.require('GLib', '2.0')
+	Gtk = rep.require('Gtk')
+	GObject = rep.require('GObject')
+	GLib = rep.require('GLib')
 	
-	print(Gtk.main)
-	
-	Gtk.init()
-	Gtk.main()
+	r = Gtk.init()
+	print(r)
+	# Gtk.main()

@@ -12,8 +12,8 @@ if __name__ == '__main__':
 	
 	print(Gtk)
 	print(Gtk.Window)
-	#~ print(Gtk.Window.__bases__)
-	#~ print(Gtk.Window.__mro__)
+	print(Gtk.Window.__bases__)
+	print(Gtk.Window.__mro__)
 	#~ print(dir(Gtk.Window))
 	
 	#~ print(Gtk.Label)

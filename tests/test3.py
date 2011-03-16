@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('..')
-from gir._gir import *
+from gir._girepository import *
 
 def tmp1():
 	g_type_init()
@@ -147,8 +147,6 @@ if __name__ == '__main__':
 		None
 	)
 	
-	
-	
 	Gtk = g_irepository_require(
 		Gir,
 		gchar_p('Gtk'),
@@ -157,20 +155,20 @@ if __name__ == '__main__':
 		None
 	)
 	
-	#~ Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
-	#~ info_print(Gtk_Window)
-	#~ 
-	#~ Gtk_Window_new = g_object_info_find_method(
-		#~ cast(Gtk_Window, POINTER(GIObjectInfo)),
-		#~ gchar_p('new')
-	#~ )
-	#~ info_print(Gtk_Window_new)
-	#~ 
-	#~ Gtk_Window_show = g_object_info_find_method(
-		#~ cast(Gtk_Window, POINTER(GIObjectInfo)),
-		#~ gchar_p('show')
-	#~ )
-	#~ info_print(Gtk_Window_show)
-	#~ 
-	#~ g_typelib_free(Gtk)
-	#~ g_typelib_free(GObject)
+	Gtk_Window = g_irepository_find_by_name(Gir, gchar_p('Gtk'), gchar_p('Window'))
+	info_print(Gtk_Window)
+	
+	n = g_object_info_get_n_methods(
+		cast(Gtk_Window, POINTER(GIObjectInfo))
+	).value
+	
+	for i in range(n):
+		info = g_object_info_get_method(
+			cast(Gtk_Window, POINTER(GIObjectInfo)),
+			gint(i)
+		)
+		info_print(info)
+	print()
+	
+	g_typelib_free(Gtk)
+	g_typelib_free(GObject)

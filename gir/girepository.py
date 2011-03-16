@@ -21,51 +21,50 @@ class GIRepository(object):
 	
 	def __init__(self):
 		_girepository.g_type_init()
-		crepository = _girepository.g_irepository_get_default()
-		self._crepository = crepository
+		self._repository = _girepository.g_irepository_get_default()
 	
 	def require(self, namespace, version=None):
 		# prepare function args
-		crepository = self._crepository
-		cnamespace = _girepository.gchar_p(namespace)
-		cversion = _girepository.gchar_p(version)
-		cflags = _girepository.G_IREPOSITORY_LOAD_FLAG_LAZY
-		cerror = _girepository.cast(
+		_repository = self._repository
+		_namespace = _girepository.gchar_p(namespace)
+		_version = _girepository.gchar_p(version)
+		_flags = _girepository.G_IREPOSITORY_LOAD_FLAG_LAZY
+		_error = _girepository.cast(
 			_girepository.gpointer(),
 			_girepository.POINTER(
 				_girepository.GError
 			)
 		)
 		
-		# ctypelib
-		ctypelib = _girepository.g_irepository_require(crepository, cnamespace, cversion, cflags, cerror)
+		# typelib
+		_typelib = _girepository.g_irepository_require(_repository, _namespace, _version, _flags, _error)
 		
-		if not ctypelib and cerror.contents:
-			raise GIError(cerror.contents.message.value)
+		if not _typelib and _error.contents:
+			raise GIError(_error.contents.message.value)
 		
 		# if version not present, get default version
 		if not version:
-			cversion = _girepository.g_irepository_get_version(crepository, cnamespace)
-			version = cversion.value
+			_version = _girepository.g_irepository_get_version(_repository, _namespace)
+			version = _version.value
 		
 		# module
 		if namespace in _modules:
 			module = _modules[namespace]
 		else:
-			module = GIModule(namespace, '', ctypelib)
+			module = GIModule(namespace, '', _typelib)
 			_modules[namespace] = module
 		
 		# dependencies
-		cdependencies = _girepository.g_irepository_get_dependencies(crepository, cnamespace)
+		_dependencies = _girepository.g_irepository_get_dependencies(_repository, _namespace)
 		
-		if cdependencies:
+		if _dependencies:
 			i = 0
 			
 			while True:
-				cdependency = cdependencies[i]
+				_dependency = _dependencies[i]
 				
-				if cdependency.value:
-					dependency = cdependency.value
+				if _dependency.value:
+					dependency = _dependency.value
 					_namespace, _version = dependency.split('-')
 					_module = self.require(_namespace, _version)
 				else:
@@ -165,11 +164,46 @@ class GIModule(types.ModuleType):
 						interface = module_interface.__getattr__(info_interface_name)
 						clsbases.append(interface)
 				
+				# class struct
+				cobjectinfo_class_struct = _girepository.g_object_info_get_class_struct(cobjectinfo)
+				
 				# create class
 				clsname = attr
 				mrobases = _mro(clsbases)
 				clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
-				clsdict = {'_cinfo': cobjectinfo}
+				clsdict = {}
+				clsdict['_cinfo'] = cobjectinfo
+				clsdict['_object_info_class_struct'] = cobjectinfo_class_struct
+				
+				# number of methods
+				cobjectinfo_n_methods = _girepository.g_object_info_get_n_methods(cobjectinfo)
+				objectinfo_n_methods = cobjectinfo_n_methods.value
+				
+				# methods
+				for i in range(objectinfo_n_methods):
+					# method
+					cfunctioninfo_method = _girepository.g_object_info_get_method(cobjectinfo, _girepository.gint(i))
+					cinfo_method = _girepository.cast(
+						cfunctioninfo_method,
+						_girepository.POINTER(_girepository.GIBaseInfo)
+					)
+					
+					# method name
+					cinfo_method_name = _girepository.g_base_info_get_name(cinfo_method)
+					info_method_name = cinfo_method_name.value
+					
+					# attach method to class dict
+					function = GIFunction(cfunctioninfo_method)
+					method = lambda self, *args, **kwargs: function(self, *args, **kwargs)
+					clsdict[info_method_name] = method
+					
+					# check if constructor
+					cfunctioninfo_flags = _girepository.g_function_info_get_flags(cfunctioninfo_method)
+					
+					if cfunctioninfo_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+						clsdict['_constructor'] = method
+				
+				# new class
 				class_ = type(clsname, clsbases, clsdict)
 				class_.__module__ = self
 				_clases[nsclsname] = class_
@@ -294,8 +328,11 @@ class GIInterface(GIRegisteredType):
 		GIRegisteredType.__init__(self, cinfo)
 
 class GIObject(GIRegisteredType):
+	_cclassstruct = None
+	
 	def __init__(self, cinfo):
 		GIRegisteredType.__init__(self, cinfo)
+		self._cinstance = None
 
 class GIStruct(GIRegisteredType):
 	def __init__(self, cinfo):

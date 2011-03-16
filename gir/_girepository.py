@@ -1727,6 +1727,35 @@ def info_get_type(info):
 	info_type = g_base_info_get_type(info)
 	return GIInfoType_to_GIInfo[info_type.value]
 
+def info_get_type_name(info):
+	# return corresponding GI*Info's name
+	GIInfoType_to_GIInfo = {
+		GI_INFO_TYPE_INVALID.value: 'GIBaseInfo',
+		GI_INFO_TYPE_FUNCTION.value: 'GIFunctionInfo',
+		GI_INFO_TYPE_CALLBACK.value: 'GICallbackInfo',
+		GI_INFO_TYPE_STRUCT.value: 'GIStructInfo',
+		GI_INFO_TYPE_BOXED.value: 'GIBaseInfo',
+		GI_INFO_TYPE_ENUM.value: 'GIEnumInfo',
+		GI_INFO_TYPE_FLAGS.value: 'GIBaseInfo',
+		GI_INFO_TYPE_OBJECT.value: 'GIObjectInfo',
+		GI_INFO_TYPE_INTERFACE.value: 'GIInterfaceInfo',
+		GI_INFO_TYPE_CONSTANT.value: 'GIConstantInfo',
+		GI_INFO_TYPE_ERROR_DOMAIN.value: 'GIErrorDomainInfo',
+		GI_INFO_TYPE_UNION.value: 'GIUnionInfo',
+		GI_INFO_TYPE_VALUE.value: 'GIValueInfo',
+		GI_INFO_TYPE_SIGNAL.value: 'GISignalInfo',
+		GI_INFO_TYPE_VFUNC.value: 'GIVFuncInfo',
+		GI_INFO_TYPE_PROPERTY.value: 'GIPropertyInfo',
+		GI_INFO_TYPE_FIELD.value: 'GIFieldInfo',
+		GI_INFO_TYPE_ARG.value: 'GIArgInfo',
+		GI_INFO_TYPE_TYPE.value: 'GITypeInfo',
+		GI_INFO_TYPE_UNRESOLVED.value: 'GIBaseInfo',
+	}
+	
+	info = cast(info, POINTER(GIBaseInfo))
+	info_type = g_base_info_get_type(info)
+	return GIInfoType_to_GIInfo[info_type.value]
+
 def info_get_name(info):
 	# return name of GI*Info as gchar_p
 	info = cast(info, POINTER(GIBaseInfo))

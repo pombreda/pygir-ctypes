@@ -89,62 +89,149 @@ class GIModule(types.ModuleType):
 		cnamespace = _girepository.g_typelib_get_namespace(self._ctypelib)
 		cattr = _girepository.gchar_p(attr)
 		cinfo = _girepository.g_irepository_find_by_name(None, cnamespace, cattr)
+		if not cinfo: raise AttributeError('missing attribute "%s"' % attr)
+		cinfotype = _girepository.info_get_type(cinfo)
 		
-		if cinfo:
-			cinfotype = _girepository.info_get_type(cinfo)
+		if cinfotype == _girepository.GIFunctionInfo:
+			# function
+			cfunctioninfo = _girepository.cast(
+				cinfo,
+				_girepository.POINTER(_girepository.GIFunctionInfo)
+			)
 			
-			if cinfotype == _girepository.GIFunctionInfo:
-				cfunctioninfo = _girepository.cast(
-					cinfo,
-					_girepository.POINTER(_girepository.GIFunctionInfo)
+			return GIFunction(cfunctioninfo)
+		elif cinfotype == _girepository.GIObjectInfo:
+			# object
+			cobjectinfo = _girepository.cast(
+				cinfo,
+				_girepository.POINTER(_girepository.GIObjectInfo)
+			)
+			
+			# namespace
+			cnamespace = _girepository.g_base_info_get_namespace(cinfo)
+			namespace = cnamespace.value
+			
+			nsclsname = '%s.%s'	% (namespace, attr)
+			
+			try:
+				class_ = _clases[nsclsname]
+			except KeyError:
+				# parent
+				cobjectinfo_parent = _girepository.g_object_info_get_parent(cobjectinfo)
+				cinfo_parent = _girepository.cast(
+					cobjectinfo_parent,
+					_girepository.POINTER(_girepository.GIBaseInfo)
 				)
 				
-				return GIFunction(cfunctioninfo)
-			elif cinfotype == _girepository.GIObjectInfo:
-				cobjectinfo = _girepository.cast(
-					cinfo,
-					_girepository.POINTER(_girepository.GIObjectInfo)
-				)
+				# parent namespace
+				cinfo_parent_namespace = _girepository.g_base_info_get_namespace(cinfo_parent)
+				info_parent_namespace = cinfo_parent_namespace.value
 				
-				cnamespace = _girepository.g_base_info_get_namespace(cinfo)
-				namespace = cnamespace.value
+				# parent name
+				cinfo_parent_name = _girepository.g_base_info_get_name(cinfo_parent)
+				info_parent_name = cinfo_parent_name.value
 				
-				nsclsname = '%s.%s'  % (namespace, attr)
-				
-				try:
-					class_ = _clases[nsclsname]
-				except KeyError:
-					cobjectinfo_parent = _girepository.g_object_info_get_parent(cobjectinfo)
-					cinfo_parent = _girepository.cast(
-						cobjectinfo_parent,
-						_girepository.POINTER(_girepository.GIBaseInfo)
-					)
+				if namespace == info_parent_namespace and attr == info_parent_name:
+					clsbases = [GIObject]
+				else:
+					# bases = [parent] + interfaces
+					clsbases = []
 					
-					cinfo_parent_namespace = _girepository.g_base_info_get_namespace(cinfo_parent)
-					info_parent_namespace = cinfo_parent_namespace.value
-					
-					cinfo_parent_name = _girepository.g_base_info_get_name(cinfo_parent)
-					info_parent_name = cinfo_parent_name.value
-					
+					# parent
 					module_parent = _modules[info_parent_namespace]
-					clsname = attr
+					clsbases.append(module_parent.__getattr__(info_parent_name))
 					
-					if namespace == info_parent_namespace and attr == info_parent_name:
-						clsbases = [object]
-					else:
-						clsbases = [module_parent.__getattr__(info_parent_name)]
+					# interfaces
+					cobjectinfo_n_interfaces = _girepository.g_object_info_get_n_interfaces(cobjectinfo)
+					objectinfo_n_interfaces = cobjectinfo_n_interfaces.value
 					
-					clsbases = tuple(clsbases)
-					clsdict = {}
-					class_ = type(clsname, clsbases, clsdict)
-					class_.__module__ = self
-					_clases[nsclsname] = class_
+					for i in range(objectinfo_n_interfaces):
+						# interface
+						cobjectinfo_interface = _girepository.g_object_info_get_interface(cobjectinfo, _girepository.gint(i))
+						cinfo_interface = _girepository.cast(
+							cobjectinfo_interface,
+							_girepository.POINTER(_girepository.GIBaseInfo)
+						)
+						
+						# interface namespace
+						cinfo_interface_namespace = _girepository.g_base_info_get_namespace(cinfo_interface)
+						info_interface_namespace = cinfo_interface_namespace.value
+						
+						# interface name
+						cinfo_interface_name = _girepository.g_base_info_get_name(cinfo_interface)
+						info_interface_name = cinfo_interface_name.value
+						
+						module_interface = _modules[info_interface_namespace]
+						interface = module_interface.__getattr__(info_interface_name)
+						clsbases.append(interface)
 				
-				return class_
-			else:
-				raise GIError('unknown info type "%s"' % _girepository.name_GIInfoType[cinfotype.value])
+				# create class
+				clsname = attr
+				mrobases = _mro(clsbases)
+				clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
+				clsdict = {'_cinfo': cobjectinfo}
+				class_ = type(clsname, clsbases, clsdict)
+				class_.__module__ = self
+				_clases[nsclsname] = class_
+			
+			return class_
+		elif cinfotype == _girepository.GIInterfaceInfo:
+			# interface
+			cinterfaceinfo = _girepository.cast(
+				cinfo,
+				_girepository.POINTER(_girepository.GIInterfaceInfo)
+			)
+			
+			# namespace
+			cnamespace = _girepository.g_base_info_get_namespace(cinfo)
+			namespace = cnamespace.value
+			
+			nsclsname = '%s.%s'	% (namespace, attr)
+			
+			try:
+				class_ = _clases[nsclsname]
+			except KeyError:
+				# interface bases
+				clsbases = []
+				
+				# number of prerequisites
+				cinterfaceinfo_n_prerequisites = _girepository.g_interface_info_get_n_prerequisites(cinterfaceinfo)
+				interfaceinfo_n_prerequisites = cinterfaceinfo_n_prerequisites.value
+				
+				# prerequisites
+				if interfaceinfo_n_prerequisites:
+					# if any prerequisite
+					for i in range(interfaceinfo_n_prerequisites):
+						# prerequisite
+						cinfo_prerequisite = _girepository.g_interface_info_get_prerequisite(cinterfaceinfo, _girepository.gint(i))
+						
+						# prerequisite namespace
+						cinfo_prerequisite_namespace = _girepository.g_base_info_get_namespace(cinfo_prerequisite)
+						info_prerequisite_namespace = cinfo_prerequisite_namespace.value
+						
+						# prerequisite name
+						cinfo_prerequisite_name = _girepository.g_base_info_get_name(cinfo_prerequisite)
+						info_prerequisite_name = cinfo_prerequisite_name.value
+						
+						module_prerequisite = _modules[info_prerequisite_namespace]
+						prerequisite = module_prerequisite.__getattr__(info_prerequisite_name)
+						clsbases.append(prerequisite)
+				else:
+					# other, base class is GIInterface
+					clsbases.append(GIInterface)
+				
+				# create class
+				clsname = attr
+				mrobases = _mro(clsbases)
+				clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
+				clsdict = {'_cinfo': cinterfaceinfo}
+				class_ = type(clsname, clsbases, clsdict)
+				class_.__module__ = self
+				_clases[nsclsname] = class_
+			
+			return class_
 		else:
-			raise AttributeError('missing attribute "%s"' % attr)
+			raise GIError('unknown info type "%s"' % _girepository.info_get_type_name(cinfo))
 
 ########################################################################
 
@@ -241,3 +328,47 @@ class GIProperty(GIBase):
 class GIType(GIBase):
 	def __init__(self, cinfo):
 		GIBase.__init__(self, cinfo)
+
+########################################################################
+
+def _merge_mro(seqs):
+	res = []
+	i = 0
+	
+	while 1:
+		nonemptyseqs = [seq for seq in seqs if seq]
+		
+		if not nonemptyseqs:
+			return res
+		
+		i += 1
+		
+		for seq in nonemptyseqs:
+			cand = seq[0]
+			nothead = [s for s in nonemptyseqs if cand in s[1:]]
+			
+			if nothead:
+				cand = None
+			else:
+				break
+		
+		if not cand:
+			raise GIError("Inconsistent hierarchy")
+		
+		res.append(cand)
+		
+		for seq in nonemptyseqs:
+			if seq[0] == cand:
+				del seq[0]
+
+def _calc_mro(C):
+	return _merge_mro([[C]] + map(_calc_mro, C.__bases__) + [list(C.__bases__)])
+
+def _mro(bases):
+	segs = []
+	
+	for base in bases:
+		segs.append(_calc_mro(base))
+	
+	segs = _merge_mro(segs)
+	return tuple(segs)

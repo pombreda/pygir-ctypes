@@ -1,5 +1,6 @@
 import sys
 sys.path.append('..')
+import threading
 
 import gir
 
@@ -9,17 +10,21 @@ if __name__ == '__main__':
 	GObject = rep.require('GObject')
 	GLib = rep.require('GLib')
 	
-	print(Gtk)
-	print(Gtk.Window)
-	print(Gtk.Window.__bases__)
-	print(Gtk.Window.__mro__)
+	#~ print(Gtk)
+	#~ print(Gtk.Window)
+	#~ print(Gtk.Window.__bases__)
+	#~ print(Gtk.Window.__mro__)
 	
-	print(Gtk.Label)
-	print(Gtk.Label.__bases__)
-	print(Gtk.Label.__mro__)
+	#~ print(Gtk.Label)
+	#~ print(Gtk.Label.__bases__)
+	#~ print(Gtk.Label.__mro__)
 	
-	# w = Gtk.Window()
+	print(Gtk.Entry)
+	print(Gtk.Entry.__bases__)
+	print(Gtk.Entry.__mro__)
 	
-	# r = Gtk.init()
-	# print(r)
-	# Gtk.main()
+	#~ w = Gtk.Window()
+	#~ print(w)
+	#~ r = Gtk.init()
+	#~ print(r)
+	#~ Gtk.main()

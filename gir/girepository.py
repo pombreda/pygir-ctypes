@@ -270,16 +270,20 @@ class GIModule(types.ModuleType):
 ########################################################################
 
 class GIBase(object):
-	def __init__(self, cinfo):
-		self._cinfo = cinfo
+	def __init__(self, _base_info):
+		self._base_info = _base_info
 
 class GICallable(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _callable_info):
+		_base_info = _girepository.cast(_callable_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._callable_info = _callable_info
 
 class GIFunction(GICallable):
-	def __init__(self, cinfo):
-		GICallable.__init__(self, cinfo)
+	def __init__(self, _function_info):
+		_callable_info = _girepository.cast(_function_info, _girepository.POINTER(_girepository.GICallableInfo))
+		GICallable.__init__(self, _callable_info)
+		self._function_info = _function_info
 	
 	def __call__(self, *args, **kwargs):
 		cinfo = self._cinfo
@@ -308,63 +312,91 @@ class GIFunction(GICallable):
 		)
 
 class GISignal(GICallable):
-	def __init__(self, cinfo):
-		GICallable.__init__(self, cinfo)
+	def __init__(self, _signal_info):
+		_callable_info = _girepository.cast(_signal_info, _girepository.POINTER(_girepository.GICallableInfo))
+		GICallable.__init__(self, _callable_info)
+		self._signal_info = _signal_info
 
 class GIVFunc(GICallable):
-	def __init__(self, cinfo):
-		GICallable.__init__(self, cinfo)
+	def __init__(self, _vfunc_info):
+		_callable_info = _girepository.cast(_vfunc_info, _girepository.POINTER(_girepository.GICallableInfo))
+		GICallable.__init__(self, _callable_info)
+		self._vfunc_info = _vfunc_info
 
 class GIRegisteredType(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _registered_info):
+		_base_info = _girepository.cast(_registered_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._registered_info = _registered_info
 
 class GIEnum(GIRegisteredType):
-	def __init__(self, cinfo):
-		GIRegisteredType.__init__(self, cinfo)
+	def __init__(self, _enum_info):
+		_registered_type_info = _girepository.cast(_enum_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		GIRegisteredType.__init__(self, _registered_type_info)
+		self._enum_info = _enum_info
 
 class GIInterface(GIRegisteredType):
-	def __init__(self, cinfo):
-		GIRegisteredType.__init__(self, cinfo)
+	def __init__(self, _interface_info):
+		_registered_type_info = _girepository.cast(_interface_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		GIRegisteredType.__init__(self, _registered_type_info)
+		self._interface_info = _interface_info
 
 class GIObject(GIRegisteredType):
-	_cclassstruct = None
+	_class_struct_info = None
 	
-	def __init__(self, cinfo):
-		GIRegisteredType.__init__(self, cinfo)
-		self._cinstance = None
+	def __init__(self, _object_info):
+		_registered_type_info = _girepository.cast(_object_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		GIRegisteredType.__init__(self, _registered_type_info)
+		self._object_info = _object_info
+		self._instance = None
 
 class GIStruct(GIRegisteredType):
-	def __init__(self, cinfo):
-		GIRegisteredType.__init__(self, cinfo)
+	def __init__(self, _struct_info):
+		_registered_type_info = _girepository.cast(_struct_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		GIRegisteredType.__init__(self, _registered_type_info)
+		self._struct_info = _struct_info
 
 class GIUnion(GIRegisteredType):
-	def __init__(self, cinfo):
-		GIRegisteredType.__init__(self, cinfo)
+	def __init__(self, _union_info):
+		_registered_type_info = _girepository.cast(_union_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		GIRegisteredType.__init__(self, _registered_type_info)
+		self._union_info = _union_info
 
 class GIArg(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _arg_info):
+		_base_info = _girepository.cast(_arg_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._arg_info = _arg_info
 
 class GIConstant(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _constant_info):
+		_base_info = _girepository.cast(_constant_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._constant_info = _constant_info
 
 class GIErrorDomain(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _error_domain_info):
+		_base_info = _girepository.cast(_error_domain_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._error_domain_info = _error_domain_info
 
 class GIField(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _field_info):
+		_base_info = _girepository.cast(_field_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._field_info = _field_info
 
 class GIProperty(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _property_info):
+		_base_info = _girepository.cast(_property_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._property_info = _property_info
 
 class GIType(GIBase):
-	def __init__(self, cinfo):
-		GIBase.__init__(self, cinfo)
+	def __init__(self, _type_info):
+		_base_info = _girepository.cast(_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
+		GIBase.__init__(self, _base_info)
+		self._type_info = _type_info
 
 ########################################################################
 

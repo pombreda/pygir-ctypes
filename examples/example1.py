@@ -9,6 +9,12 @@ if __name__ == '__main__':
 	GObject = rep.require('GObject')
 	GLib = rep.require('GLib')
 	
-	r = Gtk.init()
-	print(r)
+	print(Gtk)
+	
+	#~ print(Gtk.Window)
+	#~ print(Gtk.Window.__bases__)
+	# w = Gtk.Window()
+	
+	# r = Gtk.init()
+	# print(r)
 	# Gtk.main()

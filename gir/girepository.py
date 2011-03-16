@@ -1,13 +1,21 @@
+import os
+import sys
+import types
 from . import _girepository
+_modules = {}
+_clases = {}
 
 class GIError(Exception): pass
 
-class GIModule(object):
-	def __init__(self, ctypelib):
+class GIModule(types.ModuleType):
+	def __init__(self, modulename, moduledoc, ctypelib):
+		types.ModuleType.__init__(self, modulename, moduledoc)
 		self._ctypelib = ctypelib
 		self._attrs = {}
 	
 	def __del__(self):
+		types.ModuleType.__del__(self)
+		
 		if self._ctypelib:
 			_girepository.g_typelib_free(self._ctypelib)
 	
@@ -24,7 +32,37 @@ class GIModule(object):
 					cinfo,
 					_girepository.POINTER(_girepository.GIFunctionInfo)
 				)
+				
 				return GIFunction(cfunctioninfo)
+			elif cinfotype == _girepository.GIObjectInfo:
+				cobjectinfo = _girepository.cast(
+					cinfo,
+					_girepository.POINTER(_girepository.GIObjectInfo)
+				)
+				
+				cnamespace = _girepository.g_base_info_get_namespace(cinfo)
+				namespace = cnamespace.value
+				
+				nsclsname = '%s.%s'  % (namespace, attr)
+				
+				try:
+					class_ = _clases[nsclsname]
+				except KeyError:
+					cobjectinfo_parent = _girepository.g_object_info_get_parent(cobjectinfo)
+					cinfo_parent = _girepository.cast(
+						cobjectinfo_parent,
+						_girepository.POINTER(_girepository.GIBaseInfo)
+					)
+					cinfo_parentname = _girepository.g_base_info_get_name(cinfo_parent)
+					info_parentname = cinfo_parentname.value
+					
+					clsname = attr
+					clsbases = (self.__getattr__(info_parentname),)
+					clsdict = {}
+					class_ = type(clsname, clsbases, clsdict)
+					_clases[nsclsname] = class_
+				
+				return class_
 			else:
 				raise GIError('unknown info type "%s"' % _girepository.name_GIInfoType[cinfotype.value])
 		else:
@@ -32,8 +70,6 @@ class GIModule(object):
 
 class GIRepository(object):
 	_self = None
-	_modules = {}
-	_clases = {}
 	
 	def __new__(cls):
 		# act as singleton
@@ -73,11 +109,11 @@ class GIRepository(object):
 			version = cversion.value
 		
 		# module
-		if (namespace, version) in self._modules:
-			module = self._modules[(namespace, version)]
+		if (namespace, version) in _modules:
+			module = _modules[(namespace, version)]
 		else:
-			module = GIModule(ctypelib)
-			self._modules[(namespace, version)] = module
+			module = GIModule(namespace, '', ctypelib)
+			_modules[(namespace, version)] = module
 		
 		# dependencies
 		cdependencies = _girepository.g_irepository_get_dependencies(crepository, cnamespace)

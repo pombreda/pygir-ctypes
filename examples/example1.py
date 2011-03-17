@@ -12,9 +12,16 @@ if __name__ == '__main__':
 	
 	print(Gtk)
 	print(Gtk.Window)
-	print(Gtk.Window.__bases__)
-	print(Gtk.Window.__mro__)
+	#~ print(Gtk.Window.__bases__)
+	#~ print(Gtk.Window.__mro__)
 	#~ print(dir(Gtk.Window))
+	
+	w = Gtk.Window()
+	#~ print(w)
+	#~ print(w._function_info_constructor)
+	print(w._instance)
+	print(w.new)
+	print(Gtk.Window.new)
 	
 	#~ print(Gtk.Label)
 	#~ print(Gtk.Label.__bases__)

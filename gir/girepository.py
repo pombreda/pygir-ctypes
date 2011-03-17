@@ -94,7 +94,8 @@ class GIModule(types.ModuleType):
 		if _info_type == _girepository.GIFunctionInfo:
 			# function
 			_function_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIFunctionInfo))
-			return GIFunction(_function_info)
+			function = GIFunction(_function_info=_function_info)
+			return function
 		elif _info_type == _girepository.GIObjectInfo:
 			# object
 			_object_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIObjectInfo))
@@ -159,6 +160,7 @@ class GIModule(types.ModuleType):
 				clsname = attr
 				mrobases = _mro(clsbases)
 				clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
+				clsbases = tuple(clsbases)
 				clsdict = {}
 				clsdict['_object_info'] = _object_info
 				clsdict['_struct_info_class'] = _struct_info_class
@@ -171,25 +173,20 @@ class GIModule(types.ModuleType):
 				for i in range(object_info_n_methods):
 					# method
 					_function_info_method = _girepository.g_object_info_get_method(_object_info, _girepository.gint(i))
-					_base_info_method = _girepository.cast(
-						_function_info_method,
-						_girepository.POINTER(_girepository.GIBaseInfo)
-					)
+					_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
 					
 					# method name
 					_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
 					base_info_method_name = _base_info_method_name.value
 					
 					# attach method to class dict
-					function = GIFunction(_function_info_method)
-					method = lambda self, *args, **kwargs: function(self, *args, **kwargs)
+					method = GIFunction(_function_info=_function_info_method)
 					clsdict[base_info_method_name] = method
 					
 					# check if constructor
 					_function_info_flags = _girepository.g_function_info_get_flags(_function_info_method)
-					
 					if _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-						clsdict['_constructor'] = method
+						clsdict['_function_info_constructor'] = method
 				
 				# new class
 				class_ = type(clsname, clsbases, clsdict)
@@ -199,10 +196,7 @@ class GIModule(types.ModuleType):
 			return class_
 		elif _info_type == _girepository.GIInterfaceInfo:
 			# interface
-			_interface_info = _girepository.cast(
-				_base_info,
-				_girepository.POINTER(_girepository.GIInterfaceInfo)
-			)
+			_interface_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
 			
 			# namespace
 			_namespace = _girepository.g_base_info_get_namespace(_base_info)
@@ -235,6 +229,7 @@ class GIModule(types.ModuleType):
 						_base_info_prerequisite_name = _girepository.g_base_info_get_name(_base_info_prerequisite)
 						base_info_prerequisite_name = _base_info_prerequisite_name.value
 						
+						# append prerequisite (parent interface) to clsbases
 						module_prerequisite = _modules[base_info_prerequisite_namespace]
 						prerequisite = module_prerequisite.__getattr__(base_info_prerequisite_name)
 						clsbases.append(prerequisite)
@@ -246,7 +241,8 @@ class GIModule(types.ModuleType):
 				clsname = attr
 				mrobases = _mro(clsbases)
 				clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
-				clsdict = {'_cinfo': _interface_info}
+				clsbases = tuple(clsbases)
+				clsdict = {'_interface_info': _interface_info}
 				class_ = type(clsname, clsbases, clsdict)
 				class_.__module__ = self
 				_clases[nsclsname] = class_
@@ -258,29 +254,58 @@ class GIModule(types.ModuleType):
 ########################################################################
 
 class GIBase(object):
-	def __init__(self, _base_info):
-		self._base_info = _base_info
+	_base_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_base_info = kwargs.pop('_base_info')
+			self._base_info = _base_info
+		except KeyError:
+			pass
 
 class GICallable(GIBase):
-	def __init__(self, _callable_info):
-		_base_info = _girepository.cast(_callable_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._callable_info = _callable_info
+	_callable_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_callable_info = kwargs.pop('_callable_info')
+			_base_info = _girepository.cast(_callable_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._callable_info = _callable_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIFunction(GICallable):
-	def __init__(self, _function_info):
-		_callable_info = _girepository.cast(_function_info, _girepository.POINTER(_girepository.GICallableInfo))
-		GICallable.__init__(self, _callable_info)
-		self._function_info = _function_info
+	_function_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_function_info = kwargs.pop('_function_info')
+			_callable_info = _girepository.cast(_function_info, _girepository.POINTER(_girepository.GICallableInfo))
+			GICallable.__init__(self, _callable_info=_callable_info, *args, **kwargs)
+			self._function_info = _function_info
+		except KeyError:
+			GICallable.__init__(self, *args, **kwargs)
+	
+	def __get__(self, obj, type_=None):
+		if isinstance(obj, type_):
+			func = lambda *args, **kwargs: self(obj, *args, **kwargs)
+			_base_info_name = _girepository.g_base_info_get_name(self._base_info)
+			base_info_name = _base_info_name.value
+			func.func_name = base_info_name
+			return func
+		else:
+			return self
 	
 	def __call__(self, *args, **kwargs):
-		cinfo = self._cinfo
-		cinargs = None
-		cninargs = 0
-		coutargs = None
-		cnoutargs = 0
-		creturn = _girepository.GIArgument()
-		cerror = _girepository.cast(
+		print('*', self, args, kwargs)
+		_function_info = self._function_info
+		_inargs = None
+		_ninargs = _girepository.gint(0)
+		_outargs = None
+		_noutargs = _girepository.gint(0)
+		_return = _girepository.GIArgument()
+		_error = _girepository.cast(
 			_girepository.gpointer(),
 			_girepository.POINTER(
 				_girepository.GError
@@ -289,102 +314,204 @@ class GIFunction(GICallable):
 		
 		# print(_girepository.g_function_info_get_symbol(cinfo).value)
 		
-		cresult = _girepository.g_function_info_invoke(
-			cinfo,
-			cinargs,
-			cninargs,
-			coutargs,
-			cnoutargs,
-			creturn,
-			cerror,
+		_result = _girepository.g_function_info_invoke(
+			_function_info,
+			_inargs,
+			_ninargs,
+			_outargs,
+			_noutargs,
+			_return,
+			_error,
 		)
+		
+		return _result
 
 class GISignal(GICallable):
-	def __init__(self, _signal_info):
-		_callable_info = _girepository.cast(_signal_info, _girepository.POINTER(_girepository.GICallableInfo))
-		GICallable.__init__(self, _callable_info)
-		self._signal_info = _signal_info
+	_signal_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_signal_info = kwargs.pop('_signal_info')
+			_callable_info = _girepository.cast(_signal_info, _girepository.POINTER(_girepository.GICallableInfo))
+			GICallable.__init__(self, _callable_info=_callable_info, *args, **kwargs)
+			self._signal_info = _signal_info
+		except KeyError:
+			GICallable.__init__(self, *args, **kwargs)
 
 class GIVFunc(GICallable):
-	def __init__(self, _vfunc_info):
-		_callable_info = _girepository.cast(_vfunc_info, _girepository.POINTER(_girepository.GICallableInfo))
-		GICallable.__init__(self, _callable_info)
-		self._vfunc_info = _vfunc_info
+	_vfunc_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_vfunc_info = kwargs.pop('_vfunc_info')
+			_callable_info = _girepository.cast(_vfunc_info, _girepository.POINTER(_girepository.GICallableInfo))
+			GICallable.__init__(self, _callable_info=_callable_info, *args, **kwargs)
+			self._vfunc_info = _vfunc_info
+		except KeyError:
+			GICallable.__init__(self, *args, **kwargs)
 
 class GIRegisteredType(GIBase):
-	def __init__(self, _registered_info):
-		_base_info = _girepository.cast(_registered_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._registered_info = _registered_info
+	_registered_info = None
+	
+	def __init__(self, _registered_info=None, *args, **kwargs):
+		try:
+			_registered_info = kwargs.pop('_registered_info')
+			_base_info = _girepository.cast(_registered_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._registered_info = _registered_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIEnum(GIRegisteredType):
-	def __init__(self, _enum_info):
-		_registered_type_info = _girepository.cast(_enum_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-		GIRegisteredType.__init__(self, _registered_type_info)
-		self._enum_info = _enum_info
+	_enum_info = None
+	
+	def __init__(self, _enum_info=None, *args, **kwargs):
+		try:
+			_enum_info = kwargs.pop('_enum_info')
+			_registered_type_info = _girepository.cast(_enum_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
+			self._enum_info = _enum_info
+		except KeyError:
+			GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIInterface(GIRegisteredType):
-	def __init__(self, _interface_info):
-		_registered_type_info = _girepository.cast(_interface_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-		GIRegisteredType.__init__(self, _registered_type_info)
-		self._interface_info = _interface_info
+	_interface_info = None
+	
+	def __init__(self, _interface_info=None, *args, **kwargs):
+		try:
+			_interface_info = kwargs.pop('_interface_info')
+			_registered_type_info = _girepository.cast(_interface_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
+			self._interface_info = _interface_info
+		except KeyError:
+			GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIObject(GIRegisteredType):
+	_object_info = None
 	_struct_info_class = None
+	_function_info_constructor = None
 	
-	def __init__(self, _object_info):
-		_registered_type_info = _girepository.cast(_object_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-		GIRegisteredType.__init__(self, _registered_type_info)
-		self._object_info = _object_info
-		self._instance = None
+	def __init__(self, *args, **kwargs):
+		try:
+			_object_info = kwargs.pop('_object_info')
+			_registered_type_info = _girepository.cast(_object_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
+			self._object_info = _object_info
+		except KeyError:
+			GIRegisteredType.__init__(self, *args, **kwargs)
+		
+		try:
+			_struct_info_class = kwargs.pop('_struct_info_class')
+			self._struct_info_class = _struct_info_class
+		except KeyError:
+			pass
+		
+		try:
+			_function_info_constructor = kwargs.pop('_function_info_constructor')
+			self._function_info_constructor = _function_info_constructor
+		except KeyError:
+			pass
+		
+		if self._function_info_constructor:
+			self._instance = self._function_info_constructor(*args, **kwargs)
+		else:
+			self._instance = None
 
 class GIStruct(GIRegisteredType):
-	def __init__(self, _struct_info):
-		_registered_type_info = _girepository.cast(_struct_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-		GIRegisteredType.__init__(self, _registered_type_info)
-		self._struct_info = _struct_info
+	_struct_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_struct_info = kwargs.pop('_struct_info')
+			_registered_type_info = _girepository.cast(_struct_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
+			self._struct_info = _struct_info
+		except KeyError:
+			GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIUnion(GIRegisteredType):
-	def __init__(self, _union_info):
-		_registered_type_info = _girepository.cast(_union_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-		GIRegisteredType.__init__(self, _registered_type_info)
-		self._union_info = _union_info
+	_union_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_union_info = kwargs.pop('_union_info')
+			_registered_type_info = _girepository.cast(_union_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
+			self._union_info = _union_info
+		except KeyError:
+			GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIArg(GIBase):
-	def __init__(self, _arg_info):
-		_base_info = _girepository.cast(_arg_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._arg_info = _arg_info
+	_arg_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_arg_info = kwargs.pop('_arg_info')
+			_base_info = _girepository.cast(_arg_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._arg_info = _arg_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIConstant(GIBase):
-	def __init__(self, _constant_info):
-		_base_info = _girepository.cast(_constant_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._constant_info = _constant_info
+	_constant_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_constant_info = kwargs.pop('_constant_info')
+			_base_info = _girepository.cast(_constant_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._constant_info = _constant_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIErrorDomain(GIBase):
-	def __init__(self, _error_domain_info):
-		_base_info = _girepository.cast(_error_domain_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._error_domain_info = _error_domain_info
+	_error_domain_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_error_domain_info = kwargs.pop('_error_domain_info')
+			_base_info = _girepository.cast(_error_domain_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._error_domain_info = _error_domain_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIField(GIBase):
-	def __init__(self, _field_info):
-		_base_info = _girepository.cast(_field_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._field_info = _field_info
+	_field_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_field_info = kwargs.pop('_field_info')
+			_base_info = _girepository.cast(_field_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._field_info = _field_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIProperty(GIBase):
-	def __init__(self, _property_info):
-		_base_info = _girepository.cast(_property_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._property_info = _property_info
+	_property_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_property_info = kwargs.pop('_property_info')
+			_base_info = _girepository.cast(_property_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._property_info = _property_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 class GIType(GIBase):
-	def __init__(self, _type_info):
-		_base_info = _girepository.cast(_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
-		GIBase.__init__(self, _base_info)
-		self._type_info = _type_info
+	_type_info = None
+	
+	def __init__(self, *args, **kwargs):
+		try:
+			_type_info = kwargs.pop('_type_info')
+			_base_info = _girepository.cast(_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
+			self._type_info = _type_info
+		except KeyError:
+			GIBase.__init__(self, *args, **kwargs)
 
 ########################################################################
 

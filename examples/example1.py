@@ -32,8 +32,8 @@ if __name__ == '__main__':
 	#~ print(Gtk.WindowType.popup)
 	#~ print(Gtk.WindowType.toplevel)
 	
-	Gtk.init(0, [])
+	#~ Gtk.init(0, [])
 	w = Gtk.Window(Gtk.WindowType.toplevel)
-	w.set_title('Test 1')
-	w.show_all()
-	Gtk.main()
+	#~ w.set_title('Test 1')
+	#~ w.show_all()
+	#~ Gtk.main()

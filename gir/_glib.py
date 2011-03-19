@@ -24,6 +24,7 @@ class gsize(c_ulong): pass
 class gchar(c_char): pass		# represents "[const] gchar"
 class gchar_p(c_char_p): pass	# represents "[const] gchar*"
 class gpointer(c_void_p): pass
+class gconstpointer(c_void_p): pass # const gpointer
 
 class GQuark(guint32): pass
 class GError(Structure): 

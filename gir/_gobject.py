@@ -2,95 +2,6 @@ from ._glib import *
 
 libgobject = CDLL(find_library('gobject-2.0'))
 
-#~ # GType
-
-#~ class GTypeCValue(Union): pass
-
-#~ 
-
-#~ 
-#~ # GObject
-
-#~ 
-#~ # GParam
-#~ class GParamSpec(Structure): pass
-#~ class GParamSpecClass(Structure): pass
-#~ 
-#~ GParamFlags = gint
-#~ G_PARAM_READABLE = GParamFlags(1 << 0)
-#~ G_PARAM_WRITABLE = GParamFlags(1 << 1)
-#~ G_PARAM_CONSTRUCT = GParamFlags(1 << 2)
-#~ G_PARAM_CONSTRUCT_ONLY = GParamFlags(1 << 3)
-#~ G_PARAM_LAX_VALIDATION = GParamFlags(1 << 4)
-#~ G_PARAM_STATIC_NAME = GParamFlags(1 << 5)
-#~ G_PARAM_PRIVATE = G_PARAM_STATIC_NAME
-#~ G_PARAM_STATIC_NICK = GParamFlags(1 << 6)
-#~ G_PARAM_STATIC_BLURB = GParamFlags(1 << 7)
-#~ G_PARAM_DEPRECATED = GParamFlags(1 << 31)
-#~ 
-#~ # GCClosure
-#~ class GClosure(Structure): pass
-#~ class GCClosure(Structure): pass
-#~ 
-#~ GClosureMarshal = CFUNCTYPE(
-	#~ POINTER(GClosure),
-	#~ POINTER(GValue),
-	#~ guint,
-	#~ POINTER(GValue),
-	#~ gpointer,
-	#~ gpointer,
-#~ )
-#~ 
-#~ # GSignal
-#~ class GSignalInvocationHint(Structure): pass
-#~ GSignalCMarshaller = GClosureMarshal
-#~ 
-#~ GSignalEmissionHook = CFUNCTYPE(
-	#~ POINTER(GSignalInvocationHint),
-	#~ guint,
-	#~ POINTER(GValue),
-	#~ gpointer,
-#~ )
-#~ 
-#~ GSignalFlags = gint
-#~ G_SIGNAL_RUN_FIRST = GSignalFlags(1 << 0)
-#~ G_SIGNAL_RUN_LAST = GSignalFlags(1 << 1)
-#~ G_SIGNAL_RUN_CLEANUP = GSignalFlags(1 << 2)
-#~ G_SIGNAL_NO_RECURSE = GSignalFlags(1 << 3)
-#~ G_SIGNAL_DETAILED = GSignalFlags(1 << 4)
-#~ G_SIGNAL_ACTION = GSignalFlags(1 << 5)
-#~ G_SIGNAL_NO_HOOKS = GSignalFlags(1 << 6)
-#~ 
-#~ GSignalMatchType = gint
-#~ G_SIGNAL_MATCH_ID = GSignalMatchType(1 << 0)
-#~ G_SIGNAL_MATCH_DETAIL = GSignalMatchType(1 << 1)
-#~ G_SIGNAL_MATCH_CLOSURE = GSignalMatchType(1 << 2)
-#~ G_SIGNAL_MATCH_FUNC = GSignalMatchType(1 << 3)
-#~ G_SIGNAL_MATCH_DATA = GSignalMatchType(1 << 4)
-#~ G_SIGNAL_MATCH_UNBLOCKED = GSignalMatchType(1 << 5)
-#~ 
-#~ class GSignalQuery(Structure): pass
-
-#~ 
-#~ #
-#~ # GType/GValue
-#~ #
-
-#~ G_TYPE_GTYPE = g_gtype_get_type()
-#~ G_TYPE_VALUE = g_value_get_type()
-#~ G_TYPE_VALUE_ARRAY = g_value_array_get_type()
-
-
-
-
-
-
-
-
-
-
-
-
 #
 # GType
 #
@@ -216,6 +127,97 @@ class GValue(Structure):
 		('g_type', GType),
 		('data', _GValue_union0 * 2),
 	]
+
+#
+# GParamSpec/GValue
+#
+class GParamSpecBoolean(Structure): pass
+class GParamSpecChar(Structure): pass
+class GParamSpecUChar(Structure): pass
+class GParamSpecInt(Structure): pass
+class GParamSpecUInt(Structure): pass
+class GParamSpecLong(Structure): pass
+class GParamSpecULong(Structure): pass
+class GParamSpecInt64(Structure): pass
+class GParamSpecUInt64(Structure): pass
+class GParamSpecFloat(Structure): pass
+class GParamSpecDouble(Structure): pass
+class GParamSpecEnum(Structure): pass
+class GParamSpecFlags(Structure): pass
+class GParamSpecString(Structure): pass
+gchararray = POINTER(gchar_p)
+class GParamSpecParam(Structure): pass
+class GParamSpecBoxed(Structure): pass
+class GParamSpecPointer(Structure): pass
+class GParamSpecObject(Structure): pass
+class GParamSpecUnichar(Structure): pass
+class GParamSpecValueArray(Structure): pass
+class GParamSpecOverride(Structure): pass
+class GParamSpecGType(Structure): pass
+class GParamSpecVariant(Structure): pass
+
+#
+# GParamSpec
+#
+class GParamSpec(Structure): pass
+class GParamSpecClass(Structure): pass
+
+GParamFlag = gint
+G_PARAM_READABLE = GParamFlag(1 << 0)
+G_PARAM_WRITABLE = GParamFlag(1 << 1)
+G_PARAM_CONSTRUCT = GParamFlag(1 << 2)
+G_PARAM_CONSTRUCT_ONLY = GParamFlag(1 << 3)
+G_PARAM_LAX_VALIDATION = GParamFlag(1 << 4)
+G_PARAM_STATIC_NAME = GParamFlag(1 << 5)
+G_PARAM_PRIVATE = G_PARAM_STATIC_NAME
+G_PARAM_STATIC_NICK = GParamFlag(1 << 6)
+G_PARAM_STATIC_BLURB = GParamFlag(1 << 7)
+G_PARAM_DEPRECATED = GParamFlag(1 << 31)
+
+class GParamSpecTypeInfo(Structure): pass
+
+class GParamSpecPool(Structure): pass
+
+#
+# GTypeCValue
+#
+class GTypeCValue(Union):
+	_fields_ = [
+		('v_int', gint),
+		('v_long', glong),
+		('v_int64', gint64),
+		('v_double', gdouble),
+		('v_pointer', gpointer),
+	]
+
+#
+# GSignal
+#
+class  GSignalInvocationHint(Structure): pass
+class GSignalCMarshaller(Structure): pass
+
+GSignalFlags = gint
+G_SIGNAL_RUN_FIRST = GSignalFlags(1 << 0)
+G_SIGNAL_RUN_LAST = GSignalFlags(1 << 1)
+G_SIGNAL_RUN_CLEANUP = GSignalFlags(1 << 2)
+G_SIGNAL_NO_RECURSE = GSignalFlags(1 << 3)
+G_SIGNAL_DETAILED = GSignalFlags(1 << 4)
+G_SIGNAL_ACTION = GSignalFlags(1 << 5)
+G_SIGNAL_NO_HOOKS = GSignalFlags(1 << 6)
+
+GSignalMatchType = gint
+G_SIGNAL_MATCH_ID = GSignalMatchType(1 << 0)
+G_SIGNAL_MATCH_DETAIL = GSignalMatchType(1 << 1)
+G_SIGNAL_MATCH_CLOSURE = GSignalMatchType(1 << 2)
+G_SIGNAL_MATCH_FUNC = GSignalMatchType(1 << 3)
+G_SIGNAL_MATCH_DATA = GSignalMatchType(1 << 4)
+G_SIGNAL_MATCH_UNBLOCKED = GSignalMatchType(1 << 5)
+
+class GSignalQuery(Structure): pass
+
+GConnectFlags = gint
+G_CONNECT_AFTER = GConnectFlags(1 << 0)
+G_CONNECT_SWAPPED = GConnectFlags(1 << 1)
 
 #
 # GType
@@ -1204,28 +1206,1179 @@ g_pointer_type_register_static = ctypes_get_func(
 #
 # GValue
 #
-#~ GValue *            g_value_init                        (GValue *value,
-                                                         #~ GType g_type);
-#~ void                g_value_copy                        (const GValue *src_value,
-                                                         #~ GValue *dest_value);
-#~ GValue *            g_value_reset                       (GValue *value);
-#~ void                g_value_unset                       (GValue *value);
-#~ void                g_value_set_instance                (GValue *value,
-                                                         #~ gpointer instance);
-#~ gboolean            g_value_fits_pointer                (const GValue *value);
-#~ gpointer            g_value_peek_pointer                (const GValue *value);
-#~ gboolean            g_value_type_compatible             (GType src_type,
-                                                         #~ GType dest_type);
-#~ gboolean            g_value_type_transformable          (GType src_type,
-                                                         #~ GType dest_type);
-#~ gboolean            g_value_transform                   (const GValue *src_value,
-                                                         #~ GValue *dest_value);
-#~ void                (*GValueTransform)                  (const GValue *src_value,
-                                                         #~ GValue *dest_value);
-#~ void                g_value_register_transform_func     (GType src_type,
-                                                         #~ GType dest_type,
-                                                         #~ GValueTransform transform_func);
-#~ gchar *                 g_strdup_value_contents         (const GValue *value);
+g_value_init = ctypes_get_func(
+	libgobject,
+	'g_value_init',
+	POINTER(GValue),
+	POINTER(GValue),
+	GType,
+)
+
+g_value_copy = ctypes_get_func(
+	libgobject,
+	'g_value_copy',
+	None,
+	POINTER(GValue),
+	POINTER(GValue),
+)
+
+g_value_reset = ctypes_get_func(
+	libgobject,
+	'g_value_reset',
+	POINTER(GValue),
+	POINTER(GValue),
+)
+
+g_value_unset = ctypes_get_func(
+	libgobject,
+	'g_value_unset',
+	None,
+	POINTER(GValue),
+)
+
+g_value_set_instance = ctypes_get_func(
+	libgobject,
+	'g_value_set_instance',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
+
+g_value_fits_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_fits_pointer',
+	gboolean,
+	POINTER(GValue),
+)
+
+g_value_peek_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_peek_pointer',
+	gboolean,
+	POINTER(GValue),
+)
+
+g_value_type_compatible = ctypes_get_func(
+	libgobject,
+	'g_value_type_compatible',
+	gboolean,
+	GType,
+	GType,
+)
+
+g_value_type_transformable = ctypes_get_func(
+	libgobject,
+	'g_value_type_transformable',
+	gboolean,
+	GType,
+	GType,
+)
+
+g_value_transform = ctypes_get_func(
+	libgobject,
+	'g_value_transform',
+	gboolean,
+	POINTER(GValue),
+	POINTER(GValue),
+)
+
+GValueTransform = CFUNCTYPE(None, POINTER(GValue), POINTER(GValue))
+
+g_value_register_transform_func = ctypes_get_func(
+	libgobject,
+	'g_value_register_transform_func',
+	None,
+	GType,
+	GType,
+	GValueTransform,
+)
+
+g_strdup_value_contents = ctypes_get_func(
+	libgobject,
+	'g_strdup_value_contents',
+	gchar_p,
+	POINTER(GValue),
+)
+
+#
+# GParamSpec/GValue
+#
+g_param_spec_boolean = ctypes_get_func(
+	libgobject,
+	'g_param_spec_boolean',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gboolean,
+	GParamFlags,
+)
+
+g_value_set_boolean = ctypes_get_func(
+	libgobject,
+	'g_value_set_boolean',
+	None,
+	POINTER(GValue),
+	gboolean,
+)
+
+g_value_get_boolean = ctypes_get_func(
+	libgobject,
+	'g_value_get_boolean',
+	gboolean,
+	POINTER(GValue),
+)
+
+g_param_spec_char = ctypes_get_func(
+	libgobject,
+	'g_param_spec_char',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gint8,
+	gint8,
+	gint8,
+	GParamFlags,
+)
+
+g_value_set_char = ctypes_get_func(
+	libgobject,
+	'g_value_set_char',
+	None,
+	POINTER(GValue),
+	gchar,
+)
+
+g_value_get_char = ctypes_get_func(
+	libgobject,
+	'g_value_get_char',
+	gchar,
+	POINTER(GValue),
+)
+
+g_param_spec_uchar = ctypes_get_func(
+	libgobject,
+	'g_param_spec_uchar',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	guint8,
+	guint8,
+	guint8,
+	GParamFlags,
+)
+
+g_value_set_uchar = ctypes_get_func(
+	libgobject,
+	'g_value_set_uchar',
+	None,
+	POINTER(GValue),
+	guchar,
+)
+
+g_value_get_uchar = ctypes_get_func(
+	libgobject,
+	'g_value_get_uchar',
+	guchar,
+	POINTER(GValue),
+)
+
+g_param_spec_int = ctypes_get_func(
+	libgobject,
+	'g_param_spec_int',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gint,
+	gint,
+	gint,
+	GParamFlags,
+)
+
+g_value_set_int = ctypes_get_func(
+	libgobject,
+	'g_value_set_int',
+	None,
+	POINTER(GValue),
+	gint,
+)
+
+g_value_get_int = ctypes_get_func(
+	libgobject,
+	'g_value_get_int',
+	gint,
+	POINTER(GValue),
+)
+
+g_param_spec_uint = ctypes_get_func(
+	libgobject,
+	'g_param_spec_uint',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	guint,
+	guint,
+	guint,
+	GParamFlags,
+)
+
+g_value_set_uint = ctypes_get_func(
+	libgobject,
+	'g_value_set_uint',
+	None,
+	POINTER(GValue),
+	guint,
+)
+
+g_value_get_uint = ctypes_get_func(
+	libgobject,
+	'g_value_get_uint',
+	guint,
+	POINTER(GValue),
+)
+
+g_param_spec_long = ctypes_get_func(
+	libgobject,
+	'g_param_spec_long',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	glong,
+	glong,
+	glong,
+	GParamFlags,
+)
+
+g_value_set_long = ctypes_get_func(
+	libgobject,
+	'g_value_set_long',
+	None,
+	POINTER(GValue),
+	glong,
+)
+
+g_value_get_long = ctypes_get_func(
+	libgobject,
+	'g_value_get_long',
+	glong,
+	POINTER(GValue),
+)
+
+g_param_spec_ulong = ctypes_get_func(
+	libgobject,
+	'g_param_spec_ulong',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gulong,
+	gulong,
+	gulong,
+	GParamFlags,
+)
+
+g_value_set_ulong = ctypes_get_func(
+	libgobject,
+	'g_value_set_ulong',
+	None,
+	POINTER(GValue),
+	gulong,
+)
+
+g_value_get_ulong = ctypes_get_func(
+	libgobject,
+	'g_value_get_ulong',
+	gulong,
+	POINTER(GValue),
+)
+
+g_param_spec_int64 = ctypes_get_func(
+	libgobject,
+	'g_param_spec_int64',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gint64,
+	gint64,
+	gint64,
+	GParamFlags,
+)
+
+g_value_set_int64 = ctypes_get_func(
+	libgobject,
+	'g_value_set_int64',
+	None,
+	POINTER(GValue),
+	gint64,
+)
+
+g_value_get_int64 = ctypes_get_func(
+	libgobject,
+	'g_value_get_int64',
+	gint64,
+	POINTER(GValue),
+)
+
+g_param_spec_uint64 = ctypes_get_func(
+	libgobject,
+	'g_param_spec_uint64',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	guint64,
+	guint64,
+	guint64,
+	GParamFlags,
+)
+
+g_value_set_uint64 = ctypes_get_func(
+	libgobject,
+	'g_value_set_uint64',
+	None,
+	POINTER(GValue),
+	guint64,
+)
+
+g_value_get_uint64 = ctypes_get_func(
+	libgobject,
+	'g_value_get_uint64',
+	guint64,
+	POINTER(GValue),
+)
+
+g_param_spec_float = ctypes_get_func(
+	libgobject,
+	'g_param_spec_float',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gfloat,
+	gfloat,
+	gfloat,
+	GParamFlags,
+)
+
+g_value_set_float = ctypes_get_func(
+	libgobject,
+	'g_value_set_float',
+	None,
+	POINTER(GValue),
+	gfloat,
+)
+
+g_value_get_float = ctypes_get_func(
+	libgobject,
+	'g_value_get_float',
+	gfloat,
+	POINTER(GValue),
+)
+
+g_param_spec_double = ctypes_get_func(
+	libgobject,
+	'g_param_spec_double',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gdouble,
+	gdouble,
+	gdouble,
+	GParamFlags,
+)
+
+g_value_set_double = ctypes_get_func(
+	libgobject,
+	'g_value_set_double',
+	None,
+	POINTER(GValue),
+	gdouble,
+)
+
+g_value_get_double = ctypes_get_func(
+	libgobject,
+	'g_value_get_double',
+	gdouble,
+	POINTER(GValue),
+)
+
+g_param_spec_enum = ctypes_get_func(
+	libgobject,
+	'g_param_spec_enum',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	gint,
+	GParamFlags,
+)
+
+g_value_set_enum = ctypes_get_func(
+	libgobject,
+	'g_value_set_enum',
+	None,
+	POINTER(GValue),
+	gint,
+)
+
+g_value_get_enum = ctypes_get_func(
+	libgobject,
+	'g_value_get_enum',
+	gint,
+	POINTER(GValue),
+)
+
+g_param_spec_flags = ctypes_get_func(
+	libgobject,
+	'g_param_spec_flags',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	guint,
+	GParamFlags,
+)
+
+g_value_set_flags = ctypes_get_func(
+	libgobject,
+	'g_value_set_flags',
+	None,
+	POINTER(GValue),
+	guint,
+)
+
+g_value_get_flags = ctypes_get_func(
+	libgobject,
+	'g_value_get_flags',
+	guint,
+	POINTER(GValue),
+)
+
+g_param_spec_string = ctypes_get_func(
+	libgobject,
+	'g_param_spec_string',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GParamFlags,
+)
+
+g_value_set_string = ctypes_get_func(
+	libgobject,
+	'g_value_set_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
+
+g_value_set_static_string = ctypes_get_func(
+	libgobject,
+	'g_value_set_static_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
+
+g_value_take_string = ctypes_get_func(
+	libgobject,
+	'g_value_take_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
+
+g_value_set_string_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_string_take_ownership',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
+
+g_value_get_string = ctypes_get_func(
+	libgobject,
+	'g_value_get_string',
+	gchar_p,
+	POINTER(GValue),
+)
+
+g_value_dup_string = ctypes_get_func(
+	libgobject,
+	'g_value_dup_string',
+	gchar_p,
+	POINTER(GValue),
+)
+
+g_param_spec_param = ctypes_get_func(
+	libgobject,
+	'g_param_spec_param',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	GParamFlags,
+)
+
+g_value_set_param = ctypes_get_func(
+	libgobject,
+	'g_value_set_param',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
+
+g_value_take_param = ctypes_get_func(
+	libgobject,
+	'g_value_take_param',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
+
+g_value_set_param_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_param_take_ownership',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
+
+g_value_get_param = ctypes_get_func(
+	libgobject,
+	'g_value_get_param',
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
+
+g_value_dup_param = ctypes_get_func(
+	libgobject,
+	'g_value_dup_param',
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
+
+g_param_spec_boxed = ctypes_get_func(
+	libgobject,
+	'g_param_spec_boxed',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	GParamFlags,
+)
+
+g_value_set_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_set_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
+
+g_value_set_static_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_set_static_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
+
+g_value_take_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_take_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
+
+g_value_set_boxed_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_boxed_take_ownership',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
+
+g_value_get_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_get_boxed',
+	gpointer,
+	POINTER(GValue),
+)
+
+g_value_dup_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_dup_boxed',
+	gpointer,
+	POINTER(GValue),
+)
+
+g_param_spec_pointer = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pointer',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GParamFlags,
+)
+
+g_value_set_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_set_pointer',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
+
+g_value_get_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_get_pointer',
+	gpointer,
+	POINTER(GValue),
+)
+
+g_param_spec_object = ctypes_get_func(
+	libgobject,
+	'g_param_spec_object',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	GParamFlags,
+)
+
+g_value_set_object = ctypes_get_func(
+	libgobject,
+	'g_value_set_object',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
+
+g_value_take_object = ctypes_get_func(
+	libgobject,
+	'g_value_take_object',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
+
+g_value_set_object_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_object_take_ownership',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
+
+g_value_get_object = ctypes_get_func(
+	libgobject,
+	'g_value_get_object',
+	gpointer,
+	POINTER(GValue),
+)
+
+g_value_dup_object = ctypes_get_func(
+	libgobject,
+	'g_value_dup_object',
+	gpointer,
+	POINTER(GValue),
+)
+
+g_param_spec_unichar = ctypes_get_func(
+	libgobject,
+	'g_param_spec_unichar',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	gunichar,
+	GParamFlags,
+)
+
+g_param_spec_value_array = ctypes_get_func(
+	libgobject,
+	'g_param_spec_value_array',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	POINTER(GParamSpec),
+	GParamFlags,
+)
+
+g_param_spec_override = ctypes_get_func(
+	libgobject,
+	'g_param_spec_override',
+	POINTER(GParamSpec),
+	gchar_p,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_gtype = ctypes_get_func(
+	libgobject,
+	'g_param_spec_gtype',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GType,
+	GParamFlags,
+)
+
+g_value_get_gtype = ctypes_get_func(
+	libgobject,
+	'g_value_get_gtype',
+	GType,
+	POINTER(GValue),
+)
+
+g_value_set_gtype = ctypes_get_func(
+	libgobject,
+	'g_value_set_gtype',
+	None,
+	POINTER(GValue),
+	GType,
+)
+
+g_param_spec_variant = ctypes_get_func(
+	libgobject,
+	'g_param_spec_variant',
+	POINTER(GParamSpec),
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	POINTER(GVariantType),
+	POINTER(GVariant),
+	GParamFlags,
+)
+
+g_value_get_variant = ctypes_get_func(
+	libgobject,
+	'g_value_get_variant',
+	POINTER(GVariant),
+	POINTER(GValue),
+)
+
+g_value_dup_variant = ctypes_get_func(
+	libgobject,
+	'g_value_dup_variant',
+	POINTER(GVariant),
+	POINTER(GValue),
+)
+
+g_value_set_variant = ctypes_get_func(
+	libgobject,
+	'g_value_set_variant',
+	None,
+	POINTER(GValue),
+	POINTER(GVariant),
+)
+
+g_value_take_variant = ctypes_get_func(
+	libgobject,
+	'g_value_take_variant',
+	None,
+	POINTER(GValue),
+	POINTER(GVariant),
+)
+
+#
+# GParamSpec
+#
+g_param_spec_ref = ctypes_get_func(
+	libgobject,
+	'g_param_spec_ref',
+	POINTER(GParamSpec),
+	POINTER(GParamSpec),
+)
+
+g_param_spec_unref = ctypes_get_func(
+	libgobject,
+	'g_param_spec_unref',
+	None,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_sink = ctypes_get_func(
+	libgobject,
+	'g_param_spec_sink',
+	None,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_ref_sink = ctypes_get_func(
+	libgobject,
+	'g_param_spec_ref_sink',
+	POINTER(GParamSpec),
+	POINTER(GParamSpec),
+)
+
+g_param_value_set_default = ctypes_get_func(
+	libgobject,
+	'g_param_value_set_default',
+	None,
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
+
+g_param_value_defaults = ctypes_get_func(
+	libgobject,
+	'g_param_value_defaults',
+	gboolean,
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
+
+g_param_value_validate = ctypes_get_func(
+	libgobject,
+	'g_param_value_validate',
+	gboolean,
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
+
+g_param_value_convert = ctypes_get_func(
+	libgobject,
+	'g_param_value_convert',
+	gboolean,
+	POINTER(GParamSpec),
+	POINTER(GValue),
+	POINTER(GValue),
+	gboolean,
+)
+
+g_param_values_cmp = ctypes_get_func(
+	libgobject,
+	'g_param_values_cmp',
+	gint,
+	POINTER(GParamSpec),
+	POINTER(GValue),
+	POINTER(GValue),
+)
+
+g_param_spec_get_name = ctypes_get_func(
+	libgobject,
+	'g_param_spec_get_name',
+	gchar,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_get_nick = ctypes_get_func(
+	libgobject,
+	'g_param_spec_get_nick',
+	gchar,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_get_blurb = ctypes_get_func(
+	libgobject,
+	'g_param_spec_get_blurb',
+	gchar,
+	POINTER(GParamSpec),
+)
+
+g_param_spec_get_qdata = ctypes_get_func(
+	libgobject,
+	'g_param_spec_get_qdata',
+	gpointer,
+	POINTER(GParamSpec),
+	GQuark,
+)
+
+g_param_spec_set_qdata = ctypes_get_func(
+	libgobject,
+	'g_param_spec_set_qdata',
+	None,
+	POINTER(GParamSpec),
+	GQuark,
+	gpointer,
+)
+
+g_param_spec_set_qdata_full = ctypes_get_func(
+	libgobject,
+	'g_param_spec_set_qdata_full',
+	None,
+	POINTER(GParamSpec),
+	GQuark,
+	gpointer,
+	GDestroyNotify,
+)
+
+g_param_spec_steal_qdata = ctypes_get_func(
+	libgobject,
+	'g_param_spec_steal_qdata',
+	gpointer,
+	POINTER(GParamSpec),
+	GQuark,
+)
+
+g_param_spec_get_redirect_target = ctypes_get_func(
+	libgobject,
+	'g_param_spec_get_redirect_target',
+	POINTER(GParamSpec),
+	POINTER(GParamSpec),
+)
+
+g_param_spec_internal = ctypes_get_func(
+	libgobject,
+	'g_param_spec_internal',
+	gpointer,
+	gchar_p,
+	gchar_p,
+	gchar_p,
+	GParamFlags,
+)
+
+g_param_type_register_static = ctypes_get_func(
+	libgobject,
+	'g_param_type_register_static',
+	GType,
+	gchar_p,
+	POINTER(GParamSpecTypeInfo),
+)
+
+g_param_spec_pool_new = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_new',
+	POINTER(GParamSpecPool),
+	gboolean,
+)
+
+g_param_spec_pool_insert = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_insert',
+	None,
+	POINTER(GParamSpecPool),
+	POINTER(GParamSpec),
+	GType,
+)
+
+g_param_spec_pool_remove = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_remove',
+	None,
+	POINTER(GParamSpecPool),
+	POINTER(GParamSpec),
+)
+
+g_param_spec_pool_lookup = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_lookup',
+	POINTER(GParamSpec),
+	POINTER(GParamSpecPool),
+	gchar_p,
+	GType,
+	gboolean,
+)
+
+g_param_spec_pool_list = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_list',
+	POINTER(POINTER(GParamSpec)),
+	POINTER(GParamSpecPool),
+	GType,
+	POINTER(guint),
+)
+
+g_param_spec_pool_list_owned = ctypes_get_func(
+	libgobject,
+	'g_param_spec_pool_list_owned',
+	POINTER(GList),
+	POINTER(GParamSpecPool),
+	GType,
+)
+
+#
+# GTypeCValue
+#
+
+#
+# GSignal
+#
+#~ gboolean            (*GSignalAccumulator)               (GSignalInvocationHint *ihint,
+                                                         #~ GValue *return_accu,
+                                                         #~ const GValue *handler_return,
+                                                         #~ gpointer data);
+#~ gboolean            (*GSignalEmissionHook)              (GSignalInvocationHint *ihint,
+                                                         #~ guint n_param_values,
+                                                         #~ const GValue *param_values,
+                                                         #~ gpointer data);
+#~ guint               g_signal_new                        (const gchar *signal_name,
+                                                         #~ GType itype,
+                                                         #~ GSignalFlags signal_flags,
+                                                         #~ guint class_offset,
+                                                         #~ GSignalAccumulator accumulator,
+                                                         #~ gpointer accu_data,
+                                                         #~ GSignalCMarshaller c_marshaller,
+                                                         #~ GType return_type,
+                                                         #~ guint n_params,
+                                                         #~ ...);
+#~ guint               g_signal_newv                       (const gchar *signal_name,
+                                                         #~ GType itype,
+                                                         #~ GSignalFlags signal_flags,
+                                                         #~ GClosure *class_closure,
+                                                         #~ GSignalAccumulator accumulator,
+                                                         #~ gpointer accu_data,
+                                                         #~ GSignalCMarshaller c_marshaller,
+                                                         #~ GType return_type,
+                                                         #~ guint n_params,
+                                                         #~ GType *param_types);
+#~ guint               g_signal_new_valist                 (const gchar *signal_name,
+                                                         #~ GType itype,
+                                                         #~ GSignalFlags signal_flags,
+                                                         #~ GClosure *class_closure,
+                                                         #~ GSignalAccumulator accumulator,
+                                                         #~ gpointer accu_data,
+                                                         #~ GSignalCMarshaller c_marshaller,
+                                                         #~ GType return_type,
+                                                         #~ guint n_params,
+                                                         #~ va_list args);
+#~ void                g_signal_query                      (guint signal_id,
+                                                         #~ GSignalQuery *query);
+#~ guint               g_signal_lookup                     (const gchar *name,
+                                                         #~ GType itype);
+#~ const gchar *       g_signal_name                       (guint signal_id);
+#~ guint *                 g_signal_list_ids               (GType itype,
+                                                         #~ guint *n_ids);
+#~ void                g_signal_emit                       (gpointer instance,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ ...);
+#~ void                g_signal_emit_by_name               (gpointer instance,
+                                                         #~ const gchar *detailed_signal,
+                                                         #~ ...);
+#~ void                g_signal_emitv                      (const GValue *instance_and_params,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GValue *return_value);
+#~ void                g_signal_emit_valist                (gpointer instance,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ va_list var_args);
+#~ 
+#~ gulong              g_signal_connect_object             (gpointer instance,
+                                                         #~ const gchar *detailed_signal,
+                                                         #~ GCallback c_handler,
+                                                         #~ gpointer gobject,
+                                                         #~ GConnectFlags connect_flags);
+#~ 
+#~ gulong              g_signal_connect_data               (gpointer instance,
+                                                         #~ const gchar *detailed_signal,
+                                                         #~ GCallback c_handler,
+                                                         #~ gpointer data,
+                                                         #~ GClosureNotify destroy_data,
+                                                         #~ GConnectFlags connect_flags);
+#~ gulong              g_signal_connect_closure            (gpointer instance,
+                                                         #~ const gchar *detailed_signal,
+                                                         #~ GClosure *closure,
+                                                         #~ gboolean after);
+#~ gulong              g_signal_connect_closure_by_id      (gpointer instance,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GClosure *closure,
+                                                         #~ gboolean after);
+#~ void                g_signal_handler_block              (gpointer instance,
+                                                         #~ gulong handler_id);
+#~ void                g_signal_handler_unblock            (gpointer instance,
+                                                         #~ gulong handler_id);
+#~ void                g_signal_handler_disconnect         (gpointer instance,
+                                                         #~ gulong handler_id);
+#~ gulong              g_signal_handler_find               (gpointer instance,
+                                                         #~ GSignalMatchType mask,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GClosure *closure,
+                                                         #~ gpointer func,
+                                                         #~ gpointer data);
+#~ guint               g_signal_handlers_block_matched     (gpointer instance,
+                                                         #~ GSignalMatchType mask,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GClosure *closure,
+                                                         #~ gpointer func,
+                                                         #~ gpointer data);
+#~ guint               g_signal_handlers_unblock_matched   (gpointer instance,
+                                                         #~ GSignalMatchType mask,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GClosure *closure,
+                                                         #~ gpointer func,
+                                                         #~ gpointer data);
+#~ guint               g_signal_handlers_disconnect_matched
+                                                        #~ (gpointer instance,
+                                                         #~ GSignalMatchType mask,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GClosure *closure,
+                                                         #~ gpointer func,
+                                                         #~ gpointer data);
+#~ gboolean            g_signal_handler_is_connected       (gpointer instance,
+                                                         #~ gulong handler_id);
+#~ gboolean            g_signal_has_handler_pending        (gpointer instance,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ gboolean may_be_blocked);
+#~ void                g_signal_stop_emission              (gpointer instance,
+                                                         #~ guint signal_id,
+                                                         #~ GQuark detail);
+#~ void                g_signal_stop_emission_by_name      (gpointer instance,
+                                                         #~ const gchar *detailed_signal);
+#~ void                g_signal_override_class_closure     (guint signal_id,
+                                                         #~ GType instance_type,
+                                                         #~ GClosure *class_closure);
+#~ void                g_signal_chain_from_overridden      (const GValue *instance_and_params,
+                                                         #~ GValue *return_value);
+#~ guint               g_signal_new_class_handler          (const gchar *signal_name,
+                                                         #~ GType itype,
+                                                         #~ GSignalFlags signal_flags,
+                                                         #~ GCallback class_handler,
+                                                         #~ GSignalAccumulator accumulator,
+                                                         #~ gpointer accu_data,
+                                                         #~ GSignalCMarshaller c_marshaller,
+                                                         #~ GType return_type,
+                                                         #~ guint n_params,
+                                                         #~ ...);
+#~ void                g_signal_override_class_handler     (const gchar *signal_name,
+                                                         #~ GType instance_type,
+                                                         #~ GCallback class_handler);
+#~ void                g_signal_chain_from_overridden_handler
+                                                        #~ (gpointer instance,
+                                                         #~ ...);
+#~ gulong              g_signal_add_emission_hook          (guint signal_id,
+                                                         #~ GQuark detail,
+                                                         #~ GSignalEmissionHook hook_func,
+                                                         #~ gpointer hook_data,
+                                                         #~ GDestroyNotify data_destroy);
+#~ void                g_signal_remove_emission_hook       (guint signal_id,
+                                                         #~ gulong hook_id);
+#~ gboolean            g_signal_parse_name                 (const gchar *detailed_signal,
+                                                         #~ GType itype,
+                                                         #~ guint *signal_id_p,
+                                                         #~ GQuark *detail_p,
+                                                         #~ gboolean force_detail_quark);
+#~ GSignalInvocationHint *  g_signal_get_invocation_hint   (gpointer instance);
+#~ GClosure *          g_signal_type_cclosure_new          (GType itype,
+                                                         #~ guint struct_offset);
+#~ gboolean            g_signal_accumulator_true_handled   (GSignalInvocationHint *ihint,
+                                                         #~ GValue *return_accu,
+                                                         #~ const GValue *handler_return,
+                                                         #~ gpointer dummy);
 
 #
 # GType
@@ -1387,13 +2540,193 @@ G_TYPE_DATE_TIME = g_date_time_get_type()
 #
 # GValue
 #
-#~ #define             G_VALUE_HOLDS                       (value,
-                                                         #~ type)
-#~ #define             G_VALUE_TYPE                        (value)
-#~ #define             G_VALUE_TYPE_NAME                   (value)
-#~ #define             G_TYPE_IS_VALUE                     (type)
-#~ #define             G_TYPE_IS_VALUE_ABSTRACT            (type)
-#~ #define             G_IS_VALUE                          (value)
+G_VALUE_HOLDS = lambda value, type_: G_TYPE_CHECK_VALUE_TYPE(value, type_)
+G_VALUE_TYPE = lambda value: cast(value, POINTER(GValue)).g_type
+G_VALUE_TYPE_NAME = lambda value: g_type_name(G_VALUE_TYPE(value))
+G_TYPE_IS_VALUE = lambda type_: g_type_check_is_value_type(type_)
+G_TYPE_IS_VALUE_ABSTRACT = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_VALUE_ABSTRACT)
+G_IS_VALUE = lambda value: G_TYPE_CHECK_VALUE(value)
+G_TYPE_VALUE = g_value_get_type()
+G_TYPE_VALUE_ARRAY = g_value_array_get_type()
 
-#~ #define             G_TYPE_VALUE
-#~ #define             G_TYPE_VALUE_ARRAY
+#
+# GParamSpec/GValue
+#
+G_IS_PARAM_SPEC_BOOLEAN = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_BOOLEAN)
+G_PARAM_SPEC_BOOLEAN = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_BOOLEAN, GParamSpecBoolean)
+G_VALUE_HOLDS_BOOLEAN = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_BOOLEAN)
+G_TYPE_PARAM_BOOLEAN = g_param_spec_types[2]
+
+G_IS_PARAM_SPEC_CHAR = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_CHAR)
+G_PARAM_SPEC_CHAR = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_CHAR, GParamSpecChar)
+G_VALUE_HOLDS_CHAR = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_CHAR)
+G_TYPE_PARAM_CHAR = g_param_spec_types[0]
+
+G_IS_PARAM_SPEC_UCHAR = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_UCHAR)
+G_PARAM_SPEC_UCHAR = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_UCHAR, GParamSpecUChar)
+G_VALUE_HOLDS_UCHAR = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_UCHAR)
+G_TYPE_PARAM_UCHAR = g_param_spec_types[1]
+
+G_IS_PARAM_SPEC_INT = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_INT)
+G_PARAM_SPEC_INT = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_INT, GParamSpecInt)
+G_VALUE_HOLDS_INT = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_INT)
+G_TYPE_PARAM_INT = g_param_spec_types[3]
+
+G_IS_PARAM_SPEC_UINT = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_UINT)
+G_PARAM_SPEC_UINT = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_UINT, GParamSpecUInt)
+G_VALUE_HOLDS_UINT = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_UINT)
+G_TYPE_PARAM_UINT = g_param_spec_types[4]
+
+G_IS_PARAM_SPEC_LONG = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_LONG)
+G_PARAM_SPEC_LONG = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_LONG, GParamSpecLong)
+G_VALUE_HOLDS_LONG = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_LONG)
+G_TYPE_PARAM_LONG = g_param_spec_types[5]
+
+G_IS_PARAM_SPEC_ULONG = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_ULONG)
+G_PARAM_SPEC_ULONG = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_ULONG, GParamSpecULong)
+G_VALUE_HOLDS_ULONG = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_ULONG)
+G_TYPE_PARAM_ULONG = g_param_spec_types[6]
+
+G_IS_PARAM_SPEC_INT64 = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_INT64)
+G_PARAM_SPEC_INT64 = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_INT64, GParamSpecInt64)
+G_VALUE_HOLDS_INT64 = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_INT64)
+G_TYPE_PARAM_INT64 = g_param_spec_types[7]
+
+G_IS_PARAM_SPEC_UINT64 = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_UINT64)
+G_PARAM_SPEC_UINT64 = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_UINT64, GParamSpecUInt64)
+G_VALUE_HOLDS_UINT64 = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_UINT64)
+G_TYPE_PARAM_UINT64 = g_param_spec_types[8]
+
+G_IS_PARAM_SPEC_FLOAT = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_FLOAT)
+G_PARAM_SPEC_FLOAT = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_FLOAT, GParamSpecFloat)
+G_VALUE_HOLDS_FLOAT = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_FLOAT)
+G_TYPE_PARAM_FLOAT = g_param_spec_types[12]
+
+G_IS_PARAM_SPEC_DOUBLE = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_DOUBLE)
+G_PARAM_SPEC_DOUBLE = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_DOUBLE, GParamSpecDouble)
+G_VALUE_HOLDS_DOUBLE = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_DOUBLE)
+G_TYPE_PARAM_DOUBLE = g_param_spec_types[13]
+
+G_IS_PARAM_SPEC_ENUM = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_ENUM)
+G_PARAM_SPEC_ENUM = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_ENUM, GParamSpecEnum)
+G_VALUE_HOLDS_ENUM = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_ENUM)
+G_TYPE_PARAM_ENUM = g_param_spec_types[10]
+
+G_IS_PARAM_SPEC_FLAGS = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_FLAGS)
+G_PARAM_SPEC_FLAGS = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_FLAGS, GParamSpecFlags)
+G_VALUE_HOLDS_FLAGS = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_FLAGS)
+G_TYPE_PARAM_FLAGS = g_param_spec_types[11]
+
+G_IS_PARAM_SPEC_STRING = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_STRING)
+G_PARAM_SPEC_STRING = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_STRING, GParamSpecString)
+G_VALUE_HOLDS_STRING = lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_STRING)
+G_TYPE_PARAM_STRING = g_param_spec_types[14]
+
+G_IS_PARAM_SPEC_PARAM = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_PARAM)
+G_PARAM_SPEC_PARAM= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_PARAM, GParamSpecParam)
+G_VALUE_HOLDS_PARAM= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_PARAM)
+G_TYPE_PARAM_PARAM = g_param_spec_types[15]
+
+G_IS_PARAM_SPEC_BOXED = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_BOXED)
+G_PARAM_SPEC_BOXED= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_BOXED, GParamSpecBoxed)
+G_VALUE_HOLDS_BOXED= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_BOXED)
+G_TYPE_PARAM_BOXED = g_param_spec_types[16]
+
+G_IS_PARAM_SPEC_POINTER = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_POINTER)
+G_PARAM_SPEC_POINTER= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_POINTER, GParamSpecPointer)
+G_VALUE_HOLDS_POINTER= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_POINTER)
+G_TYPE_PARAM_POINTER = g_param_spec_types[17]
+
+G_IS_PARAM_SPEC_OBJECT = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_OBJECT)
+G_PARAM_SPEC_OBJECT= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_OBJECT, GParamSpecObject)
+G_VALUE_HOLDS_OBJECT= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_OBJECT)
+G_TYPE_PARAM_OBJECT = g_param_spec_types[19]
+
+G_IS_PARAM_SPEC_UNICHAR = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_UNICHAR)
+G_PARAM_SPEC_UNICHAR= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_UNICHAR, GParamSpecUnichar)
+G_TYPE_PARAM_UNICHAR = g_param_spec_types[9]
+
+G_IS_PARAM_SPEC_VALUE_ARRAY = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_VALUE_ARRAY)
+G_PARAM_SPEC_VALUE_ARRAY= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_VALUE_ARRAY, GParamSpecValueArray)
+G_TYPE_PARAM_VALUE_ARRAY = g_param_spec_types[18]
+
+G_IS_PARAM_SPEC_OVERRIDE = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_OVERRIDE)
+G_PARAM_SPEC_OVERRIDE= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_OVERRIDE, GParamSpecOverride)
+G_TYPE_PARAM_OVERRIDE = g_param_spec_types[20]
+
+G_IS_PARAM_SPEC_GTYPE = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_GTYPE)
+G_PARAM_SPEC_GTYPE= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_GTYPE, GParamSpecGType)
+G_VALUE_HOLDS_GTYPE= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_GTYPE)
+G_TYPE_PARAM_GTYPE = g_param_spec_types[21]
+
+G_IS_PARAM_SPEC_VARIANT = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM_VARIANT)
+G_PARAM_SPEC_VARIANT= lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM_VARIANT, GParamSpecVariant)
+G_VALUE_HOLDS_VARIANT= lambda value: G_TYPE_CHECK_VALUE_TYPE(value, G_TYPE_VARIANT)
+G_TYPE_PARAM_VARIANT = g_param_spec_types[22]
+
+#
+# GParamSpec
+#
+G_TYPE_IS_PARAM = lambda type_: gboolean(G_TYPE_FUNDAMENTAL(type_).value == G_TYPE_PARAM.value)
+G_PARAM_SPEC = lambda pspec: G_TYPE_CHECK_INSTANCE_CAST(pspec, G_TYPE_PARAM, GParamSpec)
+G_IS_PARAM_SPEC = lambda pspec: G_TYPE_CHECK_INSTANCE_TYPE(pspec, G_TYPE_PARAM)
+G_PARAM_SPEC_CLASS = lambda pclass: G_TYPE_CHECK_CLASS_CAST(pclass, G_TYPE_PARAM, GParamSpecClass)
+G_IS_PARAM_SPEC_CLASS = lambda pclass: G_TYPE_CHECK_CLASS_TYPE(pclass, G_TYPE_PARAM)
+G_PARAM_SPEC_GET_CLASS = lambda pspec: G_TYPE_INSTANCE_GET_CLASS(pspec, G_TYPE_PARAM, GParamSpecClass)
+G_PARAM_SPEC_TYPE = lambda pspec: G_TYPE_FROM_INSTANCE(pspec)
+G_PARAM_SPEC_TYPE_NAME = lambda pspec: g_type_name(G_PARAM_SPEC_TYPE(pspec))
+G_PARAM_SPEC_VALUE_TYPE = lambda pspec: G_PARAM_SPEC(pspec).value_type
+
+G_PARAM_READWRITE = G_PARAM_READABLE | G_PARAM_WRITABLE
+G_PARAM_STATIC_STRINGS = G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK | G_PARAM_STATIC_BLURB
+G_PARAM_MASK = gint(0x000000ff)
+G_PARAM_USER_SHIFT = gint(8)
+
+#
+# GTypeCValue
+#
+def G_VALUE_COLLECT_INIT(value, _value_type, var_args, flags, __error): pass
+def G_VALUE_COLLECT(value, var_args, flags, __error): pass
+def G_VALUE_LCOPY(value, var_args, flags, __error): pass
+G_VALUE_COLLECT_FORMAT_MAX_LENGTH = gint(8)
+
+#
+# GSignal
+#
+#~ #define             G_SIGNAL_TYPE_STATIC_SCOPE
+#~ #define             G_SIGNAL_MATCH_MASK
+#~ #define             G_SIGNAL_FLAGS_MASK
+#~ 
+#~ #define             g_signal_connect                    (instance,
+                                                         #~ detailed_signal,
+                                                         #~ c_handler,
+                                                         #~ data)
+#~ #define             g_signal_connect_after              (instance,
+                                                         #~ detailed_signal,
+                                                         #~ c_handler,
+                                                         #~ data)
+#~ #define             g_signal_connect_swapped            (instance,
+                                                         #~ detailed_signal,
+                                                         #~ c_handler,
+                                                         #~ data)
+#~ 
+#~ #define             g_signal_handlers_block_by_func     (instance,
+                                                         #~ func,
+                                                         #~ data)
+#~ #define             g_signal_handlers_unblock_by_func   (instance,
+                                                         #~ func,
+                                                         #~ data)
+#~ #define             g_signal_handlers_disconnect_by_func(instance,
+                                                         #~ func,
+                                                         #~ data)
+
+
+
+
+
+
+
+
+
+
+

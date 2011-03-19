@@ -23,6 +23,8 @@ class gssize(c_long): pass
 class gsize(c_ulong): pass
 class gchar(c_char): pass		# represents "[const] gchar"
 class gchar_p(c_char_p): pass	# represents "[const] gchar*"
+class gunichar(c_char): pass		# represents "[const] gunichar"
+class gunichar_p(c_char_p): pass	# represents "[const] gunichar*"
 class gpointer(c_void_p): pass
 class gconstpointer(c_void_p): pass # const gpointer
 
@@ -39,3 +41,5 @@ class GHashTable(Structure): pass
 class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass
 class GData(GQuark): pass
+
+GDestroyNotify = CFUNCTYPE(None, gpointer)

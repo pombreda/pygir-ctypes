@@ -23,6 +23,8 @@ class gssize(c_long): pass
 class gsize(c_ulong): pass
 class gchar(c_char): pass		# represents "[const] gchar"
 class gchar_p(c_char_p): pass	# represents "[const] gchar*"
+class guchar(c_char): pass		# represents "[const] guchar"
+class guchar_p(c_char_p): pass	# represents "[const] guchar*"
 class gunichar(c_char): pass		# represents "[const] gunichar"
 class gunichar_p(c_char_p): pass	# represents "[const] gunichar*"
 class gpointer(c_void_p): pass
@@ -42,4 +44,14 @@ class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass
 class GData(GQuark): pass
 
+class GVariant(Structure): pass
+
+class GVariantType(Structure): pass
+
+class GSource(Structure): pass
+
 GDestroyNotify = CFUNCTYPE(None, gpointer)
+
+GCompareFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer)
+
+GCompareDataFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer, gpointer)

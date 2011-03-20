@@ -3,6 +3,7 @@ sys.path.append('..')
 import threading
 
 import gir
+import gir._girepository
 
 if __name__ == '__main__':
 	rep = gir.GIRepository()

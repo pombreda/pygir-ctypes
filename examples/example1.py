@@ -6,21 +6,20 @@ import gir
 
 if __name__ == '__main__':
 	rep = gir.GIRepository()
-	Gtk = rep.require('Gtk')
-	GObject = rep.require('GObject')
-	GLib = rep.require('GLib')
+	Gtk = rep.Gtk
+	GObject = rep.GObject
+	GLib = rep.GLib
 	
-	print(Gtk)
-	print(Gtk.Window)
-	print(dir(Gtk), Gtk._attrs.keys())
-	Gtk._wrap_all()
-	print(Gtk)
-	print(dir(Gtk))
-	
+	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
 	#~ print(Gtk.Window)
-	#~ print(Gtk.Window.__bases__)
-	#~ print(Gtk.Window.__mro__)
-	#~ print(dir(Gtk.Window))
+	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
+	#~ Gtk._wrap_all()
+	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
+	
+	print(Gtk.Window)
+	print(Gtk.Window.__bases__)
+	print(Gtk.Window.__mro__)
+	print(dir(Gtk.Window))
 	
 	#~ print(Gtk.Label)
 	#~ print(Gtk.Label.__bases__)

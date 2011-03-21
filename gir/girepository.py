@@ -2,6 +2,8 @@ import os
 import sys
 import types
 from . import _girepository
+
+_girepository_instance = None
 _modules = {}
 _clases = {}
 
@@ -9,15 +11,16 @@ class GIError(Exception):
 	pass
 
 class GIRepository(object):
-	_self = None
-	
 	def __new__(cls):
-		# act as singleton
-		if not cls._self:
-			cls._self = object.__new__(cls)
-			cls.__init__(cls._self)
+		# default/single instance of GIRepository
+		global _girepository_instance
 		
-		return cls._self
+		# act as singleton
+		if not _girepository_instance:
+			_girepository_instance = object.__new__(cls)
+			cls.__init__(_girepository_instance)
+		
+		return _girepository_instance
 	
 	def __init__(self):
 		self._repository = _girepository.g_irepository_get_default()
@@ -73,71 +76,6 @@ class GIRepository(object):
 					
 					i += 1
 			
-			# number of infos
-			_n_infos = _girepository.g_irepository_get_n_infos(_repository, _namespace)
-			n_infos = _n_infos.value
-			
-			# infos
-			for i in range(n_infos):
-				# info
-				_base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
-				_name = _girepository.g_base_info_get_name(_base_info)
-				name = _name.value
-				_info_type = _girepository.g_base_info_get_type(_base_info)
-				
-				if _info_type.value == _girepository.GI_INFO_TYPE_INVALID.value:
-					raise GIError('Unsupported info type: %i' % _info_type.value)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_FUNCTION.value:
-					_function_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIFunctionInfo))
-					function = GIFunction(_function_info=_function_info)
-					setattr(module, name, function)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
-					_callback_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GICallbackInfo))
-					callback = GICallback(_callback_info=_callback_info)
-					setattr(module, name, callback)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_STRUCT.value:
-					_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
-					struct = GIStruct(_struct_info=_struct_info)
-					setattr(module, name, struct)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_BOXED.value:
-					_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
-					struct = GIStruct(_struct_info=_struct_info)
-					setattr(module, name, struct)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_ENUM.value:
-					_enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
-					enum = GIEnum(_enum_info=_enum_info)
-					setattr(module, name, enum)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_FLAGS.value:
-					_enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
-					enum = GIEnum(_enum_info=_enum_info)
-					setattr(module, name, enum)
-				elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_CONSTANT.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_ERROR_DOMAIN.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_UNION.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_SIGNAL.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_VFUNC.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_PROPERTY.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_FIELD.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_ARG.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_TYPE.value:
-					pass
-				elif _info_type.value == _girepository.GI_INFO_TYPE_UNRESOLVED.value:
-					pass
-			
 			# import module (hack)
 			_modules[namespace] = module
 		
@@ -148,7 +86,7 @@ class GIModule(types.ModuleType):
 		types.ModuleType.__init__(self, modulename, moduledoc)
 		self._typelib = _typelib
 		self._attrs = {}
-		
+	
 	def __del__(self):
 		if self._typelib:
 			_girepository.g_typelib_free(self._typelib)
@@ -158,14 +96,16 @@ class GIModule(types.ModuleType):
 		_attr = _girepository.gchar_p(attr)
 		_base_info = _girepository.g_irepository_find_by_name(None, _namespace, _attr)
 		if not _base_info: raise AttributeError('missing attribute "%s"' % attr)
-		_info_type = _girepository.info_get_type(_base_info)
+		_info_type = _girepository.g_base_info_get_type(_base_info)
 		
-		if _info_type == _girepository.GIFunctionInfo:
+		if _info_type.value == _girepository.GI_INFO_TYPE_INVALID.value:
+			raise GIError('Unsupported info type: %i' % _info_type.value)
+		elif _info_type == _girepository.GI_INFO_TYPE_FUNCTION.value:
 			# function
 			_function_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIFunctionInfo))
 			function = GIFunction(_function_info=_function_info)
 			return function
-		elif _info_type == _girepository.GIObjectInfo:
+		elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
 			# object
 			_object_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIObjectInfo))
 			
@@ -263,7 +203,7 @@ class GIModule(types.ModuleType):
 				_clases[nsclsname] = class_
 			
 			return class_
-		elif _info_type == _girepository.GIEnumInfo:
+		elif _info_type.value == _girepository.GI_INFO_TYPE_ENUM.value:
 			# enum
 			_enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
 			
@@ -308,7 +248,7 @@ class GIModule(types.ModuleType):
 				_clases[nsclsname] = class_
 			
 			return class_
-		elif _info_type == _girepository.GIInterfaceInfo:
+		elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
 			# interface
 			_interface_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
 			
@@ -364,6 +304,73 @@ class GIModule(types.ModuleType):
 			return class_
 		else:
 			raise GIError('unknown info type "%s"' % _girepository.info_get_type_name(_base_info))
+	
+	def _wrap_all(self):
+		#~ # number of infos
+		#~ _n_infos = _girepository.g_irepository_get_n_infos(_repository, _namespace)
+		#~ n_infos = _n_infos.value
+		#~ 
+		#~ # infos
+		#~ for i in range(n_infos):
+			#~ # info
+			#~ _base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
+			#~ _name = _girepository.g_base_info_get_name(_base_info)
+			#~ name = _name.value
+			#~ _info_type = _girepository.g_base_info_get_type(_base_info)
+			#~ 
+			#~ if _info_type.value == _girepository.GI_INFO_TYPE_INVALID.value:
+				#~ raise GIError('Unsupported info type: %i' % _info_type.value)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_FUNCTION.value:
+				#~ _function_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIFunctionInfo))
+				#~ function = GIFunction(_function_info=_function_info)
+				#~ setattr(module, name, function)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
+				#~ _callback_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GICallbackInfo))
+				#~ callback = GICallback(_callback_info=_callback_info)
+				#~ setattr(module, name, callback)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_STRUCT.value:
+				#~ _struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
+				#~ struct = GIStruct(_struct_info=_struct_info)
+				#~ setattr(module, name, struct)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_BOXED.value:
+				#~ _struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
+				#~ struct = GIStruct(_struct_info=_struct_info)
+				#~ setattr(module, name, struct)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_ENUM.value:
+				#~ _enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
+				#~ enum = GIEnum(_enum_info=_enum_info)
+				#~ setattr(module, name, enum)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_FLAGS.value:
+				#~ _enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
+				#~ enum = GIEnum(_enum_info=_enum_info)
+				#~ setattr(module, name, enum)
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_CONSTANT.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_ERROR_DOMAIN.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_UNION.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_SIGNAL.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_VFUNC.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_PROPERTY.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_FIELD.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_ARG.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_TYPE.value:
+				#~ pass
+			#~ elif _info_type.value == _girepository.GI_INFO_TYPE_UNRESOLVED.value:
+				#~ pass
+		pass
 
 ########################################################################
 
@@ -376,6 +383,9 @@ class GIBase(object):
 			self._base_info = _base_info
 		except KeyError:
 			pass
+	
+	def _wrap_all(self):
+		pass
 	
 class GICallback(GIBase):
 	_callback_info = None

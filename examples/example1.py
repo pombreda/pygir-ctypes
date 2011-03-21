@@ -3,7 +3,6 @@ sys.path.append('..')
 import threading
 
 import gir
-import gir._girepository
 
 if __name__ == '__main__':
 	rep = gir.GIRepository()
@@ -11,8 +10,13 @@ if __name__ == '__main__':
 	GObject = rep.require('GObject')
 	GLib = rep.require('GLib')
 	
-	#~ print(Gtk)
-	#~ print(dir(Gtk))
+	print(Gtk)
+	print(Gtk.Window)
+	print(dir(Gtk), Gtk._attrs.keys())
+	Gtk._wrap_all()
+	print(Gtk)
+	print(dir(Gtk))
+	
 	#~ print(Gtk.Window)
 	#~ print(Gtk.Window.__bases__)
 	#~ print(Gtk.Window.__mro__)

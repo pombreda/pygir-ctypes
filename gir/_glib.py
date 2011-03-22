@@ -37,8 +37,20 @@ class GError(Structure):
 		('code', gint),
 		('message', gchar_p),
 	]
+
 class GList(Structure): pass
+GList._fields_ = [
+	('data', gpointer),
+	('next', POINTER(GList)),
+	('prev', POINTER(GList)),
+]
+
 class GSList(Structure): pass
+GSList._fields_ = [
+	('data', gpointer),
+	('next', POINTER(GSList)),
+]
+
 class GHashTable(Structure): pass
 class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass

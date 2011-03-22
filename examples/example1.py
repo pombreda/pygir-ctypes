@@ -27,8 +27,8 @@ if __name__ == '__main__':
 	#~ print(Gtk.Entry.__bases__)
 	#~ print(Gtk.Entry.__mro__)
 	
-	#~ Gtk.init(0, [])
-	#~ w = Gtk.Window(Gtk.WindowType.toplevel)
-	#~ w.set_title('Test 1')
-	#~ w.show_all()
-	#~ Gtk.main()
+	Gtk.init(0, [])
+	w = Gtk.Window(Gtk.WindowType.toplevel)
+	w.set_title('Test 1')
+	w.show_all()
+	Gtk.main()

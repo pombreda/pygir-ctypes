@@ -828,6 +828,92 @@ def _convert_pyobject_to_giargument_with_constantinfo(obj, _type_info):
 
 def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer):
 	obj = None
+	
+	_type_tag = _girepository.g_type_info_get_tag(_type_info)
+	
+	if _type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
+		_is_pointer = _girepository.g_type_info_is_pointer(_type_info)
+		
+		if _is_pointer.value:
+			obj = _arg.v_pointer
+		else:
+			obj = None
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
+		obj = bool(_arg.v_boolean)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
+		obj = int(_arg.v_int8)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_UINT8.value:
+		obj = int(_arg.v_uint8)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT16.value:
+		obj = int(_arg.v_int16)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_UINT16.value:
+		obj = int(_arg.v_uint16)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT32.value:
+		obj = int(_arg.v_int32)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_UINT32.value:
+		obj = int(_arg.v_uint32)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT64.value:
+		obj = int(_arg.v_int64)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_UINT64.value:
+		obj = int(_arg.v_uint64)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_FLOAT.value:
+		obj = float(_arg.v_float)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_DOUBLE.value:
+		obj = float(_arg.v_double)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
+		obj = int(_arg.v_long)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_UTF8.value:
+		obj = str(_arg.v_string)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
+		obj = str(_arg.v_string)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
+		if not _arg.v_pointer:
+			obj = []
+		else:
+			_array = cast(_arg.v_pointer, POINTER(_girepository.GArray))
+			_item_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
+			_item_type_tag = _girepository.g_type_info_get_tag(_item_type_info)
+			_item_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
+			_item_size = _girepository.g_array_get_element_size(_array)
+			
+			obj = []
+			
+			for i in range(_array.contents.len):
+				_item = _girepository.GIArgument()
+				is_struct = False
+				
+				if _item_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+					_iface_info = _girepository.g_type_info_get_interface(_item_type_info)
+					_iface_info_type_tag = _girepository.g_base_info_get_type(iface_info)
+					
+					if _iface_info_type_tag.value == _girepository.GI_INFO_TYPE_STRUCT.value:
+						is_struct = True
+					elif _iface_info_type_tag.value == _girepository.GI_INFO_TYPE_BOXED.value:
+						is_struct = True
+				
+					_base_info = cast(_iface_info, POINTER(_girepository.GIBaseInfo))
+					_girepository.g_base_info_unref(_base_info)
+					
+					if is_struct:
+						_item.v_pointer = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+					else:
+						#~ _item0 = (_girepository.GIArgument * 1)()
+						#~ _pointer0 = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+						#~ memmove(pointer(_item0), pointer(), 
+						#~ _item = _item0[0]
+						pass
+					
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+		pass
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
+		pass
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
+		pass
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
+		pass
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
+		raise GIError('unsupported type tag %i' % (_type_tag.value,))
+	
 	return obj
 
 def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _transfer):

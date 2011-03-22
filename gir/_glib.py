@@ -55,3 +55,15 @@ GDestroyNotify = CFUNCTYPE(None, gpointer)
 GCompareFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer)
 
 GCompareDataFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer, gpointer)
+
+class GArray(Structure):
+	_fields_ = [
+		('data', gchar_p),
+		('len', guint),
+	]
+
+def g_array_index(a, t, i):
+	# return ((t*)(void *)(a)->data)[i]
+	at = (t * (a.len // sizeof(t)))()
+	memmove(at, a.data.value, a.len.value)
+	return at[i.value]

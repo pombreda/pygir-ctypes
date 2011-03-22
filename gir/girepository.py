@@ -435,7 +435,7 @@ class GIFunction(GICallable):
 	
 	def __get__(self, obj, type_=None):
 		if isinstance(obj, type_):
-			func = lambda *args, **kwargs: self(obj, *args, **kwargs)
+			func = lambda *args, **kwargs: self(obj._self, *args, **kwargs)
 			_base_info_name = _girepository.g_base_info_get_name(self._base_info)
 			base_info_name = _base_info_name.value
 			func.func_name = base_info_name
@@ -453,8 +453,6 @@ class GIFunction(GICallable):
 		_arg_info_outs = []
 		_arg_ins = []
 		_arg_outs = []
-		#~ arg_ins = []
-		#~ arg_outs = []
 		
 		# number of args
 		_n_args = _girepository.g_callable_info_get_n_args(_callable_info)
@@ -470,29 +468,20 @@ class GIFunction(GICallable):
 			
 			# argument
 			arg = args[i]
-			_argument = _convert_pyobject_to_giargument_with_arginfo(arg, _arg_info)
+			_arg = _convert_pyobject_to_giargument_with_arginfo(arg, _arg_info)
 			
 			# arg in or out according to direction
 			if _direction.value == _girepository.GI_DIRECTION_IN.value:
 				_arg_info_ins.append(_arg_info)
-				_arg_ins.append(_argument)
-				#~ arg_ins.append(arg)
+				_arg_ins.append(_arg)
 			elif _direction.value == _girepository.GI_DIRECTION_OUT.value:
 				_arg_info_outs.append(_arg_info)
-				_arg_outs.append(_argument)
-				#~ arg_outs.append(arg)
+				_arg_outs.append(_arg)
 			elif _direction.value == _girepository.GI_DIRECTION_INOUT.value:
 				_arg_info_ins.append(_arg_info)
 				_arg_info_outs.append(_arg_info)
-				_arg_ins.append(_argument)
-				_arg_outs.append(_argument)
-				#~ arg_ins.append(arg)
-				#~ arg_outs.append(arg)
-		
-		#~ print('GIFunction.__call__:', self, args, kwargs)
-		#~ print('GIFunction.__call__:', _arg_info_ins, _arg_info_outs)
-		#~ print('GIFunction.__call__:', _arg_ins, _arg_outs)
-		#~ print('GIFunction.__call__:', arg_ins, arg_outs)
+				_arg_ins.append(_arg)
+				_arg_outs.append(_arg)
 		
 		# final preparation of args for g_function_info_invoke
 		_inargs = (_girepository.GIArgument * len(_arg_ins))(*_arg_ins)
@@ -518,10 +507,8 @@ class GIFunction(GICallable):
 			_error,
 		)
 		
-		# result
-		result = _result.value
-		
-		if not result:
+		# did error occur?
+		if not _result.value:
 			# error occured, raise an exception with GError message
 			error_message = _error.contents.message.value
 			raise GIError(error_message)
@@ -535,13 +522,25 @@ class GIFunction(GICallable):
 		# return
 		if _is_constructor:
 			# return as C object
-			return _retarg[0].v_pointer
+			return_ = _retarg[0].v_pointer
 		else:
 			# return as Python object
 			_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
 			_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
-			return_ = [_convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg, _type_info_return, _transfer_return)]
-			return return_ if return_ else return_[0]
+			obj = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg, _type_info_return, _transfer_return)
+			
+			if _arg_outs:
+				# return as list
+				return_ = [obj]
+				
+				for _arg_info, _arg in zip(_arg_outs, _arg_info_outs):
+					obj = _convert_giargument_to_pyobject_with_arginfo(_arg, _arg_info)
+					return_.append(obj)
+			else:
+				# return as single object
+				return_ = obj
+		
+		return return_
 
 class GISignal(GICallable):
 	_signal_info = None

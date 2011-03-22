@@ -7,9 +7,6 @@ _girepository_instance = None
 _modules = {}
 _classes = {}
 
-_k = 0
-_window = None
-
 class GIError(Exception):
 	pass
 
@@ -381,6 +378,10 @@ class GIBase(object):
 			self._base_info = _base_info
 		except KeyError:
 			pass
+	
+	def __del__(self):
+		if self._base_info:
+			_girepository.g_base_info_unref(self._base_info)
 
 class GICallback(GIBase):
 	_callback_info = None
@@ -452,8 +453,8 @@ class GIFunction(GICallable):
 		_arg_info_outs = []
 		_arg_ins = []
 		_arg_outs = []
-		arg_ins = []
-		arg_outs = []
+		#~ arg_ins = []
+		#~ arg_outs = []
 		
 		# number of args
 		_n_args = _girepository.g_callable_info_get_n_args(_callable_info)
@@ -475,57 +476,27 @@ class GIFunction(GICallable):
 			if _direction.value == _girepository.GI_DIRECTION_IN.value:
 				_arg_info_ins.append(_arg_info)
 				_arg_ins.append(_argument)
-				arg_ins.append(arg)
+				#~ arg_ins.append(arg)
 			elif _direction.value == _girepository.GI_DIRECTION_OUT.value:
 				_arg_info_outs.append(_arg_info)
 				_arg_outs.append(_argument)
-				arg_outs.append(arg)
+				#~ arg_outs.append(arg)
 			elif _direction.value == _girepository.GI_DIRECTION_INOUT.value:
 				_arg_info_ins.append(_arg_info)
 				_arg_info_outs.append(_arg_info)
 				_arg_ins.append(_argument)
 				_arg_outs.append(_argument)
-				arg_ins.append(arg)
-				arg_outs.append(arg)
+				#~ arg_ins.append(arg)
+				#~ arg_outs.append(arg)
 		
-		print('GIFunction.__call__:', self, args, kwargs)
-		print('GIFunction.__call__:', _arg_info_ins, _arg_info_outs)
-		print('GIFunction.__call__:', _arg_ins, _arg_outs)
-		print('GIFunction.__call__:', arg_ins, arg_outs)
+		#~ print('GIFunction.__call__:', self, args, kwargs)
+		#~ print('GIFunction.__call__:', _arg_info_ins, _arg_info_outs)
+		#~ print('GIFunction.__call__:', _arg_ins, _arg_outs)
+		#~ print('GIFunction.__call__:', arg_ins, arg_outs)
 		
 		# final preparation of args for g_function_info_invoke
-		#~ _inargs = (_girepository.GIArgument * len(_arg_ins))(*_arg_ins)
-		#~ _ninargs = _girepository.gint(len(_inargs))
-		#~ _outargs = (_girepository.GIArgument * len(_arg_outs))(*_arg_outs)
-		#~ _noutargs = _girepository.gint(len(_outargs))
-		
-		global _k
-		global _window
-		
-		if _k == 0:
-			_inargs = (_girepository.GIArgument * 2)(_girepository.GIArgument(), _girepository.GIArgument())
-			_inargs[0].v_int = _girepository.gint(0)
-			_inargs[1].v_pointer = _girepository.gpointer()
-			_ninargs = _girepository.gint(2)
-		elif _k == 1:
-			_inargs = (_girepository.GIArgument * 1)(_girepository.GIArgument())
-			_inargs[0].v_int = _girepository.gint(0)
-			_ninargs = _girepository.gint(1)
-		elif _k == 2:
-			_inargs = (_girepository.GIArgument * 2)(_girepository.GIArgument(), _girepository.GIArgument())
-			_inargs[0].v_pointer = _window
-			_inargs[1].v_string = _girepository.gchar_p('Test 1')
-			_ninargs = _girepository.gint(2)
-		elif _k == 3:
-			_inargs = (_girepository.GIArgument * 1)(_girepository.GIArgument())
-			_inargs[0].v_pointer = _window
-			_ninargs = _girepository.gint(1)
-		elif _k == 4:
-			_inargs = None
-			_ninargs = _girepository.gint(0)
-		
-		_k += 1
-		
+		_inargs = (_girepository.GIArgument * len(_arg_ins))(*_arg_ins)
+		_ninargs = _girepository.gint(len(_inargs))
 		_outargs = (_girepository.GIArgument * len(_arg_outs))(*_arg_outs)
 		_noutargs = _girepository.gint(len(_outargs))
 		_retarg = (_girepository.GIArgument * 1)(_girepository.GIArgument())
@@ -551,24 +522,26 @@ class GIFunction(GICallable):
 		result = _result.value
 		
 		if not result:
-			# error occured, raise an exception
+			# error occured, raise an exception with GError message
 			error_message = _error.contents.message.value
 			raise GIError(error_message)
 		
-		if _k == 2:
-			_window = _retarg[0].v_pointer
-		
+		# is constructor?
 		try:
-			_self = kwargs.pop('_self')
-			_self._instance = _retarg[0].v_pointer
+			_is_constructor = kwargs.pop('_is_constructor')
 		except KeyError:
-			pass
+			_is_constructor = False
 		
 		# return
-		_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
-		_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
-		return_ = [_convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg, _type_info_return, _transfer_return)]
-		return return_ if return_ else return_[0]
+		if _is_constructor:
+			# return as C object
+			return _retarg[0].v_pointer
+		else:
+			# return as Python object
+			_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
+			_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
+			return_ = [_convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg, _type_info_return, _transfer_return)]
+			return return_ if return_ else return_[0]
 
 class GISignal(GICallable):
 	_signal_info = None
@@ -645,26 +618,27 @@ class GIObject(GIRegisteredType):
 			GIRegisteredType.__init__(self, *args, **kwargs)
 		
 		try:
-			_struct_info_class = kwargs.pop('_struct_info_class')
-			self._struct_info_class = _struct_info_class
+			self._struct_info_class = kwargs.pop('_struct_info_class')
 		except KeyError:
 			pass
 		
 		try:
-			_function_info_constructor = kwargs.pop('_function_info_constructor')
-			self._function_info_constructor = _function_info_constructor
+			self._function_info_constructor = kwargs.pop('_function_info_constructor')
 		except KeyError:
 			pass
 		
 		try:
-			_instance = kwargs.pop('_instance')
-			self._instance = _instance
+			self._self = kwargs.pop('_self')
 		except KeyError:
 			if self._function_info_constructor:
-				print self._function_info_constructor
-				return_ = self.__class__._function_info_constructor(_self=self, *args, **kwargs)
+				self._self = self.__class__._function_info_constructor(_is_constructor=True, *args, **kwargs)
 			else:
-				self._instance = None
+				self._self = None
+		
+		try:
+			self._transfer = kwargs.pop('_transfer')
+		except KeyError:
+			self._transfer = _girepository.GI_TRANSFER_NOTHING
 
 class GIStruct(GIRegisteredType):
 	_struct_info = None
@@ -828,7 +802,6 @@ def _convert_pyobject_to_giargument_with_constantinfo(obj, _type_info):
 
 def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer):
 	obj = None
-	
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)
 	
 	if _type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
@@ -871,40 +844,74 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 			obj = []
 		else:
 			_array = cast(_arg.v_pointer, POINTER(_girepository.GArray))
-			_item_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
-			_item_type_tag = _girepository.g_type_info_get_tag(_item_type_info)
-			_item_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
-			_item_size = _girepository.g_array_get_element_size(_array)
-			
+			_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
+			_param_base_info = _girepository.cast(_param_type_info, POINTER(_girepository.GIBaseInfo))
+			_param_type_tag = _girepository.g_type_info_get_tag(_param_type_info)
+			_param_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
 			obj = []
 			
 			for i in range(_array.contents.len):
-				_item = _girepository.GIArgument()
 				is_struct = False
 				
-				if _item_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
-					_iface_info = _girepository.g_type_info_get_interface(_item_type_info)
-					_iface_info_type_tag = _girepository.g_base_info_get_type(iface_info)
+				if _param_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+					_item_base_info = _girepository.g_type_info_get_interface(_param_type_info)
+					_item_interface_info = cast(_item_base_info, POINTER(_girepository.GIInterfaceInfo))
+					_item_type_tag = _girepository.g_base_info_get_type(_item_base_info)
 					
-					if _iface_info_type_tag.value == _girepository.GI_INFO_TYPE_STRUCT.value:
+					if _item_type_tag.value in (
+						_girepository.GI_INFO_TYPE_STRUCT.value,
+						_girepository.GI_INFO_TYPE_BOXED.value,
+					):
 						is_struct = True
-					elif _iface_info_type_tag.value == _girepository.GI_INFO_TYPE_BOXED.value:
-						is_struct = True
+					
+					_girepository.g_base_info_unref(_item_base_info)
 				
-					_base_info = cast(_iface_info, POINTER(_girepository.GIBaseInfo))
-					_girepository.g_base_info_unref(_base_info)
-					
-					if is_struct:
-						_item.v_pointer = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
-					else:
-						#~ _item0 = (_girepository.GIArgument * 1)()
-						#~ _pointer0 = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
-						#~ memmove(pointer(_item0), pointer(), 
-						#~ _item = _item0[0]
-						pass
-					
+				if is_struct:
+					_item = _girepository.GIArgument()
+					_item.v_pointer = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+				else:
+					_item = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+				
+				item = _convert_giargument_to_pyobject_with_typeinfo_transfer(_item, _param_type_info, _param_transfer)
+				obj.append(item)
+			
+			_girepository.g_base_info_unref(_param_type_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
-		pass
+		_base_info = _girepository.g_type_info_get_interface(_type_info)
+		_interface_info = cast(_base_info, POINTER(_girepository.GIInterfaceInfo))
+		_type_tag = _girepository.g_base_info_get_type(_base_info)
+		
+		if _type_tag.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
+			obj = None
+		elif _type_tag.value in (
+			_girepository.GI_INFO_TYPE_BOXED.value,
+			_girepository.GI_INFO_TYPE_STRUCT.value,
+			_girepository.GI_INFO_TYPE_UNION.value,
+		):
+			if not _arg.v_pointer:
+				obj = None
+			else:
+				_registered_type_info = cast(_base_info, POINTER(_girepository.GIRegisteredTypeInfo))
+				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
+				
+				if _girepository.g_type_is_a(_type, _girepository.G_TYPE_VALUE).value:
+					obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
+				elif _girepository.g_type_is_a(_type, _girepository.G_TYPE_BOXED).value:
+					type_ = _convert_gtype_to_pytype(_type)
+					obj = type_(_instance=_arg.v_pointer, _transfer=_girepository.GI_TRANSFER_EVERYTHING)
+					
+		elif _type_tag.value in (
+			_girepository.GI_INFO_TYPE_ENUM.value,
+			_girepository.GI_INFO_TYPE_FLAGS.value,
+		):
+			pass
+		elif _type_tag.value in (
+			_girepository.GI_INFO_TYPE_INTERFACE.value,
+			_girepository.GI_INFO_TYPE_OBJECT.value,
+		):
+			pass
+		else:
+			raise GIError('unsupported type tag %i' % (_type_tag.value,))
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
 		pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
@@ -913,9 +920,19 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
 		raise GIError('unsupported type tag %i' % (_type_tag.value,))
+	else:
+		raise GIError('unsupported type tag %i' % (_type_tag.value,))
 	
 	return obj
 
 def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _transfer):
 	_arg = _girepository.GIArgument()
 	return _arg
+
+def _convert_gvalue_to_pyobject(_value, copy_boxed):
+	obj = None
+	return obj
+
+def _convert_pyobject_to_gvalue(obj, _value):
+	_value = _girepository.GArray()
+	return _value

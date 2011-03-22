@@ -64,6 +64,6 @@ class GArray(Structure):
 
 def g_array_index(a, t, i):
 	# return ((t*)(void *)(a)->data)[i]
-	at = (t * (a.len // sizeof(t)))()
-	memmove(at, a.data.value, a.len.value)
-	return at[i.value]
+	ba = (t * (a.contents.len.value // sizeof(t)))()
+	memmove(ba, a.contents.data, a.contents.len.value)
+	return ba[i.value]

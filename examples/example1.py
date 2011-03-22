@@ -18,6 +18,8 @@ if __name__ == '__main__':
 	#~ print(Gtk.Window)
 	#~ print(Gtk.Window.__bases__)
 	#~ print(Gtk.Window.__mro__)
+	#~ print(Gtk.Window.connect)
+	#~ print(GObject.signal_connect_data)
 	
 	#~ print(Gtk.Label)
 	#~ print(Gtk.Label.__bases__)

@@ -1072,15 +1072,55 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
 		_arg.v_string = _girepository.gchar_p(obj)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
+		# raise GIError('unsupported type tag %i' % _type_tag.value)
+		# FIXME: implement me
 		pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
-		pass
+		_base_info = _girepository.g_type_info_get_interface(_type_info)
+		_registered_type_info = _girepository.cast(_base_info, POINTER(_girepository.GIRegisteredTypeInfo))
+		_info_type = _girepository.g_base_info_get_type(_base_info)
+		
+		# raise GIError('unsupported type tag %i' % _type_tag.value)
+		if _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
+			pass
+		elif _info_type.value in (
+			_girepository.GI_INFO_TYPE_BOXED.value,
+			_girepository.GI_INFO_TYPE_STRUCT.value,
+			_girepository.GI_INFO_TYPE_UNION.value,
+		):
+			if obj is None:
+				_arg.v_pointer = gpointer(0)
+			else:
+				#~ _type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
+					#~ type_ = _convert_pytype_to_gtype(obj)
+				#~ 
+				#~ if _type.value == _girepository.G_TYPE_VALUE.value:
+					#~ pass
+				#~ elif _type.value == _girepository.G_TYPE_CLOSURE.value:
+					#~ pass
+				#~ elif _type.value == _girepository.G_TYPE_BOXED.value:
+					#~ pass
+				#~ elif _type.value == _girepository.G_TYPE_VALUE.value:
+					#~ pass
+				pass
+		elif _info_type.value in (
+			_girepository.GI_INFO_TYPE_ENUM.value,
+			_girepository.GI_INFO_TYPE_FLAGS.value,
+		):
+			pass
+		elif _info_type.value in (
+			_girepository.GI_INFO_TYPE_INTERFACE.value,
+			_girepository.GI_INFO_TYPE_OBJECT.value,
+		):
+			pass
+		else:
+			pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
-		pass
+		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
-		pass
+		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
-		pass
+		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	else:

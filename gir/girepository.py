@@ -24,7 +24,6 @@ class GIRepository(object):
 	
 	def __init__(self):
 		self._repository = _girepository.g_irepository_get_default()
-		self._attrs = {}
 	
 	def __getattr__(self, attr):
 		try:
@@ -33,12 +32,6 @@ class GIRepository(object):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def require(self, namespace, version=None):
-		# check if already loaded
-		try:
-			return self._attrs[namespace]
-		except KeyError:
-			pass
-		
 		# prepare function args
 		_repository = self._repository
 		_namespace = _girepository.gchar_p(namespace)
@@ -69,7 +62,7 @@ class GIRepository(object):
 			module = _modules[namespace]
 		else:
 			# new module
-			module = GIModule(namespace, '', _typelib)
+			module = GITypelib(namespace, '', _typelib)
 			
 			# dependencies
 			_dependencies = _girepository.g_irepository_get_dependencies(_repository, _namespace)
@@ -92,15 +85,14 @@ class GIRepository(object):
 					i += 1
 			
 			_modules[namespace] = module
-			self._attrs[namespace] = module
+			setattr(self, namespace, module)
 		
 		return module
 
-class GIModule(types.ModuleType):
+class GITypelib(types.ModuleType):
 	def __init__(self, modulename, moduledoc, _typelib):
 		types.ModuleType.__init__(self, modulename, moduledoc)
 		self._typelib = _typelib
-		self._attrs = {}
 	
 	def __del__(self):
 		if self._typelib:
@@ -113,12 +105,6 @@ class GIModule(types.ModuleType):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def _wrap(self, attr):
-		# check if already loaded
-		try:
-			return self._attrs[attr]
-		except KeyError:
-			pass
-		
 		# prepare
 		_namespace = _girepository.g_typelib_get_namespace(self._typelib)
 		namespace = _namespace.value
@@ -131,18 +117,15 @@ class GIModule(types.ModuleType):
 		# switch _info_type
 		if _info_type.value == _girepository.GI_INFO_TYPE_INVALID.value:
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
-		elif _info_type.value == _girepository.GI_INFO_TYPE_FUNCTION.value:
-			# function
+		elif _info_type.value in (
+			_girepository.GI_INFO_TYPE_FUNCTION.value,
+			_girepository.GI_INFO_TYPE_CALLBACK.value,
+		):
+			# function/callback
 			_function_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIFunctionInfo))
 			function = GIFunction(_function_info=_function_info)
-			self._attrs[attr] = function
+			setattr(self, attr, function)
 			return function
-		elif _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
-			# callback == function
-			_callback_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GICallbackInfo))
-			callback = GICallback(_callback_info=_callback_info)
-			self._attrs[attr] = callback
-			return callback
 		elif _info_type.value in (
 			_girepository.GI_INFO_TYPE_STRUCT.value,
 			_girepository.GI_INFO_TYPE_BOXED.value,
@@ -185,7 +168,7 @@ class GIModule(types.ModuleType):
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
 			_classes[namespace_class_name] = class_
-			self._attrs[attr] = class_
+			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value in (
 			_girepository.GI_INFO_TYPE_ENUM.value,
@@ -225,7 +208,7 @@ class GIModule(types.ModuleType):
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
 			_classes[namespace_class_name] = class_
-			self._attrs[attr] = class_
+			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
 			# object
@@ -314,7 +297,7 @@ class GIModule(types.ModuleType):
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
 			_classes[namespace_class_name] = class_
-			self._attrs[attr] = class_
+			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
 			# interface
@@ -359,7 +342,7 @@ class GIModule(types.ModuleType):
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
 			_classes[namespace_class_name] = class_
-			self._attrs[attr] = class_
+			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_CONSTANT.value:
 			_constant_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIConstantInfo))
@@ -367,7 +350,7 @@ class GIModule(types.ModuleType):
 			_transfer = _girepository.GI_TRANSFER_NOTHING
 			_type_info = _girepository.g_constant_info_get_type(_constant_info)
 			argument = _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer)
-			self._attrs[attr] = argument
+			setattr(self, attr, argument)
 			return argument
 		elif _info_type.value == _girepository.GI_INFO_TYPE_ERROR_DOMAIN.value:
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
@@ -410,7 +393,7 @@ class GIModule(types.ModuleType):
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
 			_classes[namespace_class_name] = class_
-			self._attrs[attr] = class_
+			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
@@ -466,18 +449,6 @@ class GIBase(object):
 		if self._base_info:
 			_girepository.g_base_info_unref(self._base_info)
 
-class GICallback(GIBase):
-	_callback_info = None
-	
-	def __init__(self, *args, **kwargs):
-		try:
-			_callback_info = kwargs.pop('_callback_info')
-			_base_info = _girepository.cast(_callback_info, _girepository.POINTER(_girepository.GIBaseInfo))
-			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
-			self._callback_info = _callback_info
-		except KeyError:
-			GIBase.__init__(self, *args, **kwargs)
-	
 class GICallable(GIBase):
 	_callable_info = None
 	
@@ -888,16 +859,6 @@ def _convert_pyobject_to_giargument_with_arginfo(obj, _arg_info):
 	_type_info = _girepository.g_arg_info_get_type(_arg_info)
 	_transfer = _girepository.g_arg_info_get_ownership_transfer(_arg_info)
 	return _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _transfer)
-
-#~ def _convert_giargument_to_pyobject_with_constantinfo(_arg, _constant_info):
-	#~ _transfer = _girepository.GI_TRANSFER_NOTHING
-	#~ _type_info = _girepository.g_constant_info_get_type(_constant_info)
-	#~ return _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer)
-#~ 
-#~ def _convert_pyobject_to_giargument_with_constantinfo(obj, _constant_info):
-	#~ _transfer = _girepository.GI_TRANSFER_NOTHING
-	#~ _type_info = _girepository.g_constant_info_get_type(_constant_info)
-	#~ return _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _transfer)
 
 def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer):
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)

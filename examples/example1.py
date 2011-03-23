@@ -14,6 +14,10 @@ if __name__ == '__main__':
 	Gtk = rep.Gtk
 	Gtk._wrap_all()
 	
+	print(gir, dir(gir))
+	print(rep, dir(rep))
+	print(Gtk, dir(Gtk))
+	
 	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
 	#~ print(Gtk.Window)
 	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
@@ -34,8 +38,8 @@ if __name__ == '__main__':
 	#~ print(Gtk.Entry.__bases__)
 	#~ print(Gtk.Entry.__mro__)
 	
-	Gtk.init(0, [])
-	w = Gtk.Window(Gtk.WindowType.toplevel)
-	w.set_title('Test 1')
-	w.show_all()
-	Gtk.main()
+	#~ Gtk.init(0, [])
+	#~ w = Gtk.Window(Gtk.WindowType.toplevel)
+	#~ w.set_title('Test 1')
+	#~ w.show_all()
+	#~ Gtk.main()

@@ -5,9 +5,14 @@ import gir
 
 if __name__ == '__main__':
 	rep = gir.GIRepository()
-	Gtk = rep.Gtk
-	GObject = rep.GObject
 	GLib = rep.GLib
+	GLib._wrap_all()
+	
+	GObject = rep.GObject
+	GObject._wrap_all()
+	
+	Gtk = rep.Gtk
+	Gtk._wrap_all()
 	
 	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
 	#~ print(Gtk.Window)

@@ -3457,36 +3457,40 @@ G_TYPE_CLOSURE = g_closure_get_type()
 #
 # Closure
 #
-_closure_ids = {}
-
 class Closure(Structure):
 	_fields_ = [
 		('closure', GClosure),
-		('id', guint),
+		('data', gpointer),
 	]
 
-def closure_new(pyobj):
-	global _closure_ids
-	closure_id = len(_closure_ids)
-	_closure_id = guint(closure_id)
-	_closure_ids[closure_id] = pyobj
-	
-	#~ gclosure_p = g_closure_new_simple(guint(sizeof(Closure)), gpointer(0))
-	#~ print(bool(gclosure_p))
-	gclosure_p = pointer(Closure())
-	gclosure_p.contents.inmarshal_isinvalid = guint(0)
-	closure_p = cast(gclosure_p, POINTER(Closure))
-	closure_p.contents.id = _closure_id
-	return closure_p
-
-def closure_invoke(closure_p, *args):
-	global _closure_ids
-	_closure_id = closure_p.contents.id
-	closure_id = _closure_id.value
-	pyobj = _closure_ids[closure_id]
-	
-	ret = pyobj(*args)
-	return ret
-
-def closure_del(closure_p):
-	pass
+#~ class Closure(Structure):
+	#~ _fields_ = [
+		#~ ('closure', GClosure),
+		#~ ('id', guint),
+	#~ ]
+#~ 
+#~ def closure_new(pyobj):
+	#~ global _closure_ids
+	#~ closure_id = len(_closure_ids)
+	#~ _closure_id = guint(closure_id)
+	#~ _closure_ids[closure_id] = pyobj
+	#~ 
+	#~ # gclosure_p = g_closure_new_simple(guint(sizeof(Closure)), gpointer(0))
+	#~ # print(bool(gclosure_p))
+	#~ gclosure_p = pointer(Closure())
+	#~ gclosure_p.contents.inmarshal_isinvalid = guint(0)
+	#~ closure_p = cast(gclosure_p, POINTER(Closure))
+	#~ closure_p.contents.id = _closure_id
+	#~ return closure_p
+#~ 
+#~ def closure_invoke(closure_p, *args):
+	#~ global _closure_ids
+	#~ _closure_id = closure_p.contents.id
+	#~ closure_id = _closure_id.value
+	#~ pyobj = _closure_ids[closure_id]
+	#~ 
+	#~ ret = pyobj(*args)
+	#~ return ret
+#~ 
+#~ def closure_del(closure_p):
+	#~ pass

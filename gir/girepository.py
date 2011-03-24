@@ -108,7 +108,7 @@ class GITypelib(types.ModuleType):
 		# prepare
 		_namespace = _girepository.g_typelib_get_namespace(self._typelib)
 		namespace = _namespace.value
-		namespace_class_name = '%s.%s'	% (namespace, attr)
+		namespace_classname = '%s.%s'	% (namespace, attr)
 		_attr = _girepository.gchar_p(attr)
 		_base_info = _girepository.g_irepository_find_by_name(None, _namespace, _attr)
 		if not _base_info: raise GIError('missing attribute "%s"' % attr)
@@ -142,32 +142,23 @@ class GITypelib(types.ModuleType):
 			clsdict = {}
 			clsdict['_struct_info'] = _struct_info
 			
-			# number of methods
-			_struct_info_n_methods = _girepository.g_struct_info_get_n_methods(_struct_info)
+			# FIXME: parse fields
 			
 			# methods
+			_struct_info_n_methods = _girepository.g_struct_info_get_n_methods(_struct_info)
+			
 			for i in range(_struct_info_n_methods.value):
 				# method
 				_function_info_method = _girepository.g_struct_info_get_method(_struct_info, _girepository.gint(i))
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
-				
-				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
-				base_info_method_name = _base_info_method_name.value
-				
-				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[base_info_method_name] = method
-				
-				# check if constructor
-				_function_info_flags = _girepository.g_function_info_get_flags(_function_info_method)
-				if _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-					clsdict['_function_info_constructor'] = method
+				clsdict[_base_info_method_name.value] = method
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_class_name] = class_
+			_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value in (
@@ -183,137 +174,115 @@ class GITypelib(types.ModuleType):
 			clsdict = {}
 			clsdict['_enum_info'] = _enum_info
 			
-			# n values
-			_n_values = _girepository.g_enum_info_get_n_values(_enum_info)
-			n_values = _n_values.value
-			
 			# values
-			for i in range(n_values):
+			_n_values = _girepository.g_enum_info_get_n_values(_enum_info)
+			
+			for i in range(_n_values.value):
 				# value
 				_value_info = _girepository.g_enum_info_get_value(_enum_info, _girepository.gint(i))
 				_value_info_base_info = _girepository.cast(_value_info, _girepository.POINTER(_girepository.GIBaseInfo))
-				
-				# value name
 				_value_info_name = _girepository.g_base_info_get_name(_value_info_base_info)
-				value_info_name = _value_info_name.value
-				
-				# value value
 				_value_info_value = _girepository.g_value_info_get_value(_value_info)
-				value_info_value = _value_info_value.value
-				
-				# enum member
-				clsdict[value_info_name] = value_info_value
+				clsdict[_value_info_name.value] = _value_info_value.value
 			
 			# create new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_class_name] = class_
+			_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
 			# object
 			_object_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIObjectInfo))
-			
-			# parent
 			_object_info_parent = _girepository.g_object_info_get_parent(_object_info)
 			_base_info_parent = _girepository.cast(_object_info_parent, _girepository.POINTER(_girepository.GIBaseInfo))
-			
-			# parent namespace
 			_base_info_parent_namespace = _girepository.g_base_info_get_namespace(_base_info_parent)
-			base_info_parent_namespace = _base_info_parent_namespace.value
-			
-			# parent name
 			_base_info_parent_name = _girepository.g_base_info_get_name(_base_info_parent)
-			base_info_parent_name = _base_info_parent_name.value
+			_struct_info_class = _girepository.g_object_info_get_class_struct(_object_info)
 			
-			if namespace == base_info_parent_namespace and attr == base_info_parent_name:
+			# class
+			clsname = attr
+			clsdict = {}
+			clsdict['_object_info'] = _object_info
+			clsdict['_struct_info_class'] = _struct_info_class
+			
+			# bases
+			if namespace == _base_info_parent_namespace.value and attr == _base_info_parent_name.value:
 				clsbases = [GIObject]
 			else:
 				# bases = [parent] + interfaces
 				clsbases = []
 				
 				# parent
-				module_parent = _modules[base_info_parent_namespace]
-				clsbases.append(module_parent.__getattr__(base_info_parent_name))
+				module_parent = _modules[_base_info_parent_namespace.value]
+				clsbases.append(module_parent.__getattr__(_base_info_parent_name.value))
 				
 				# interfaces
 				_object_info_n_interfaces = _girepository.g_object_info_get_n_interfaces(_object_info)
-				object_info_n_interfaces = _object_info_n_interfaces.value
 				
-				for i in range(object_info_n_interfaces):
+				for i in range(_object_info_n_interfaces.value):
 					# interface
 					_object_info_interface = _girepository.g_object_info_get_interface(_object_info, _girepository.gint(i))
 					_base_info_interface = _girepository.cast(_object_info_interface, _girepository.POINTER(_girepository.GIBaseInfo))
 					
 					# interface namespace
 					_base_info_interface_namespace = _girepository.g_base_info_get_namespace(_base_info_interface)
-					base_info_interface_namespace = _base_info_interface_namespace.value
 					
 					# interface name
 					_base_info_interface_name = _girepository.g_base_info_get_name(_base_info_interface)
-					base_info_interface_name = _base_info_interface_name.value
 					
 					# add interface to clsbasses
-					module_interface = _modules[base_info_interface_namespace]
-					interface = module_interface.__getattr__(base_info_interface_name)
+					module_interface = _modules[_base_info_interface_namespace.value]
+					interface = getattr(module_interface, _base_info_interface_name.value)
 					clsbases.append(interface)
 			
-			# class struct
-			_struct_info_class = _girepository.g_object_info_get_class_struct(_object_info)
-			
-			# create class
-			clsname = attr
 			mrobases = _mro(clsbases)
 			clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
 			clsbases = tuple(clsbases)
-			clsdict = {}
-			clsdict['_object_info'] = _object_info
-			clsdict['_struct_info_class'] = _struct_info_class
 			
-			# number of methods
-			_object_info_n_methods = _girepository.g_object_info_get_n_methods(_object_info)
-			object_info_n_methods = _object_info_n_methods.value
+			# FIXME: parse fields
+			# FIXME: parse properties
 			
 			# methods
-			for i in range(object_info_n_methods):
+			_object_info_n_methods = _girepository.g_object_info_get_n_methods(_object_info)
+			
+			for i in range(_object_info_n_methods.value):
 				# method
 				_function_info_method = _girepository.g_object_info_get_method(_object_info, _girepository.gint(i))
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
 				
 				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
-				base_info_method_name = _base_info_method_name.value
 				
 				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[base_info_method_name] = method
-				
-				# check if constructor
-				_function_info_flags = _girepository.g_function_info_get_flags(_function_info_method)
-				if _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-					clsdict['_function_info_constructor'] = method
+				clsdict[_base_info_method_name.value] = method
+			
+			# FIXME: parse signals
+			# FIXME: parse constant
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_class_name] = class_
+			_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
 			# interface
 			_interface_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
 			
-			# interface bases
+			# class
+			clsname = attr
 			clsbases = []
+			clsdict = {}
+			clsdict['_interface_info'] = _interface_info
 			
-			# number of prerequisites
+			# bases
 			_interface_info_n_prerequisites = _girepository.g_interface_info_get_n_prerequisites(_interface_info)
-			interface_info_n_prerequisites = _interface_info_n_prerequisites.value
 			
-			# prerequisites
-			if interface_info_n_prerequisites:
+			if _interface_info_n_prerequisites.value:
 				# if any prerequisite
-				for i in range(interface_info_n_prerequisites):
+				for i in range(_interface_info_n_prerequisites.value):
 					# prerequisite
 					_base_info_prerequisite = _girepository.g_interface_info_get_prerequisite(_interface_info, _girepository.gint(i))
 					
@@ -333,18 +302,40 @@ class GITypelib(types.ModuleType):
 				# other, base class is GIInterface
 				clsbases.append(GIInterface)
 			
-			# create class
-			clsname = attr
 			mrobases = _mro(clsbases)
 			clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
 			clsbases = tuple(clsbases)
-			clsdict = {'_interface_info': _interface_info}
+			
+			# FIXME: parse properties
+			
+			# methods
+			_interface_info_n_methods = _girepository.g_interface_info_get_n_methods(_interface_info)
+			
+			for i in range(_interface_info_n_methods.value):
+				# method
+				_function_info_method = _girepository.g_interface_info_get_method(_interface_info, _girepository.gint(i))
+				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
+				
+				# method name
+				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
+				base_info_method_name = _base_info_method_name.value
+				
+				# attach method to class dict
+				method = GIFunction(_function_info=_function_info_method)
+				clsdict[base_info_method_name] = method
+			
+			# FIXME: parse signals
+			# FIXME: parse vfuncs
+			# FIXME: parse constants
+			
+			# create class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_class_name] = class_
+			_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_CONSTANT.value:
+			# constant
 			_constant_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIConstantInfo))
 			_arg = _girepository.GIArgument()
 			_transfer = _girepository.GI_TRANSFER_NOTHING
@@ -367,32 +358,23 @@ class GITypelib(types.ModuleType):
 			clsdict = {}
 			clsdict['_union_info'] = _union_info
 			
-			# number of methods
-			_union_info_n_methods = _girepository.g_union_info_get_n_methods(_union_info)
+			# FIXME: parse fields
 			
 			# methods
+			_union_info_n_methods = _girepository.g_union_info_get_n_methods(_union_info)
+			
 			for i in range(_union_info_n_methods.value):
 				# method
 				_function_info_method = _girepository.g_union_info_get_method(_union_info, _girepository.gint(i))
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
-				
-				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
-				base_info_method_name = _base_info_method_name.value
-				
-				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[base_info_method_name] = method
-				
-				# check if conunionor
-				_function_info_flags = _girepository.g_function_info_get_flags(_function_info_method)
-				if _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-					clsdict['_function_info_conunionor'] = method
+				clsdict[_base_info_method_name.value] = method
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_class_name] = class_
+			_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
@@ -487,21 +469,27 @@ class GIFunction(GICallable):
 			'>',
 		))
 	
+	# FIXME: *move to GIObject
 	def __get__(self, obj, type_=None):
 		if isinstance(obj, type_):
-			func = lambda *args, **kwargs: self(obj._self, *args, **kwargs)
+			func = lambda *args, **kwargs: self(obj._self, _pytype=type_, *args, **kwargs)
 			_base_info_name = _girepository.g_base_info_get_name(self._base_info)
 			base_info_name = _base_info_name.value
 			func.func_name = base_info_name
-			return func
 		else:
-			return self
+			func = lambda *args, **kwargs: self(_pytype=type_, *args, **kwargs)
+		
+		return func
 	
 	def __call__(self, *args, **kwargs):
 		# prepare args for g_function_info_invoke
 		_callable_info = self._callable_info
 		_function_info = self._function_info
 		_function_info_flags = _girepository.g_function_info_get_flags(_function_info)
+		_return_type_type_info = _girepository.g_callable_info_get_return_type(_callable_info)
+		_return_type_type_tag = _girepository.g_type_info_get_tag(_return_type_type_info)
+		_return_transfer = _girepository.g_callable_info_get_caller_owns(_callable_info)
+		_may_return_null_type_info = _girepository.g_callable_info_may_return_null(_callable_info)
 		
 		# prepare in/out args
 		_arg_info_ins = []
@@ -509,11 +497,13 @@ class GIFunction(GICallable):
 		_arg_ins = []
 		_arg_outs = []
 		
-		# is method?
+		# function info flags?
 		if _function_info_flags.value == _girepository.GI_FUNCTION_IS_METHOD.value:
 			_self_arg = _girepository.GIArgument()
 			_self_arg.v_pointer = args[0]
 			args = args[1:]
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+			pass
 		
 		# number of args
 		_n_args = _girepository.g_callable_info_get_n_args(_callable_info)
@@ -544,9 +534,11 @@ class GIFunction(GICallable):
 				_arg_ins.append(_arg)
 				_arg_outs.append(_arg)
 		
-		# is method?
+		# function info flags?
 		if _function_info_flags.value == _girepository.GI_FUNCTION_IS_METHOD.value:
 			_arg_ins[0:0] = [_self_arg]
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+			pass
 		
 		#~ print 'GIFunction.__call__', args, kwargs
 		#~ print 'GIFunction.__call__', _arg_info_ins, _arg_info_outs
@@ -582,18 +574,8 @@ class GIFunction(GICallable):
 			error_message = _error.contents.message.value
 			raise GIError(error_message)
 		
-		# is constructor?
-		try:
-			_is_constructor = kwargs.pop('_is_constructor')
-		except KeyError:
-			_is_constructor = False
-		
-		# return
-		if _is_constructor:
-			# return as C object
-			return_ = _retarg[0].v_pointer
-		else:
-			# return as Python object
+		# function info flags?
+		if _function_info_flags.value == _girepository.GI_FUNCTION_IS_METHOD.value:
 			_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
 			_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
 			obj = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg[0], _type_info_return, _transfer_return)
@@ -608,6 +590,23 @@ class GIFunction(GICallable):
 			else:
 				# return as single object
 				return_ = obj
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+			pytype = kwargs.pop('_pytype')
+			return_ = pytype(_self=_retarg[0].v_pointer)
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_GETTER.value:
+			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
+			return_ = None
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_SETTER.value:
+			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
+			return_ = None
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_WRAPS_VFUNC.value:
+			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
+			return_ = None
+		elif _function_info_flags.value == _girepository.GI_FUNCTION_THROWS.value:
+			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
+			return_ = None
+		else:
+			return_ = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg[0], _return_type_type_info, _return_transfer)
 		
 		return return_
 
@@ -691,17 +690,9 @@ class GIObject(GIRegisteredType):
 			pass
 		
 		try:
-			self._function_info_constructor = kwargs.pop('_function_info_constructor')
-		except KeyError:
-			pass
-		
-		try:
 			self._self = kwargs.pop('_self')
 		except KeyError:
-			if self._function_info_constructor:
-				self._self = self.__class__._function_info_constructor(_is_constructor=True, *args, **kwargs)
-			else:
-				self._self = None
+			self._self = None
 		
 		try:
 			self._transfer = kwargs.pop('_transfer')
@@ -862,14 +853,13 @@ def _convert_pyobject_to_giargument_with_arginfo(obj, _arg_info):
 
 def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer):
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)
+	obj = None
 	
 	if _type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
 		_is_pointer = _girepository.g_type_info_is_pointer(_type_info)
 		
 		if _is_pointer.value:
 			obj = _arg.v_pointer
-		else:
-			obj = None
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
 		obj = bool(_arg.v_boolean.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
@@ -899,6 +889,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
 		obj = str(_arg.v_string.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
+		# array
 		if not _arg.v_pointer:
 			obj = []
 		else:
@@ -936,10 +927,11 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 			
 			_girepository.g_base_info_unref(_param_base_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+		# interface
 		_base_info = _girepository.g_type_info_get_interface(_type_info)
-		_registered_type_info = cast(_base_info, POINTER(_girepository.GIRegisteredTypeInfo))
-		_struct_info = cast(_base_info, POINTER(_girepository.GIStructInfo))
-		_interface_info = cast(_base_info, POINTER(_girepository.GIInterfaceInfo))
+		_registered_type_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
+		_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
+		_interface_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
 		_type_tag = _girepository.g_base_info_get_type(_base_info)
 		
 		if _type_tag.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
@@ -949,12 +941,11 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 			_girepository.GI_INFO_TYPE_STRUCT.value,
 			_girepository.GI_INFO_TYPE_UNION.value,
 		):
-			if not _arg.v_pointer:
-				obj = None
-			else:
+			if _arg.v_pointer:
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
+					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
 					obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
 				elif _type.value in (
 					_girepository.G_TYPE_BOXED.value,
@@ -986,6 +977,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		
 		_girepository.g_base_info_unref(_base_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
+		# glist
 		_list = cast(_arg.v_pointer, POINTER(_girepository.GList))
 		_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
 		_param_base_info = _girepository.cast(_param_type_info, POINTER(_girepository.GIBaseInfo))
@@ -1001,6 +993,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		
 		_girepository.g_base_info_unref(_param_base_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
+		# gslist
 		_list = cast(_arg.v_pointer, POINTER(_girepository.GSList))
 		_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
 		_param_base_info = _girepository.cast(_param_type_info, POINTER(_girepository.GIBaseInfo))
@@ -1016,6 +1009,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		
 		_girepository.g_base_info_unref(_param_base_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
+		# ghash
 		if not _arg.v_pointer:
 			obj = None
 		else:
@@ -1077,7 +1071,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 		pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
 		_base_info = _girepository.g_type_info_get_interface(_type_info)
-		_registered_type_info = _girepository.cast(_base_info, POINTER(_girepository.GIRegisteredTypeInfo))
+		_registered_type_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 		_info_type = _girepository.g_base_info_get_type(_base_info)
 		
 		# raise GIError('unsupported type tag %i' % _type_tag.value)
@@ -1112,7 +1106,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			_girepository.GI_INFO_TYPE_INTERFACE.value,
 			_girepository.GI_INFO_TYPE_OBJECT.value,
 		):
-			pass
+			_arg.v_pointer = obj._self
 		else:
 			pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
@@ -1128,22 +1122,25 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 	
 	return _arg
 
-def _convert_gvalue_to_pyobject(_value, copy_boxed):
-	obj = None
-	return obj
+#~ def _convert_gvalue_to_pyobject(_value, copy_boxed):
+	#~ obj = None
+	#~ return obj
 
-def _convert_pyobject_to_gvalue(obj):
-	_value = _girepository.GArray()
-	return _value
+#~ def _convert_pyobject_to_gvalue(obj):
+	#~ _value = _girepository.GArray()
+	#~ return _value
 
-def _convert_gtype_to_pytype(_type):
-	pass
+#~ def _convert_gtype_to_pytype(_type):
+	#~ pass
 
-def _convert_pytype_to_gtype(type_):
-	pass
+#~ def _convert_pytype_to_gtype(type_):
+	#~ pass
 
 def _convert_gibaseinfo_to_pytype(_gibaseinfo):
-	pass
-
-def _convert_pytype_to_gibaseinfo(type_):
-	pass
+	global _girepository_instance
+	_namespace = _girepository.g_base_info_get_namespace(_gibaseinfo)
+	_name = _girepository.g_base_info_get_name(_gibaseinfo)
+	girepository = GIRepository()
+	gitypelib = getattr(girepository, _namespace.value)
+	pytype = getattr(gitypelib, _name.value)
+	return pytype

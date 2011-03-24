@@ -22,10 +22,10 @@ if __name__ == '__main__':
 	
 	#~ print(GObject, dir(GObject))
 	#~ print(GObject, dir(GObject.Object))
-	print(GObject.Closure, dir(GObject.Closure))
-	
-	closure = GObject.Closure()
-	print(closure, dir(closure))
+	#~ print(GObject.Closure, dir(GObject.Closure))
+	#~ 
+	#~ closure = GObject.Closure()
+	#~ print(closure, dir(closure))
 	
 	#~ print(Gtk, dir(Gtk), Gtk._attrs.keys())
 	#~ print(Gtk.Window)
@@ -47,11 +47,18 @@ if __name__ == '__main__':
 	#~ print(Gtk.Entry.__bases__)
 	#~ print(Gtk.Entry.__mro__)
 	
-	#~ Gtk.init(0, [])
-	#~ w = Gtk.Window(Gtk.WindowType.toplevel)
-	#~ w.set_title('Test 1')
-	#~ w.show_all()
+	Gtk.init(0, [])
+	window = Gtk.Window.new(Gtk.WindowType.toplevel)
+	window.set_title('Test 1')
+	window.show_all()
 	#~ closure_p = gir._girepository.closure_new(Gtk.main_quit)
 	#~ gclosure_p = gir._girepository.cast(closure_p, gir._girepository.POINTER(gir._girepository.GClosure))
-	#~ hid = GObject.signal_connect_closure(w._self, 'destroy', gclosure_p, False)
+	#~ hid = GObject.signal_connect_closure(window._self, 'destroy', gclosure_p, False)
+	#~ _data = gir._girepository.cast(window._self, gir._girepository.POINTER(gir._girepository.Closure))
+	#~ size = gir._girepository.sizeof()
+	#~ print size
+	#~ closure = GObject.Closure.new_object(size, window)
+	#~ closure = GObject.Closure.new_object(32, window)
+	#~ print closure, dir(closure)
+	#~ print closure._self
 	#~ Gtk.main()

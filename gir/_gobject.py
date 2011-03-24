@@ -3457,12 +3457,14 @@ G_TYPE_CLOSURE = g_closure_get_type()
 #
 # Closure
 #
-class Closure(Structure):
-	_fields_ = [
-		('closure', GClosure),
-		('data', gpointer),
-	]
+#~ class Closure(Structure):
+	#~ _fields_ = [
+		#~ ('closure', GClosure),
+		#~ ('data', gpointer),
+	#~ ]
 
+#~ _closure_ids = {}
+#~ 
 #~ class Closure(Structure):
 	#~ _fields_ = [
 		#~ ('closure', GClosure),
@@ -3475,10 +3477,11 @@ class Closure(Structure):
 	#~ _closure_id = guint(closure_id)
 	#~ _closure_ids[closure_id] = pyobj
 	#~ 
-	#~ # gclosure_p = g_closure_new_simple(guint(sizeof(Closure)), gpointer(0))
-	#~ # print(bool(gclosure_p))
-	#~ gclosure_p = pointer(Closure())
+	#~ gclosure_p = g_closure_new_simple(guint(sizeof(Closure)), gpointer(0))
+	#~ print(bool(gclosure_p))
+	#~ #gclosure_p = pointer(GClosure())
 	#~ gclosure_p.contents.inmarshal_isinvalid = guint(0)
+	#~ g_closure_ref(gclosure_p)
 	#~ closure_p = cast(gclosure_p, POINTER(Closure))
 	#~ closure_p.contents.id = _closure_id
 	#~ return closure_p
@@ -3486,11 +3489,55 @@ class Closure(Structure):
 #~ def closure_invoke(closure_p, *args):
 	#~ global _closure_ids
 	#~ _closure_id = closure_p.contents.id
-	#~ closure_id = _closure_id.value
-	#~ pyobj = _closure_ids[closure_id]
-	#~ 
+	#~ pyobj = _closure_ids[_closure_id.value]
 	#~ ret = pyobj(*args)
 	#~ return ret
 #~ 
 #~ def closure_del(closure_p):
-	#~ pass
+	#~ global _closure_ids
+	#~ _closure_id = closure_p.contents.id
+	#~ del _closure_ids[_closure_id.value]
+	#~ g_closure_unref(gclosure_p)
+
+#~ typedef struct _MyClosure MyClosure;
+#~ struct _MyClosure
+#~ {
+	#~ GClosure closure;
+	#~ // extra data goes here
+#~ };
+_pyclosure_ids = {}
+
+class PyClosure(Structure):
+	_fields_ = [
+		('closure', GClosure),
+		('id', guint),
+	]
+
+#~ static void
+#~ my_closure_finalize (gpointer  notify_data,
+#~ GClosure *closure)
+#~ {
+	#~ MyClosure *my_closure = (MyClosure *)closure;
+	#~ // free extra data here
+#~ }
+def py_closure_finalize(_notify_data, _gclosure):
+	global _pyclosure_ids
+	pyclosure = cast(_gclosure, POINTER(PyClosure))
+	pyid = pyclosure.contents.id
+	del _pyclosure_ids[pyid]
+
+#~ MyClosure *my_closure_new (gpointer data)
+#~ {
+	#~ GClosure *closure;
+	#~ MyClosure *my_closure;
+	#~ closure = g_closure_new_simple (sizeof (MyClosure), data);
+	#~ my_closure = (MyClosure *) closure;
+	#~ // initialize extra data here
+	#~ g_closure_add_finalize_notifier (closure, notify_data,
+	#~ my_closure_finalize);
+	#~ return my_closure;
+#~ }
+def py_closure_new(_data):
+	_gclosure = g_closure_new_simple(sizeof(PyClosure), _data)
+	_pyclosure = cast(_gclosure, POINTER(PyClosure))
+	

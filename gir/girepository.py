@@ -53,8 +53,7 @@ class GIRepository(object):
 		# if version not present, get default version
 		if not version:
 			_version = _girepository.g_irepository_get_version(_repository, _namespace)
-			version = _version.value
-		
+				
 		# module
 		global _modules
 		

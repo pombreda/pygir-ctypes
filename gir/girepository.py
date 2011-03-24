@@ -396,23 +396,18 @@ class GITypelib(types.ModuleType):
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 	
 	def _wrap_all(self):
-		# repository
+		# repository, namespace
 		_repository = _girepository_instance._repository
-		
-		# namespace
 		_namespace = _girepository.g_typelib_get_namespace(self._typelib)
 		
-		# number of infos
-		_n_infos = _girepository.g_irepository_get_n_infos(_repository, _namespace)
-		n_infos = _n_infos.value
-		
 		# infos
-		for i in range(n_infos):
+		_n_infos = _girepository.g_irepository_get_n_infos(_repository, _namespace)
+		
+		for i in range(_n_infos.value):
 			# info
 			_base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
 			_name = _girepository.g_base_info_get_name(_base_info)
-			name = _name.value
-			o = self._wrap(name)
+			o = self._wrap(_name.value)
 
 ########################################################################
 

@@ -222,15 +222,12 @@ G_CONNECT_SWAPPED = GConnectFlags(1 << 1)
 #
 # GClosure
 #
-
-#class GClosure(Structure):
-#	_fields_ = [
-#		('in_marshal', guint, 1),
-#		('is_invalid', guint, 1),
-#	]
 class GClosure(Structure):
 	_fields_ = [
-		('inmarshal_isinvalid', guint),
+		('refcount_metamarshal_nguards_nfnotifiers_ninotifiers_ininotify_floating_derivativeflag_inmarshal_isinvalid', guint),
+		('marshal', gpointer),
+		('data', gpointer),
+		('notifiers', gpointer),
 	]
 
 class GCClosure(Structure):
@@ -3499,12 +3496,6 @@ G_TYPE_CLOSURE = g_closure_get_type()
 	#~ del _closure_ids[_closure_id.value]
 	#~ g_closure_unref(gclosure_p)
 
-#~ typedef struct _MyClosure MyClosure;
-#~ struct _MyClosure
-#~ {
-	#~ GClosure closure;
-	#~ // extra data goes here
-#~ };
 _pyclosure_ids = {}
 
 class PyClosure(Structure):
@@ -3513,31 +3504,35 @@ class PyClosure(Structure):
 		('id', guint),
 	]
 
-#~ static void
-#~ my_closure_finalize (gpointer  notify_data,
-#~ GClosure *closure)
-#~ {
-	#~ MyClosure *my_closure = (MyClosure *)closure;
-	#~ // free extra data here
-#~ }
-def py_closure_finalize(_notify_data, _gclosure):
+def pyclosure_invalidate(_data, _gclosure):
 	global _pyclosure_ids
-	pyclosure = cast(_gclosure, POINTER(PyClosure))
-	pyid = pyclosure.contents.id
-	del _pyclosure_ids[pyid]
+	_pyclosure = cast(_gclosure, POINTER(PyClosure))
+	_pyclosure_id = _pyclosure.contents.id
+	pyclosure_id = _pyclosure_id.value
+	del _pyclosure_ids[pyclosure_id]
 
-#~ MyClosure *my_closure_new (gpointer data)
-#~ {
-	#~ GClosure *closure;
-	#~ MyClosure *my_closure;
-	#~ closure = g_closure_new_simple (sizeof (MyClosure), data);
-	#~ my_closure = (MyClosure *) closure;
-	#~ // initialize extra data here
-	#~ g_closure_add_finalize_notifier (closure, notify_data,
-	#~ my_closure_finalize);
-	#~ return my_closure;
-#~ }
-def py_closure_new(_data):
+def pyclosure_finalize(_data, _gclosure):
+	g_closure_unref(_gclosure)
+
+def pyclosure_new(_data, pyobj):
+	global _pyclosure_ids
+	pyclosure_id = len(_pyclosure_ids)
+	_pyclosure_id = guint(pyclosure_id)
+	_pyclosure_ids[pyclosure_id] = pyobj
+	
 	_gclosure = g_closure_new_simple(sizeof(PyClosure), _data)
 	_pyclosure = cast(_gclosure, POINTER(PyClosure))
+	_pyclosure.contents.id = _pyclosure_id
 	
+	g_closure_add_finalize_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_finalize))
+	g_closure_add_invalidate_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_invalidate))
+	
+	return _gclosure
+
+def pyclosure_invoke(_gclosure, args):
+	_pyclosure = cast(_gclosure, POINTER(PyClosure))
+	_pyclosure_id = _pyclosure.contents.id
+	pyclosure_id = _pyclosure_id.value
+	pyobj = _pyclosure_ids[pyclosure_id]
+	_return = pyobj(*args)
+	return _return

@@ -2344,9 +2344,11 @@ g_param_spec_pool_list_owned = ctypes_get_func(
 #
 # GClosure
 #
-GCallback = CFUNCTYPE(None)
+# GCallback = CFUNCTYPE(None, None)
+GCallback = CFUNCTYPE(gpointer, gpointer)
 GClosureMarshal = CFUNCTYPE(None, POINTER(GClosure), POINTER(GValue), guint, POINTER(GValue), gpointer, gpointer)
-GClosureNotify = CFUNCTYPE(None, gpointer, POINTER(GClosure))
+# GClosureNotify = CFUNCTYPE(None, gpointer, POINTER(GClosure))
+GClosureNotify = CFUNCTYPE(gpointer, gpointer, POINTER(GClosure))
 
 g_cclosure_new = ctypes_get_func(
 	libgobject,
@@ -3496,43 +3498,43 @@ G_TYPE_CLOSURE = g_closure_get_type()
 	#~ del _closure_ids[_closure_id.value]
 	#~ g_closure_unref(gclosure_p)
 
-_pyclosure_ids = {}
-
-class PyClosure(Structure):
-	_fields_ = [
-		('closure', GClosure),
-		('id', guint),
-	]
-
-def pyclosure_invalidate(_data, _gclosure):
-	global _pyclosure_ids
-	_pyclosure = cast(_gclosure, POINTER(PyClosure))
-	_pyclosure_id = _pyclosure.contents.id
-	pyclosure_id = _pyclosure_id.value
-	del _pyclosure_ids[pyclosure_id]
-
-def pyclosure_finalize(_data, _gclosure):
-	g_closure_unref(_gclosure)
-
-def pyclosure_new(_data, pyobj):
-	global _pyclosure_ids
-	pyclosure_id = len(_pyclosure_ids)
-	_pyclosure_id = guint(pyclosure_id)
-	_pyclosure_ids[pyclosure_id] = pyobj
-	
-	_gclosure = g_closure_new_simple(sizeof(PyClosure), _data)
-	_pyclosure = cast(_gclosure, POINTER(PyClosure))
-	_pyclosure.contents.id = _pyclosure_id
-	
-	g_closure_add_finalize_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_finalize))
-	g_closure_add_invalidate_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_invalidate))
-	
-	return _gclosure
-
-def pyclosure_invoke(_gclosure, args):
-	_pyclosure = cast(_gclosure, POINTER(PyClosure))
-	_pyclosure_id = _pyclosure.contents.id
-	pyclosure_id = _pyclosure_id.value
-	pyobj = _pyclosure_ids[pyclosure_id]
-	_return = pyobj(*args)
-	return _return
+#~ _pyclosure_ids = {}
+#~ 
+#~ class PyClosure(Structure):
+	#~ _fields_ = [
+		#~ ('closure', GClosure),
+		#~ ('id', guint),
+	#~ ]
+#~ 
+#~ def pyclosure_invalidate(_data, _gclosure):
+	#~ global _pyclosure_ids
+	#~ _pyclosure = cast(_gclosure, POINTER(PyClosure))
+	#~ _pyclosure_id = _pyclosure.contents.id
+	#~ pyclosure_id = _pyclosure_id.value
+	#~ del _pyclosure_ids[pyclosure_id]
+#~ 
+#~ def pyclosure_finalize(_data, _gclosure):
+	#~ g_closure_unref(_gclosure)
+#~ 
+#~ def pyclosure_new(_data, pyobj):
+	#~ global _pyclosure_ids
+	#~ pyclosure_id = len(_pyclosure_ids)
+	#~ _pyclosure_id = guint(pyclosure_id)
+	#~ _pyclosure_ids[pyclosure_id] = pyobj
+	#~ 
+	#~ _gclosure = g_closure_new_simple(sizeof(PyClosure), _data)
+	#~ _pyclosure = cast(_gclosure, POINTER(PyClosure))
+	#~ _pyclosure.contents.id = _pyclosure_id
+	#~ 
+	#~ g_closure_add_finalize_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_finalize))
+	#~ g_closure_add_invalidate_notifier(_gclosure, gpointer(None), (CFUNCTYPE(None, gpointer, POINTER(GClosure)))(pyclosure_invalidate))
+	#~ 
+	#~ return _gclosure
+#~ 
+#~ def pyclosure_invoke(_gclosure, args):
+	#~ _pyclosure = cast(_gclosure, POINTER(PyClosure))
+	#~ _pyclosure_id = _pyclosure.contents.id
+	#~ pyclosure_id = _pyclosure_id.value
+	#~ pyobj = _pyclosure_ids[pyclosure_id]
+	#~ _return = pyobj(*args)
+	#~ return _return

@@ -14,6 +14,10 @@ GObject = rep.GObject
 Gtk = rep.Gtk
 # Gtk._wrap_all()
 
+def cb_window_destroy(window, *args):
+	print window, args
+	Gtk.main_quit()
+
 if __name__ == '__main__':
 	Gtk.init(0, [])
 	window = Gtk.Window.new(Gtk.WindowType.toplevel)
@@ -21,8 +25,7 @@ if __name__ == '__main__':
 	window.show_all()
 	
 	# create and connect closure to window
-	_gclosure = gir._girepository.pyclosure_new(window._self, Gtk.main_quit)
-	closure = GObject.Closure(_self=_gclosure)
-	hid = GObject.signal_connect_closure(window, 'destroy', closure, False)
+	hid = window.connect('destroy', cb_window_destroy, None)
+	print hid
 	
 	Gtk.main()

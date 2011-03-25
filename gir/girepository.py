@@ -7,6 +7,9 @@ _girepository_instance = None
 _modules = {}
 _classes = {}
 
+_object_ids = {}
+_last_object_id = 0
+
 class GIError(Exception):
 	pass
 
@@ -260,6 +263,45 @@ class GITypelib(types.ModuleType):
 			# FIXME: parse signals
 			# FIXME: parse constant
 			
+			# HACK: uses direct low-level access to shared library
+			if namespace_classname == 'GObject.Object':
+				_libgobject = _girepository.libgobject
+				
+				def connect(instance, detailed_signal, py_handler, data):
+					def py_handler_func(a):
+						print 'py_handler_func:', a
+						py_handler(instance)
+						return 0
+					
+					def py_closure_notify_func(a, b):
+						print 'py_closure_notify_func:', a, b
+						return 0
+					
+					_instance = instance._self
+					_detailed_signal = _girepository.gchar_p(detailed_signal)
+					_c_handler = _girepository.GCallback(py_handler_func)
+					_data = _girepository.gpointer(0)
+					_destroy_data = _girepository.GClosureNotify(py_closure_notify_func)
+					_connect_flags = _girepository.gint(0)
+					
+					_return = _libgobject.g_signal_connect_data(
+						_instance,
+						_detailed_signal,
+						_c_handler,
+						_data,
+						_destroy_data,
+						_connect_flags
+					)
+					
+					return_ = int(_return.value)
+					return return_
+				
+				def disconnect(instance, handler_id):
+					print 'disconnect:', instance, handler_id
+				
+				clsdict['connect'] = connect
+				clsdict['disconnect'] = disconnect
+			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
@@ -343,6 +385,7 @@ class GITypelib(types.ModuleType):
 			setattr(self, attr, argument)
 			return argument
 		elif _info_type.value == _girepository.GI_INFO_TYPE_ERROR_DOMAIN.value:
+			# error domain
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_UNION.value:
 			# union
@@ -377,22 +420,31 @@ class GITypelib(types.ModuleType):
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
+			# value
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_SIGNAL.value:
+			# signal
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_VFUNC.value:
+			# vfunc
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_PROPERTY.value:
+			# property
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_FIELD.value:
+			# field
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_ARG.value:
+			# arg
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_TYPE.value:
+			# type
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		elif _info_type.value == _girepository.GI_INFO_TYPE_UNRESOLVED.value:
+			# unresolved
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 		else:
+			# error
 			raise GIError('unknown info type "%s" for %s' % (_info_type.value, attr))
 	
 	def _wrap_all(self):

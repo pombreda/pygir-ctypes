@@ -14,8 +14,8 @@ GObject = rep.GObject
 Gtk = rep.Gtk
 # Gtk._wrap_all()
 
-def cb_window_destroy(window, *args):
-	print window, args
+def cb_window_destroy(window, *args, **kwargs):
+	print('cb_window_destroy:', window, args, kwargs)
 	Gtk.main_quit()
 
 if __name__ == '__main__':
@@ -23,9 +23,5 @@ if __name__ == '__main__':
 	window = Gtk.Window.new(Gtk.WindowType.toplevel)
 	window.set_title('Test 1')
 	window.show_all()
-	
-	# create and connect closure to window
-	hid = window.connect('destroy', cb_window_destroy, None)
-	print hid
-	
+	window.connect('destroy', cb_window_destroy, None, a=10)
 	Gtk.main()

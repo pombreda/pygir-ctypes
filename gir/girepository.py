@@ -7,8 +7,8 @@ _girepository_instance = None
 _modules = {}
 _classes = {}
 
-_object_ids = {}
-_last_object_id = 0
+_cfunctype_cache = {}
+_cfunctype_last = 0
 
 class GIError(Exception):
 	pass
@@ -97,7 +97,7 @@ class GITypelib(types.ModuleType):
 		self._typelib = _typelib
 	
 	def __del__(self):
-		if self._typelib:
+		if self._typelib and _girepository:
 			_girepository.g_typelib_free(self._typelib)
 	
 	def __getattr__(self, attr):
@@ -267,16 +267,21 @@ class GITypelib(types.ModuleType):
 			if namespace_classname == 'GObject.Object':
 				_libgobject = _girepository.libgobject
 				
-				def connect(instance, detailed_signal, py_handler, data):
-					def py_handler_func(a):
-						print 'py_handler_func:', a
-						py_handler(instance)
+				def connect(instance, detailed_signal, py_handler, *args, **kwargs):
+					global _cfunctype_cache
+					
+					def py_handler_func():
+						return_ = py_handler(instance, *args, **kwargs)
+						
+						try:
+							return int(return_)
+						except TypeError:
+							return 0
+					
+					def py_closure_notify_func(_data, _closure):
 						return 0
 					
-					def py_closure_notify_func(a, b):
-						print 'py_closure_notify_func:', a, b
-						return 0
-					
+					# prepare
 					_instance = instance._self
 					_detailed_signal = _girepository.gchar_p(detailed_signal)
 					_c_handler = _girepository.GCallback(py_handler_func)
@@ -284,7 +289,8 @@ class GITypelib(types.ModuleType):
 					_destroy_data = _girepository.GClosureNotify(py_closure_notify_func)
 					_connect_flags = _girepository.gint(0)
 					
-					_return = _libgobject.g_signal_connect_data(
+					# connect
+					_handler_id = _libgobject.g_signal_connect_data(
 						_instance,
 						_detailed_signal,
 						_c_handler,
@@ -293,14 +299,34 @@ class GITypelib(types.ModuleType):
 						_connect_flags
 					)
 					
-					return_ = int(_return.value)
-					return return_
+					handler_id = int(_handler_id.value)
+					
+					# cache
+					_cfunctype_cache[(instance, handler_id)] = (_c_handler, _destroy_data)
+					
+					return handler_id
 				
 				def disconnect(instance, handler_id):
-					print 'disconnect:', instance, handler_id
+					global _cfunctype_cache
+					_instance = instance._self
+					_handler_id = _girepository.gulong(handler_id)
+					_libgobject.g_signal_handler_disconnect(_instance, _handler_id)
+					del _cfunctype_cache[(instance, handler_id)]
+				
+				def block(instance, handler_id):
+					_instance = instance._self
+					_handler_id = _girepository.gulong(handler_id)
+					_libgobject.g_signal_handler_block(_instance, _handler_id)
+				
+				def unblock(instance, handler_id):
+					_instance = instance._self
+					_handler_id = _girepository.gulong(handler_id)
+					_libgobject.g_signal_handler_unblock(_instance, _handler_id)
 				
 				clsdict['connect'] = connect
 				clsdict['disconnect'] = disconnect
+				clsdict['block'] = block
+				clsdict['unblock'] = unblock
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)

@@ -2344,11 +2344,9 @@ g_param_spec_pool_list_owned = ctypes_get_func(
 #
 # GClosure
 #
-# GCallback = CFUNCTYPE(None, None)
-GCallback = CFUNCTYPE(gpointer, gpointer)
+GCallback = CFUNCTYPE(None)
 GClosureMarshal = CFUNCTYPE(None, POINTER(GClosure), POINTER(GValue), guint, POINTER(GValue), gpointer, gpointer)
-# GClosureNotify = CFUNCTYPE(None, gpointer, POINTER(GClosure))
-GClosureNotify = CFUNCTYPE(gpointer, gpointer, POINTER(GClosure))
+GClosureNotify = CFUNCTYPE(None, gpointer, POINTER(GClosure))
 
 g_cclosure_new = ctypes_get_func(
 	libgobject,

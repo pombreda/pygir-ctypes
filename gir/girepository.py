@@ -3,10 +3,19 @@ import sys
 import types
 from . import _girepository
 
+# major python version
+if sys.version_info[0] == 2:
+	PY2, PY3 = True, False
+elif sys.version_info[0] == 3:
+	PY2, PY3 = False, True
+
+# cache used modules and classes
 _girepository_instance = None
 _modules = {}
 _classes = {}
 
+# cache used for signals/callbacks
+# REASON: preserve gc
 _cfunctype_cache = {}
 _cfunctype_last = 0
 
@@ -35,10 +44,20 @@ class GIRepository(object):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def require(self, namespace, version=None):
+		global _modules
+		
+		# python compatibility
+		if PY2:
+			namespace_bytes = namespace
+			version_bytes = version if version else None
+		elif PY3:
+			namespace_bytes = namespace.encode()
+			version_bytes = version.encode() if version else None
+		
 		# prepare function args
 		_repository = self._repository
-		_namespace = _girepository.gchar_p(namespace)
-		_version = _girepository.gchar_p(version)
+		_namespace = _girepository.gchar_p(namespace_bytes)
+		_version = _girepository.gchar_p(version_bytes)
 		_flags = _girepository.G_IREPOSITORY_LOAD_FLAG_LAZY
 		_error = _girepository.cast(
 			_girepository.gpointer(),
@@ -53,14 +72,12 @@ class GIRepository(object):
 		if not _typelib and _error.contents:
 			raise GIError(_error.contents.message.value)
 		
-		# if version not present, get default version
+		# if version_bytes not present, get default version_bytes
 		if not version:
 			_version = _girepository.g_irepository_get_version(_repository, _namespace)
-				
-		# module
-		global _modules
 		
-		if namespace in _modules:
+		# module
+		if namespace_bytes in _modules:
 			module = _modules[namespace]
 		else:
 			# new module
@@ -77,8 +94,14 @@ class GIRepository(object):
 					_dependency = _dependencies[i]
 					
 					if _dependency.value:
+						dependency_bytes = _dependency.value
+						
+						if PY2:
+							dependency = dependency_bytes
+						elif PY3:
+							dependency = dependency_bytes.decode()
+						
 						# require (import) dependency
-						dependency = _dependency.value
 						_namespace, _version = dependency.split('-')
 						_module = self.require(_namespace, _version)
 					else:
@@ -97,8 +120,9 @@ class GITypelib(types.ModuleType):
 		self._typelib = _typelib
 	
 	def __del__(self):
-		if self._typelib and _girepository:
-			_girepository.g_typelib_free(self._typelib)
+		#if self._typelib and _girepository:
+		#	_girepository.g_typelib_free(self._typelib)
+		pass
 	
 	def __getattr__(self, attr):
 		try:
@@ -107,11 +131,23 @@ class GITypelib(types.ModuleType):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def _wrap(self, attr):
+		# python compatibility
+		if PY2:
+			attr_bytes = attr
+		elif PY3:
+			attr_bytes = attr.encode()
+		
 		# prepare
 		_namespace = _girepository.g_typelib_get_namespace(self._typelib)
-		namespace = _namespace.value
+		namespace_bytes = _namespace.value
+		
+		if PY2:
+			namespace = namespace_bytes
+		elif PY3:
+			namespace = namespace_bytes.decode()
+		
 		namespace_classname = '%s.%s'	% (namespace, attr)
-		_attr = _girepository.gchar_p(attr)
+		_attr = _girepository.gchar_p(attr_bytes)
 		_base_info = _girepository.g_irepository_find_by_name(None, _namespace, _attr)
 		if not _base_info: raise GIError('missing attribute "%s"' % attr)
 		_info_type = _girepository.g_base_info_get_type(_base_info)
@@ -154,8 +190,15 @@ class GITypelib(types.ModuleType):
 				_function_info_method = _girepository.g_struct_info_get_method(_struct_info, _girepository.gint(i))
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
+				base_info_method_name_bytes = _base_info_method_name.value
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
+				
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[_base_info_method_name.value] = method
+				clsdict[base_info_method_name] = method
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
@@ -184,8 +227,15 @@ class GITypelib(types.ModuleType):
 				_value_info = _girepository.g_enum_info_get_value(_enum_info, _girepository.gint(i))
 				_value_info_base_info = _girepository.cast(_value_info, _girepository.POINTER(_girepository.GIBaseInfo))
 				_value_info_name = _girepository.g_base_info_get_name(_value_info_base_info)
+				value_info_name_bytes = _value_info_name.value
+				
+				if PY2:
+					value_info_name = value_info_name_bytes
+				elif PY3:
+					value_info_name = value_info_name_bytes.decode()
+				
 				_value_info_value = _girepository.g_value_info_get_value(_value_info)
-				clsdict[_value_info_name.value] = _value_info_value.value
+				clsdict[value_info_name] = _value_info_value.value
 			
 			# create new class
 			class_ = type(clsname, clsbases, clsdict)
@@ -199,7 +249,21 @@ class GITypelib(types.ModuleType):
 			_object_info_parent = _girepository.g_object_info_get_parent(_object_info)
 			_base_info_parent = _girepository.cast(_object_info_parent, _girepository.POINTER(_girepository.GIBaseInfo))
 			_base_info_parent_namespace = _girepository.g_base_info_get_namespace(_base_info_parent)
+			base_info_parent_namespace_bytes = _base_info_parent_namespace.value
+			
+			if PY2:
+				base_info_parent_namespace = base_info_parent_namespace_bytes
+			elif PY3:
+				base_info_parent_namespace = base_info_parent_namespace_bytes.decode()
+			
 			_base_info_parent_name = _girepository.g_base_info_get_name(_base_info_parent)
+			base_info_parent_name_bytes = _base_info_parent_name.value
+			
+			if PY2:
+				base_info_parent_name = base_info_parent_name_bytes
+			elif PY3:
+				base_info_parent_name = base_info_parent_name_bytes.decode()
+			
 			_struct_info_class = _girepository.g_object_info_get_class_struct(_object_info)
 			
 			# class
@@ -209,15 +273,16 @@ class GITypelib(types.ModuleType):
 			clsdict['_struct_info_class'] = _struct_info_class
 			
 			# bases
-			if namespace == _base_info_parent_namespace.value and attr == _base_info_parent_name.value:
+			if namespace == base_info_parent_namespace and attr == base_info_parent_name:
 				clsbases = [GIObject]
 			else:
 				# bases = [parent] + interfaces
 				clsbases = []
 				
 				# parent
-				module_parent = _modules[_base_info_parent_namespace.value]
-				clsbases.append(module_parent.__getattr__(_base_info_parent_name.value))
+				module_parent = _modules[base_info_parent_namespace]
+				clsbase = getattr(module_parent, base_info_parent_name)
+				clsbases.append(clsbase)
 				
 				# interfaces
 				_object_info_n_interfaces = _girepository.g_object_info_get_n_interfaces(_object_info)
@@ -229,14 +294,26 @@ class GITypelib(types.ModuleType):
 					
 					# interface namespace
 					_base_info_interface_namespace = _girepository.g_base_info_get_namespace(_base_info_interface)
+					base_info_interface_namespace_bytes = _base_info_interface_namespace.value
+					
+					if PY2:
+						base_info_interface_namespace = base_info_interface_namespace_bytes
+					elif PY3:
+						base_info_interface_namespace = base_info_interface_namespace_bytes.decode()
 					
 					# interface name
 					_base_info_interface_name = _girepository.g_base_info_get_name(_base_info_interface)
+					base_info_interface_name_bytes = _base_info_interface_name.value
+					
+					if PY2:
+						base_info_interface_name = base_info_interface_name_bytes
+					elif PY3:
+						base_info_interface_name = base_info_interface_name_bytes.decode()
 					
 					# add interface to clsbasses
-					module_interface = _modules[_base_info_interface_namespace.value]
-					interface = getattr(module_interface, _base_info_interface_name.value)
-					clsbases.append(interface)
+					module_interface = _modules[base_info_interface_namespace]
+					clsbase = getattr(module_interface, base_info_interface_name)
+					clsbases.append(clsbase)
 			
 			mrobases = _mro(clsbases)
 			clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
@@ -255,10 +332,16 @@ class GITypelib(types.ModuleType):
 				
 				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
+				base_info_method_name_bytes = _base_info_method_name.value
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
 				
 				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[_base_info_method_name.value] = method
+				clsdict[base_info_method_name] = method
 			
 			# FIXME: parse signals
 			# FIXME: parse constant
@@ -283,7 +366,12 @@ class GITypelib(types.ModuleType):
 					
 					# prepare
 					_instance = instance._self
-					_detailed_signal = _girepository.gchar_p(detailed_signal)
+					
+					if PY2:
+						_detailed_signal = _girepository.gchar_p(detailed_signal)
+					elif PY3:
+						_detailed_signal = _girepository.gchar_p(detailed_signal.encode())
+					
 					_c_handler = _girepository.GCallback(py_handler_func)
 					_data = _girepository.gpointer(0)
 					_destroy_data = _girepository.GClosureNotify(py_closure_notify_func)
@@ -355,16 +443,26 @@ class GITypelib(types.ModuleType):
 					
 					# prerequisite namespace
 					_base_info_prerequisite_namespace = _girepository.g_base_info_get_namespace(_base_info_prerequisite)
-					base_info_prerequisite_namespace = _base_info_prerequisite_namespace.value
+					base_info_prerequisite_namespace_bytes = _base_info_prerequisite_namespace.value
+					
+					if PY2:
+						base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes
+					elif PY3:
+						base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes.decode()
 					
 					# prerequisite name
 					_base_info_prerequisite_name = _girepository.g_base_info_get_name(_base_info_prerequisite)
-					base_info_prerequisite_name = _base_info_prerequisite_name.value
+					base_info_prerequisite_name_bytes = _base_info_prerequisite_name.value
+					
+					if PY2:
+						base_info_prerequisite_name = base_info_prerequisite_name_bytes
+					elif PY3:
+						base_info_prerequisite_name = base_info_prerequisite_name_bytes.decode()
 					
 					# append prerequisite (parent interface) to clsbases
 					module_prerequisite = _modules[base_info_prerequisite_namespace]
-					prerequisite = module_prerequisite.__getattr__(base_info_prerequisite_name)
-					clsbases.append(prerequisite)
+					clsbase = getattr(module_prerequisite, base_info_prerequisite_name)
+					clsbases.append(clsbase)
 			else:
 				# other, base class is GIInterface
 				clsbases.append(GIInterface)
@@ -385,7 +483,12 @@ class GITypelib(types.ModuleType):
 				
 				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
-				base_info_method_name = _base_info_method_name.value
+				base_info_method_name_bytes = _base_info_method_name.value
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
 				
 				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
@@ -436,8 +539,15 @@ class GITypelib(types.ModuleType):
 				_function_info_method = _girepository.g_union_info_get_method(_union_info, _girepository.gint(i))
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
+				base_info_method_name_bytes = _base_info_method_name.value
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
+				
 				method = GIFunction(_function_info=_function_info_method)
-				clsdict[_base_info_method_name.value] = method
+				clsdict[base_info_method_name] = method
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
@@ -485,7 +595,14 @@ class GITypelib(types.ModuleType):
 			# info
 			_base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
 			_name = _girepository.g_base_info_get_name(_base_info)
-			o = self._wrap(_name.value)
+			name_bytes = _name.value
+			
+			if PY2:
+				name = name_bytes
+			elif PY3:
+				name = name_bytes.decode()
+			
+			o = self._wrap(name)
 
 ########################################################################
 
@@ -505,8 +622,9 @@ class GIBase(object):
 			self._self = None
 	
 	def __del__(self):
-		if self._base_info:
-			_girepository.g_base_info_unref(self._base_info)
+		#if self._base_info:
+		#	_girepository.g_base_info_unref(self._base_info)
+		pass
 
 class GICallable(GIBase):
 	_callable_info = None
@@ -894,7 +1012,7 @@ def _merge_mro(seqs):
 				del seq[0]
 
 def _calc_mro(C):
-	return _merge_mro([[C]] + map(_calc_mro, C.__bases__) + [list(C.__bases__)])
+	return _merge_mro([[C]] + [_calc_mro(base) for base in C.__bases__] + [list(C.__bases__)])
 
 def _mro(bases):
 	segs = []
@@ -1001,7 +1119,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		_type_tag = _girepository.g_base_info_get_type(_base_info)
 		
 		if _type_tag.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
-			# FIXME: correct implementation
+			# FIXME: implement
 			# obj = lambda *args: None
 			raise GIError('unsupported type tag %i' % _type_tag.value)
 		elif _type_tag.value in (
@@ -1013,8 +1131,9 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
-					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
+					# FIXME: implement
 					obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
+					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
 				elif _type.value in (
 					_girepository.G_TYPE_BOXED.value,
 					_girepository.G_TYPE_POINTER.value,
@@ -1089,10 +1208,12 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 			_param_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
 			
 			# FIXME: implement hash table iteration
+			# ...
 			
 			_girepository.g_base_info_unref(_key_base_info)
 			_girepository.g_base_info_unref(_value_base_info)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
+		# FIXME: implement
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	else:
 		raise GIError('unsupported type tag %i' % _type_tag.value)
@@ -1130,20 +1251,28 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
 		_arg.v_long = _girepository.glong(obj)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_UTF8.value:
-		_arg.v_string = _girepository.gchar_p(obj)
+		if PY2:
+			_arg.v_string = _girepository.gchar_p(obj)
+		elif PY3:
+			obj_bytes = obj.encode()
+			_arg.v_string = _girepository.gchar_p(obj_bytes)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
-		_arg.v_string = _girepository.gchar_p(obj)
+		if PY2:
+			_arg.v_string = _girepository.gchar_p(obj)
+		elif PY3:
+			obj_bytes = obj.encode()
+			_arg.v_string = _girepository.gchar_p(obj_bytes)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
 		# raise GIError('unsupported type tag %i' % _type_tag.value)
-		# FIXME: implement me
+		# FIXME: implement
 		pass
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
 		_base_info = _girepository.g_type_info_get_interface(_type_info)
 		_registered_type_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 		_info_type = _girepository.g_base_info_get_type(_base_info)
 		
-		# raise GIError('unsupported type tag %i' % _type_tag.value)
 		if _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
+			# FIXME: implement
 			raise GIError('unsupported info type %i' % _info_type.value)
 		elif _info_type.value in (
 			_girepository.GI_INFO_TYPE_BOXED.value,
@@ -1156,12 +1285,15 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
+					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				elif _type.value == _girepository.G_TYPE_CLOSURE.value:
 					_arg.v_pointer = obj._self
 				elif _type.value == _girepository.G_TYPE_BOXED.value:
+					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				elif _type.value == _girepository.G_TYPE_VALUE.value:
+					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				else:
 					raise GIError('unsupported type %i' % _type.value)
@@ -1178,37 +1310,41 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 		else:
 			raise GIError('unsupported info type %i' % _info_type.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
+		# FIXME: implement
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
+		# FIXME: implement
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
+		# FIXME: implement
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
+		# FIXME: implement
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	else:
 		raise GIError('unsupported type tag %i' % _type_tag.value)
 	
 	return _arg
 
-#~ def _convert_gvalue_to_pyobject(_value, copy_boxed):
-	#~ obj = None
-	#~ return obj
-
-#~ def _convert_pyobject_to_gvalue(obj):
-	#~ _value = _girepository.GArray()
-	#~ return _value
-
-#~ def _convert_gtype_to_pytype(_type):
-	#~ pass
-
-#~ def _convert_pytype_to_gtype(type_):
-	#~ pass
-
 def _convert_gibaseinfo_to_pytype(_gibaseinfo):
 	global _girepository_instance
 	_namespace = _girepository.g_base_info_get_namespace(_gibaseinfo)
+	namespace_bytes = _namespace.value
+	
+	if PY2:
+		namespace = namespace_bytes
+	elif PY3:
+		namespace = namespace_bytes.decode()
+	
 	_name = _girepository.g_base_info_get_name(_gibaseinfo)
+	name_bytes = _name.value
+	
+	if PY2:
+		name = name_bytes
+	elif PY3:
+		name = name_bytes.decode()
+	
 	girepository = GIRepository()
-	gitypelib = getattr(girepository, _namespace.value)
-	pytype = getattr(gitypelib, _name.value)
+	gitypelib = getattr(girepository, namespace)
+	pytype = getattr(gitypelib, name)
 	return pytype

@@ -626,13 +626,19 @@ class GIFunction(GICallable):
 	
 	def __repr__(self):
 		_function_info_symbol = _girepository.g_function_info_get_symbol(self._function_info)
+		function_info_symbol_bytes = _function_info_symbol.value
+		if PY2: function_info_symbol = function_info_symbol_bytes
+		elif PY3: function_info_symbol = function_info_symbol_bytes.decode()
 		_function_info_name = _girepository.g_base_info_get_name(self._base_info)
+		function_info_name_bytes = _function_info_name.value
+		if PY2: function_info_name = function_info_name_bytes
+		elif PY3: function_info_name = function_info_name_bytes.decode()
 		
 		return ''.join((
 			'<',
 			self.__class__.__name__,
 			' ',
-			_function_info_symbol.value if _function_info_symbol else _function_info_name.value,
+			function_info_symbol if function_info_symbol else function_info_name,
 			' at ',
 			hex(id(self)),
 			'>',
@@ -640,58 +646,31 @@ class GIFunction(GICallable):
 	
 	def __get__(self, obj, type_=None):
 		_function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
-		func = None
+		_base_info_name = _girepository.g_base_info_get_name(self._base_info)
+		base_info_name_bytes = _base_info_name.value
+		if PY2: base_info_name = base_info_name_bytes
+		elif PY3: base_info_name = base_info_name_bytes.decode()
 		
 		if isinstance(obj, type_):
 			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 				func = lambda *args, **kwargs: self(obj._self, *args, _pytype=type_, **kwargs)
-				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
-				base_info_name_bytes = _base_info_name.value
-				
-				if PY2:
-					base_info_name = base_info_name_bytes
-					func.func_name = base_info_name
-				elif PY3:
-					base_info_name = base_info_name_bytes.decode()
-					func.__name__ = base_info_name
 			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
 				func = lambda cls, *args, **kwargs: self(*args, _pytype=type_, **kwargs)
-				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
-				base_info_name_bytes = _base_info_name.value
-				
-				if PY2:
-					base_info_name = base_info_name_bytes
-					func.func_name = base_info_name
-				elif PY3:
-					base_info_name = base_info_name_bytes.decode()
-					func.__name__ = base_info_name
-				
+				if PY2: func.func_name = base_info_name
+				elif PY3: func.__name__ = base_info_name
 				func = classmethod(func)
 			else:
 				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
 		else:
 			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 				func = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
-				
-				if PY2:
-					base_info_name = base_info_name_bytes
-					func.func_name = base_info_name
-				elif PY3:
-					base_info_name = base_info_name_bytes.decode()
-					func.__name__ = base_info_name
+				if PY2: func.func_name = base_info_name
+				elif PY3: func.__name__ = base_info_name
 			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
 				func = lambda cls, *args, **kwargs: self(*args, _pytype=cls, **kwargs)
-				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
-				base_info_name_bytes = _base_info_name.value
-				
-				if PY2:
-					base_info_name = base_info_name_bytes
-					func.func_name = base_info_name
-				elif PY3:
-					base_info_name = base_info_name_bytes.decode()
-					func.__name__ = base_info_name
-				
-				#~ func = classmethod(func)
+				if PY2: func.func_name = base_info_name
+				elif PY3: func.__name__ = base_info_name
+				func = classmethod(func)
 			else:
 				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
 		
@@ -888,7 +867,6 @@ class GIInterface(GIRegisteredType):
 
 class GIObject(GIRegisteredType):
 	_object_info = None
-	_function_info_constructor = None
 	
 	def __init__(self, *args, **kwargs):
 		try:

@@ -46,10 +46,13 @@ class GIRepository(object):
 	def require(self, namespace, version=None):
 		global _modules
 		
-		if PY2: namespace_bytes = namespace
-		elif PY3: namespace_bytes = namespace.encode()
-		if PY2: version_bytes = version if version else None
-		elif PY3: version_bytes = version.encode() if version else None
+		# python compatibility
+		if PY2:
+			namespace_bytes = namespace
+			version_bytes = version if version else None
+		elif PY3:
+			namespace_bytes = namespace.encode()
+			version_bytes = version.encode() if version else None
 		
 		# prepare function args
 		_repository = self._repository
@@ -69,14 +72,10 @@ class GIRepository(object):
 		if not _typelib and _error.contents:
 			raise GIError(_error.contents.message.value)
 		
-		# if version_bytes not present, get default version_bytes
-		if not version:
-			_version = _girepository.g_irepository_get_version(_repository, _namespace)
-		
 		# module
-		if namespace_bytes in _modules:
+		try:
 			module = _modules[namespace]
-		else:
+		except KeyError:
 			# new module
 			module = GITypelib(namespace, '', _typelib)
 			
@@ -96,8 +95,8 @@ class GIRepository(object):
 						elif PY3: dependency = dependency_bytes.decode()
 						
 						# require (import) dependency
-						_namespace, _version = dependency.split('-')
-						_module = self.require(_namespace, _version)
+						namespace_, version_ = dependency.split('-')
+						module_ = self.require(namespace_, version_)
 					else:
 						break
 					
@@ -125,6 +124,8 @@ class GITypelib(types.ModuleType):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def _wrap(self, attr):
+		global _girepository_instance
+		
 		# python compatibility
 		if PY2: attr_bytes = attr
 		elif PY3: attr_bytes = attr.encode()
@@ -137,7 +138,7 @@ class GITypelib(types.ModuleType):
 		
 		namespace_classname = '%s.%s'	% (namespace, attr)
 		_attr = _girepository.gchar_p(attr_bytes)
-		_base_info = _girepository.g_irepository_find_by_name(None, _namespace, _attr)
+		_base_info = _girepository.g_irepository_find_by_name(_girepository_instance._repository, _namespace, _attr)
 		if not _base_info: raise GIError('missing attribute "%s"' % attr)
 		_info_type = _girepository.g_base_info_get_type(_base_info)
 		
@@ -161,17 +162,14 @@ class GITypelib(types.ModuleType):
 			_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
 			
 			# create class
-			clsname = attr
-			clsbases = (GIStruct,)
-			mrobases = _mro(clsbases)
-			clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
-			clsbases = tuple(clsbases)
+			clsname = namespace_classname
+			clsbases = (clsbase for clsbase in _mro([GIStruct]) if clsbase in clsbases)
 			clsdict = {}
 			clsdict['_struct_info'] = _struct_info
 			
 			# FIXME: parse fields
 			
-			# FIXME: methods
+			# methods
 			_struct_info_n_methods = _girepository.g_struct_info_get_n_methods(_struct_info)
 			
 			for i in range(_struct_info_n_methods.value):
@@ -237,13 +235,11 @@ class GITypelib(types.ModuleType):
 			base_info_parent_name_bytes = _base_info_parent_name.value
 			if PY2: base_info_parent_name = base_info_parent_name_bytes
 			elif PY3: base_info_parent_name = base_info_parent_name_bytes.decode()
-			_struct_info_class = _girepository.g_object_info_get_class_struct(_object_info)
 			
 			# class
 			clsname = namespace_classname
 			clsdict = {}
 			clsdict['_object_info'] = _object_info
-			clsdict['_struct_info_class'] = _struct_info_class
 			
 			# bases
 			if namespace == base_info_parent_namespace and attr == base_info_parent_name:
@@ -268,14 +264,20 @@ class GITypelib(types.ModuleType):
 					# interface namespace
 					_base_info_interface_namespace = _girepository.g_base_info_get_namespace(_base_info_interface)
 					base_info_interface_namespace_bytes = _base_info_interface_namespace.value
-					if PY2: base_info_interface_namespace = base_info_interface_namespace_bytes
-					elif PY3: base_info_interface_namespace = base_info_interface_namespace_bytes.decode()
+					
+					if PY2:
+						base_info_interface_namespace = base_info_interface_namespace_bytes
+					elif PY3:
+						base_info_interface_namespace = base_info_interface_namespace_bytes.decode()
 					
 					# interface name
 					_base_info_interface_name = _girepository.g_base_info_get_name(_base_info_interface)
 					base_info_interface_name_bytes = _base_info_interface_name.value
-					if PY2: base_info_interface_name = base_info_interface_name_bytes
-					elif PY3: base_info_interface_name = base_info_interface_name_bytes.decode()
+					
+					if PY2:
+						base_info_interface_name = base_info_interface_name_bytes
+					elif PY3:
+						base_info_interface_name = base_info_interface_name_bytes.decode()
 					
 					# add interface to clsbasses
 					module_interface = _modules[base_info_interface_namespace]
@@ -300,56 +302,15 @@ class GITypelib(types.ModuleType):
 				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
 				base_info_method_name_bytes = _base_info_method_name.value
-				if PY2: base_info_method_name = base_info_method_name_bytes
-				elif PY3: base_info_method_name = base_info_method_name_bytes.decode()
 				
-				#~ _function_info_symbol = _girepository.g_function_info_get_symbol(_function_info_method)
-				#~ function_info_symbol_bytes = _function_info_symbol.value
-				#~ if PY2: function_info_symbol = function_info_symbol_bytes
-				#~ elif PY3: function_info_symbol = function_info_symbol_bytes.decode()
-				#~ _function_info_name = _girepository.g_base_info_get_name(_base_info_method)
-				#~ function_info_name_bytes = _function_info_name.value
-				#~ if PY2: function_info_name = function_info_name_bytes
-				#~ elif PY3: function_info_name = function_info_name_bytes.decode()
-				#~ print('*', function_info_symbol, function_info_name_bytes)
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
 				
-				# function
-				gifunction = GIFunction(_function_info=_function_info_method)
-				_function_info_flags = _girepository.g_function_info_get_flags(_function_info_method)
-				
-				if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-					function = lambda *args, **kwargs: gifunction(*args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-					function = staticmethod(function)
-				elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_GETTER.value:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_SETTER.value:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				elif _function_info_flags.value & _girepository.GI_FUNCTION_WRAPS_VFUNC.value:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				elif _function_info_flags.value & _girepository.GI_FUNCTION_THROWS.value:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				else:
-					function = lambda self, *args, **kwargs: gifunction(self, *args, **kwargs)
-					if PY2: function.func_name = base_info_method_name
-					elif PY3: function.__name__ = base_info_method_name
-				
-				# attach function to class dict
-				#~ print('**', base_info_method_name, function)
-				clsdict[base_info_method_name] = function
+				# attach method to class dict
+				method = GIFunction(_function_info=_function_info_method)
+				clsdict[base_info_method_name] = method
 			
 			# FIXME: parse signals
 			# FIXME: parse constant
@@ -452,14 +413,20 @@ class GITypelib(types.ModuleType):
 					# prerequisite namespace
 					_base_info_prerequisite_namespace = _girepository.g_base_info_get_namespace(_base_info_prerequisite)
 					base_info_prerequisite_namespace_bytes = _base_info_prerequisite_namespace.value
-					if PY2: base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes
-					elif PY3: base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes.decode()
+					
+					if PY2:
+						base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes
+					elif PY3:
+						base_info_prerequisite_namespace = base_info_prerequisite_namespace_bytes.decode()
 					
 					# prerequisite name
 					_base_info_prerequisite_name = _girepository.g_base_info_get_name(_base_info_prerequisite)
 					base_info_prerequisite_name_bytes = _base_info_prerequisite_name.value
-					if PY2: base_info_prerequisite_name = base_info_prerequisite_name_bytes
-					elif PY3: base_info_prerequisite_name = base_info_prerequisite_name_bytes.decode()
+					
+					if PY2:
+						base_info_prerequisite_name = base_info_prerequisite_name_bytes
+					elif PY3:
+						base_info_prerequisite_name = base_info_prerequisite_name_bytes.decode()
 					
 					# append prerequisite (parent interface) to clsbases
 					module_prerequisite = _modules[base_info_prerequisite_namespace]
@@ -475,7 +442,7 @@ class GITypelib(types.ModuleType):
 			
 			# FIXME: parse properties
 			
-			# FIXME: methods
+			# methods
 			_interface_info_n_methods = _girepository.g_interface_info_get_n_methods(_interface_info)
 			
 			for i in range(_interface_info_n_methods.value):
@@ -486,8 +453,11 @@ class GITypelib(types.ModuleType):
 				# method name
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
 				base_info_method_name_bytes = _base_info_method_name.value
-				if PY2: base_info_method_name = base_info_method_name_bytes
-				elif PY3: base_info_method_name = base_info_method_name_bytes.decode()
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
 				
 				# attach method to class dict
 				method = GIFunction(_function_info=_function_info_method)
@@ -520,7 +490,7 @@ class GITypelib(types.ModuleType):
 			_union_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIUnionInfo))
 			
 			# create class
-			clsname = attr
+			clsname = namespace_classname
 			clsbases = (GIUnion,)
 			mrobases = _mro(clsbases)
 			clsbases = [clsbase for clsbase in mrobases if clsbase in clsbases]
@@ -530,7 +500,7 @@ class GITypelib(types.ModuleType):
 			
 			# FIXME: parse fields
 			
-			# FIXME: methods
+			# methods
 			_union_info_n_methods = _girepository.g_union_info_get_n_methods(_union_info)
 			
 			for i in range(_union_info_n_methods.value):
@@ -539,8 +509,12 @@ class GITypelib(types.ModuleType):
 				_base_info_method = _girepository.cast(_function_info_method, _girepository.POINTER(_girepository.GIBaseInfo))
 				_base_info_method_name = _girepository.g_base_info_get_name(_base_info_method)
 				base_info_method_name_bytes = _base_info_method_name.value
-				if PY2: base_info_method_name = base_info_method_name_bytes
-				elif PY3: base_info_method_name = base_info_method_name_bytes.decode()
+				
+				if PY2:
+					base_info_method_name = base_info_method_name_bytes
+				elif PY3:
+					base_info_method_name = base_info_method_name_bytes.decode()
+				
 				method = GIFunction(_function_info=_function_info_method)
 				clsdict[base_info_method_name] = method
 			
@@ -591,8 +565,12 @@ class GITypelib(types.ModuleType):
 			_base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
 			_name = _girepository.g_base_info_get_name(_base_info)
 			name_bytes = _name.value
-			if PY2: name = name_bytes
-			elif PY3: name = name_bytes.decode()
+			
+			if PY2:
+				name = name_bytes
+			elif PY3:
+				name = name_bytes.decode()
+			
 			o = self._wrap(name)
 
 ########################################################################
@@ -648,23 +626,76 @@ class GIFunction(GICallable):
 	
 	def __repr__(self):
 		_function_info_symbol = _girepository.g_function_info_get_symbol(self._function_info)
-		function_info_symbol_bytes = _function_info_symbol.value
-		if PY2: function_info_symbol = function_info_symbol_bytes
-		elif PY3: function_info_symbol = function_info_symbol_bytes.decode()
 		_function_info_name = _girepository.g_base_info_get_name(self._base_info)
-		function_info_name_bytes = _function_info_name.value
-		if PY2: function_info_name = function_info_name_bytes
-		elif PY3: function_info_name = function_info_name_bytes.decode()
 		
 		return ''.join((
 			'<',
 			self.__class__.__name__,
 			' ',
-			function_info_symbol if function_info_symbol else function_info_name,
+			_function_info_symbol.value if _function_info_symbol else _function_info_name.value,
 			' at ',
 			hex(id(self)),
 			'>',
 		))
+	
+	def __get__(self, obj, type_=None):
+		_function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
+		func = None
+		
+		if isinstance(obj, type_):
+			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+				func = lambda *args, **kwargs: self(obj._self, *args, _pytype=type_, **kwargs)
+				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
+				base_info_name_bytes = _base_info_name.value
+				
+				if PY2:
+					base_info_name = base_info_name_bytes
+					func.func_name = base_info_name
+				elif PY3:
+					base_info_name = base_info_name_bytes.decode()
+					func.__name__ = base_info_name
+			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+				func = lambda cls, *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
+				base_info_name_bytes = _base_info_name.value
+				
+				if PY2:
+					base_info_name = base_info_name_bytes
+					func.func_name = base_info_name
+				elif PY3:
+					base_info_name = base_info_name_bytes.decode()
+					func.__name__ = base_info_name
+				
+				func = classmethod(func)
+			else:
+				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
+		else:
+			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+				func = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+				
+				if PY2:
+					base_info_name = base_info_name_bytes
+					func.func_name = base_info_name
+				elif PY3:
+					base_info_name = base_info_name_bytes.decode()
+					func.__name__ = base_info_name
+			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+				func = lambda cls, *args, **kwargs: self(*args, _pytype=cls, **kwargs)
+				_base_info_name = _girepository.g_base_info_get_name(self._base_info)
+				base_info_name_bytes = _base_info_name.value
+				
+				if PY2:
+					base_info_name = base_info_name_bytes
+					func.func_name = base_info_name
+				elif PY3:
+					base_info_name = base_info_name_bytes.decode()
+					func.__name__ = base_info_name
+				
+				#~ func = classmethod(func)
+			else:
+				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
+		
+		return func
 	
 	def __call__(self, *args, **kwargs):
 		print('GIFunction.__call__', args, kwargs)
@@ -685,8 +716,6 @@ class GIFunction(GICallable):
 		_arg_outs = []
 		
 		# function info flags?
-		print('GIFunction.__call__', repr(self), _function_info_flags.value)
-		
 		if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 			# preserve instance
 			_self_arg = _girepository.GIArgument()
@@ -719,7 +748,7 @@ class GIFunction(GICallable):
 				_arg_outs.append(_arg)
 		
 		# function info flags?
-		if _function_info_flags.value == _girepository.GI_FUNCTION_IS_METHOD.value:
+		if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 			# prepend instance
 			_arg_ins[0:0] = [_self_arg]
 		
@@ -859,7 +888,6 @@ class GIInterface(GIRegisteredType):
 
 class GIObject(GIRegisteredType):
 	_object_info = None
-	_struct_info_class = None
 	_function_info_constructor = None
 	
 	def __init__(self, *args, **kwargs):
@@ -870,11 +898,6 @@ class GIObject(GIRegisteredType):
 			self._object_info = _object_info
 		except KeyError:
 			GIRegisteredType.__init__(self, *args, **kwargs)
-		
-		try:
-			self._struct_info_class = kwargs.pop('_struct_info_class')
-		except KeyError:
-			pass
 
 class GIStruct(GIRegisteredType):
 	_struct_info = None
@@ -1323,15 +1346,21 @@ def _convert_gibaseinfo_to_pytype(_gibaseinfo):
 	global _girepository_instance
 	_namespace = _girepository.g_base_info_get_namespace(_gibaseinfo)
 	namespace_bytes = _namespace.value
-	if PY2: namespace = namespace_bytes
-	elif PY3: namespace = namespace_bytes.decode()
+	
+	if PY2:
+		namespace = namespace_bytes
+	elif PY3:
+		namespace = namespace_bytes.decode()
+	
 	_name = _girepository.g_base_info_get_name(_gibaseinfo)
 	name_bytes = _name.value
-	if PY2: name = name_bytes
-	elif PY3: name = name_bytes.decode()
+	
+	if PY2:
+		name = name_bytes
+	elif PY3:
+		name = name_bytes.decode()
 	
 	girepository = GIRepository()
 	gitypelib = getattr(girepository, namespace)
 	pytype = getattr(gitypelib, name)
-	
 	return pytype

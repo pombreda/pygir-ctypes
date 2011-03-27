@@ -1,5 +1,6 @@
 from ._gobject import *
 
+# girepository - C library
 libgirepository = CDLL(find_library('girepository-1.0'))
 
 #

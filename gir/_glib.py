@@ -1,5 +1,6 @@
 from ._common import *
 
+# glib - C library
 libglib = CDLL(find_library('glib-2.0'))
 
 class gboolean(c_int): pass
@@ -21,14 +22,14 @@ class glong(c_long): pass
 class gulong(c_ulong): pass
 class gssize(c_long): pass
 class gsize(c_ulong): pass
-class gchar(c_char): pass		# represents "[const] gchar"
-class gchar_p(c_char_p): pass	# represents "[const] gchar*"
-class guchar(c_char): pass		# represents "[const] guchar"
-class guchar_p(c_char_p): pass	# represents "[const] guchar*"
-class gunichar(c_char): pass		# represents "[const] gunichar"
-class gunichar_p(c_char_p): pass	# represents "[const] gunichar*"
+class gchar(c_char): pass
+class gchar_p(c_char_p): pass
+class guchar(c_char): pass
+class guchar_p(c_char_p): pass
+class gunichar(c_char): pass
+class gunichar_p(c_char_p): pass
 class gpointer(c_void_p): pass
-class gconstpointer(c_void_p): pass # const gpointer
+class gconstpointer(c_void_p): pass
 
 class GQuark(guint32): pass
 class GError(Structure): 
@@ -55,24 +56,19 @@ class GHashTable(Structure): pass
 class GOptionGroup(Structure): pass
 class GMappedFile(Structure): pass
 class GData(GQuark): pass
-
 class GVariant(Structure): pass
-
 class GVariantType(Structure): pass
-
 class GSource(Structure): pass
-
-GDestroyNotify = CFUNCTYPE(None, gpointer)
-
-GCompareFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer)
-
-GCompareDataFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer, gpointer)
 
 class GArray(Structure):
 	_fields_ = [
 		('data', gchar_p),
 		('len', guint),
 	]
+
+GDestroyNotify = CFUNCTYPE(None, gpointer)
+GCompareFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer)
+GCompareDataFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer, gpointer)
 
 def g_array_index(a, t, i):
 	# return ((t*)(void *)(a)->data)[i]

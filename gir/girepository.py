@@ -10,29 +10,29 @@ elif sys.version_info[0] == 3:
 	PY2, PY3 = False, True
 
 # cache used modules and classes
-_girepository_instance = None
-_modules = {}
-_classes = {}
+_pygirepository = None
+_pygirepository_modules = {}
+_pygirepository_classes = {}
 
-# cache used for signals/callbacks
-# REASON: preserve gc
+# cache used for signals/callbacks; prevents to be GC'ed
 _cfunctype_cache = {}
 _cfunctype_last = 0
 
+# default exception class
 class GIError(Exception):
 	pass
 
 class GIRepository(object):
 	def __new__(cls):
-		# default/single instance of GIRepository
-		global _girepository_instance
+		global _pygirepository
 		
 		# act as singleton
-		if not _girepository_instance:
-			_girepository_instance = object.__new__(cls)
-			cls.__init__(_girepository_instance)
+		if not _pygirepository:
+			# default/single instance of GIRepository
+			_pygirepository = object.__new__(cls)
+			cls.__init__(_pygirepository)
 		
-		return _girepository_instance
+		return _pygirepository
 	
 	def __init__(self):
 		self._repository = _girepository.g_irepository_get_default()
@@ -44,7 +44,7 @@ class GIRepository(object):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def require(self, namespace, version=None):
-		global _modules
+		global _pygirepository_modules
 		
 		# python compatibility
 		if PY2:
@@ -74,7 +74,7 @@ class GIRepository(object):
 		
 		# module
 		try:
-			module = _modules[namespace]
+			module = _pygirepository_modules[namespace]
 		except KeyError:
 			# new module
 			module = GITypelib(namespace, '', _typelib)
@@ -102,7 +102,7 @@ class GIRepository(object):
 					
 					i += 1
 			
-			_modules[namespace] = module
+			_pygirepository_modules[namespace] = module
 			setattr(self, namespace, module)
 		
 		return module
@@ -124,7 +124,7 @@ class GITypelib(types.ModuleType):
 			raise AttributeError('missing attribute "%s"' % attr)
 	
 	def _wrap(self, attr):
-		global _girepository_instance
+		global _pygirepository
 		
 		# attr
 		if PY2: attr_bytes = attr
@@ -141,7 +141,7 @@ class GITypelib(types.ModuleType):
 		namespace_classname = '%s.%s'	% (namespace, attr)
 		
 		# base info
-		_base_info = _girepository.g_irepository_find_by_name(_girepository_instance._repository, _namespace, _attr)
+		_base_info = _girepository.g_irepository_find_by_name(_pygirepository._repository, _namespace, _attr)
 		if not _base_info: raise GIError('missing attribute "%s"' % attr)
 		
 		# "switch" info type
@@ -192,7 +192,7 @@ class GITypelib(types.ModuleType):
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_classname] = class_
+			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value in (
@@ -225,7 +225,7 @@ class GITypelib(types.ModuleType):
 			# create new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_classname] = class_
+			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
@@ -255,7 +255,7 @@ class GITypelib(types.ModuleType):
 				clsbases = []
 				
 				# parent
-				module_parent = _modules[base_info_parent_namespace]
+				module_parent = _pygirepository_modules[base_info_parent_namespace]
 				clsbase = getattr(module_parent, base_info_parent_name)
 				clsbases.append(clsbase)
 				
@@ -280,7 +280,7 @@ class GITypelib(types.ModuleType):
 					elif PY3: base_info_interface_name = base_info_interface_name_bytes.decode()
 					
 					# add interface to clsbasses
-					module_interface = _modules[base_info_interface_namespace]
+					module_interface = _pygirepository_modules[base_info_interface_namespace]
 					clsbase = getattr(module_interface, base_info_interface_name)
 					clsbases.append(clsbase)
 			
@@ -382,7 +382,7 @@ class GITypelib(types.ModuleType):
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_classname] = class_
+			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
@@ -417,7 +417,7 @@ class GITypelib(types.ModuleType):
 					elif PY3: base_info_prerequisite_name = base_info_prerequisite_name_bytes.decode()
 					
 					# append prerequisite (parent interface) to clsbases
-					module_prerequisite = _modules[base_info_prerequisite_namespace]
+					module_prerequisite = _pygirepository_modules[base_info_prerequisite_namespace]
 					clsbase = getattr(module_prerequisite, base_info_prerequisite_name)
 					clsbases.append(clsbase)
 			else:
@@ -456,7 +456,7 @@ class GITypelib(types.ModuleType):
 			# create class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_classname] = class_
+			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_CONSTANT.value:
@@ -505,7 +505,7 @@ class GITypelib(types.ModuleType):
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
 			class_.__module__ = self
-			_classes[namespace_classname] = class_
+			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
 			return class_
 		elif _info_type.value == _girepository.GI_INFO_TYPE_VALUE.value:
@@ -538,7 +538,7 @@ class GITypelib(types.ModuleType):
 	
 	def _wrap_all(self):
 		# repository, namespace
-		_repository = _girepository_instance._repository
+		_repository = _pygirepository._repository
 		_namespace = _girepository.g_typelib_get_namespace(self._typelib)
 		
 		# infos
@@ -1305,7 +1305,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 	return _arg
 
 def _convert_gibaseinfo_to_pytype(_gibaseinfo):
-	global _girepository_instance
+	global _pygirepository
 	_namespace = _girepository.g_base_info_get_namespace(_gibaseinfo)
 	namespace_bytes = _namespace.value
 	

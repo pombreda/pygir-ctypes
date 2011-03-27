@@ -1,5 +1,6 @@
 from ._glib import *
 
+# gobject - C library
 libgobject = CDLL(find_library('gobject-2.0'))
 
 #

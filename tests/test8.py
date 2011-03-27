@@ -3,7 +3,7 @@ class A(object):
 	@classmethod
 	def new(cls, *args, **kwargs):
 		print('A.new', cls, args, kwargs)
-		return cls(_self=None, *args, **kwargs)
+		return cls(_cself=None, *args, **kwargs)
 	
 	def __new__(cls, *args, **kwargs):
 		print('A.__new__', cls, args, kwargs)

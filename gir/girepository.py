@@ -320,6 +320,32 @@ class GITypelib(types.ModuleType):
 				# attach method to class dict
 				gifunction = GIFunction(_function_info=_method_function_info)
 				clsdict[method_name] = gifunction
+				
+				#~ # attach method to class dict
+				#~ gifunction = GIFunction(_function_info=_method_function_info)
+				#~ _method_function_info_flags = _girepository.g_function_info_get_flags(_method_function_info)
+				#~ 
+				#~ if _method_function_info_flags.value == 0:
+					#~ function = lambda *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, **kwargs)
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+					#~ function = lambda self, *args, _pygifunction=gifunction, **kwargs: _pygifunction(self, *args, **kwargs)
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, _pytype=cls, **kwargs))
+					#~ function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, _pytype=cls.__mro__[1], **kwargs))
+					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: cls(_cself=_pygifunction(*args, **kwargs)))
+					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: cls(_cself=_pygifunction(*args, **kwargs)))
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_GETTER.value:
+					#~ function = None
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_SETTER.value:
+					#~ function = None
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_WRAPS_VFUNC.value:
+					#~ function = None
+				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_THROWS.value:
+					#~ function = None
+				#~ else:
+					#~ raise GIError('usupported function info flag "%i"' % _method_function_info_flags.value)
+				#~ 
+				#~ clsdict[method_name] = function
 			
 			# FIXME: parse signals
 			# FIXME: parse constant
@@ -343,7 +369,7 @@ class GITypelib(types.ModuleType):
 						return 0
 					
 					# prepare low-level values/objects
-					_instance = instance._self
+					_instance = instance._cself
 					if PY2: _detailed_signal = _girepository.gchar_p(detailed_signal)
 					elif PY3: _detailed_signal = _girepository.gchar_p(detailed_signal.encode())
 					_c_handler = _girepository.GCallback(py_handler_func)
@@ -371,18 +397,18 @@ class GITypelib(types.ModuleType):
 				
 				def disconnect(instance, handler_id):
 					global _cfunctype_cache
-					_instance = instance._self
+					_instance = instance._cself
 					_handler_id = _girepository.gulong(handler_id)
 					_libgobject.g_signal_handler_disconnect(_instance, _handler_id)
 					del _cfunctype_cache[(instance, handler_id)]
 				
 				def block(instance, handler_id):
-					_instance = instance._self
+					_instance = instance._cself
 					_handler_id = _girepository.gulong(handler_id)
 					_libgobject.g_signal_handler_block(_instance, _handler_id)
 				
 				def unblock(instance, handler_id):
-					_instance = instance._self
+					_instance = instance._cself
 					_handler_id = _girepository.gulong(handler_id)
 					_libgobject.g_signal_handler_unblock(_instance, _handler_id)
 				
@@ -575,7 +601,6 @@ class GIBase(object):
 	
 	def __new__(cls, *args, **kwargs):
 		self = super(GIBase, cls).__new__(cls, *args, **kwargs)
-		GIBase.__init__(self, *args, **kwargs)
 		return self
 	
 	def __init__(self, *args, **kwargs):
@@ -586,9 +611,9 @@ class GIBase(object):
 			pass
 		
 		try:
-			self._self = kwargs.pop('_self')
+			self._cself = kwargs.pop('_cself')
 		except KeyError:
-			self._self = None
+			self._cself = None
 	
 	def __del__(self):
 		#if self._base_info:
@@ -620,10 +645,13 @@ class GIFunction(GICallable):
 			GICallable.__init__(self, *args, **kwargs)
 	
 	def __repr__(self):
+		# symbol
 		_function_info_symbol = _girepository.g_function_info_get_symbol(self._function_info)
 		function_info_symbol_bytes = _function_info_symbol.value
 		if PY2: function_info_symbol = function_info_symbol_bytes
 		elif PY3: function_info_symbol = function_info_symbol_bytes.decode()
+		
+		# name
 		_function_info_name = _girepository.g_base_info_get_name(self._base_info)
 		function_info_name_bytes = _function_info_name.value
 		if PY2: function_info_name = function_info_name_bytes
@@ -639,37 +667,54 @@ class GIFunction(GICallable):
 			'>',
 		))
 	
+	#~ def __get__(self, obj, type_=None):
+		#~ print('GIFunction.__get__:', self, obj, type_)
+		#~ _function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
+		#~ _base_info_name = _girepository.g_base_info_get_name(self._base_info)
+		#~ base_info_name_bytes = _base_info_name.value
+		#~ if PY2: base_info_name = base_info_name_bytes
+		#~ elif PY3: base_info_name = base_info_name_bytes.decode()
+		#~ 
+		#~ if isinstance(obj, type_):
+			#~ if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+				#~ func = lambda *args, **kwargs: self(obj._cself, *args, _pytype=type_, **kwargs)
+			#~ elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+				#~ func = lambda cls, *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+				#~ if PY2: func.func_name = base_info_name
+				#~ elif PY3: func.__name__ = base_info_name
+				#~ func = classmethod(func)
+			#~ else:
+				#~ raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
+		#~ else:
+			#~ if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+				#~ func = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+				#~ if PY2: func.func_name = base_info_name
+				#~ elif PY3: func.__name__ = base_info_name
+			#~ elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+				#~ func = lambda cls, *args, **kwargs: self(*args, _pytype=cls, **kwargs)
+				#~ if PY2: func.func_name = base_info_name
+				#~ elif PY3: func.__name__ = base_info_name
+				#~ func = classmethod(func)
+			#~ else:
+				#~ raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
+		#~ 
+		#~ return func
+	
 	def __get__(self, obj, type_=None):
+		print('GIFunction.__get__:', self, obj, type_)
 		_function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
-		_base_info_name = _girepository.g_base_info_get_name(self._base_info)
-		base_info_name_bytes = _base_info_name.value
-		if PY2: base_info_name = base_info_name_bytes
-		elif PY3: base_info_name = base_info_name_bytes.decode()
 		
-		if isinstance(obj, type_):
+		if obj is None:
+			function = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+		elif isinstance(obj, type_):
 			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
-				func = lambda *args, **kwargs: self(obj._self, *args, _pytype=type_, **kwargs)
+				function = lambda *args, **kwargs: self(obj, *args, **kwargs)
 			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-				func = lambda cls, *args, **kwargs: self(*args, _pytype=type_, **kwargs)
-				if PY2: func.func_name = base_info_name
-				elif PY3: func.__name__ = base_info_name
-				func = classmethod(func)
+				function = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
 			else:
-				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
-		else:
-			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
-				func = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
-				if PY2: func.func_name = base_info_name
-				elif PY3: func.__name__ = base_info_name
-			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-				func = lambda cls, *args, **kwargs: self(*args, _pytype=cls, **kwargs)
-				if PY2: func.func_name = base_info_name
-				elif PY3: func.__name__ = base_info_name
-				func = classmethod(func)
-			else:
-				raise GIError('usupported function info flag "%i"' % _function_info_flags.value)
+				function = lambda *args, **kwargs: self(*args, **kwargs)
 		
-		return func
+		return function
 	
 	def __call__(self, *args, **kwargs):
 		print('GIFunction.__call__', args, kwargs)
@@ -693,7 +738,7 @@ class GIFunction(GICallable):
 		if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 			# preserve instance
 			_self_arg = _girepository.GIArgument()
-			_self_arg.v_pointer = args[0]
+			_self_arg.v_pointer = args[0]._cself
 			
 			# pop first (instance)
 			args = args[1:]
@@ -760,7 +805,7 @@ class GIFunction(GICallable):
 			raise GIError(error_message)
 		
 		# function info flags?
-		if _function_info_flags.value == _girepository.GI_FUNCTION_IS_METHOD.value:
+		if _function_info_flags.value in (0, _girepository.GI_FUNCTION_IS_METHOD.value):
 			_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
 			_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
 			obj = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg[0], _type_info_return, _transfer_return)
@@ -777,21 +822,17 @@ class GIFunction(GICallable):
 				return_ = obj
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
 			pytype = kwargs.pop('_pytype')
-			return_ = pytype(_self=_retarg[0].v_pointer)
+			return_ = pytype(_cself=_retarg[0].v_pointer)
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_GETTER.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
-			return_ = None
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_SETTER.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
-			return_ = None
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_WRAPS_VFUNC.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
-			return_ = None
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_THROWS.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
-			return_ = None
 		else:
-			return_ = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg[0], _return_type_type_info, _return_transfer)
+			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
 		
 		return return_
 
@@ -1129,7 +1170,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 					_girepository.G_TYPE_NONE.value
 				):
 					type_ = _convert_gtype_to_pytype(_type)
-					obj = type_(_self=_arg.v_pointer, _transfer=_transfer)
+					obj = type_(_cself=_arg.v_pointer, _transfer=_transfer)
 				else:
 					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
 		elif _type_tag.value in (
@@ -1145,7 +1186,7 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		):
 			if _arg.v_pointer:
 				type_ = _convert_gibaseinfo_to_pytype(_base_info)
-				obj = type_(_self=_arg.v_pointer)
+				obj = type_(_cself=_arg.v_pointer)
 			else:
 				obj = None
 		else:
@@ -1214,7 +1255,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)
 	
 	if _type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
-		_arg.v_pointer = obj._self
+		_arg.v_pointer = obj._cself
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
 		_arg.v_boolean = _girepository.gboolean(obj)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
@@ -1277,7 +1318,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				elif _type.value == _girepository.G_TYPE_CLOSURE.value:
-					_arg.v_pointer = obj._self
+					_arg.v_pointer = obj._cself
 				elif _type.value == _girepository.G_TYPE_BOXED.value:
 					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
@@ -1295,7 +1336,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			_girepository.GI_INFO_TYPE_INTERFACE.value,
 			_girepository.GI_INFO_TYPE_OBJECT.value,
 		):
-			_arg.v_pointer = obj._self
+			_arg.v_pointer = obj._cself
 		else:
 			raise GIError('unsupported info type %i' % _info_type.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:

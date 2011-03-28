@@ -331,9 +331,13 @@ class GITypelib(types.ModuleType):
 					#~ function = lambda self, *args, _pygifunction=gifunction, **kwargs: _pygifunction(self, *args, **kwargs)
 				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
 					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, _pytype=cls, **kwargs))
-					#~ function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, _pytype=cls.__mro__[1], **kwargs))
+					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: _pygifunction(*args, _pytype=cls.__mro__[1], **kwargs))
 					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: cls(_cself=_pygifunction(*args, **kwargs)))
 					#~ # function = classmethod(lambda cls, *args, _pygifunction=gifunction, **kwargs: cls(_cself=_pygifunction(*args, **kwargs)))
+					#~ def function(cls, *args, **kwargs):
+						#~ self = super(cls).__new__(cls, *args, **kwargs)
+						#~ return self
+					#~ 
 				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_GETTER.value:
 					#~ function = None
 				#~ elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_SETTER.value:
@@ -705,7 +709,14 @@ class GIFunction(GICallable):
 		_function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
 		
 		if obj is None:
-			function = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+			def function(*args, **kwargs):
+				print('GIFunction.__get__.function:', self, obj, type_, args, kwargs)
+				_cself = self(*args, **kwargs)
+				cls = type_.__mro__[1]
+				self_ = super(cls, type_).__new__(type_, *args, **kwargs)
+				self_._cself = _cself
+				return self_
+			
 		elif isinstance(obj, type_):
 			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 				function = lambda *args, **kwargs: self(obj, *args, **kwargs)
@@ -821,7 +832,7 @@ class GIFunction(GICallable):
 				# return as single object
 				return_ = obj
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-			pytype = kwargs.pop('_pytype')
+			#~ pytype = kwargs.pop('_pytype')
 			#~ return_ = pytype(_cself=_retarg[0].v_pointer)
 			return_ = _retarg[0].v_pointer
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_GETTER.value:

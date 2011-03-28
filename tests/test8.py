@@ -15,6 +15,13 @@ class A(object):
 		print('A.__init__', self, args, kwargs)
 
 class B(A):
+	@classmethod
+	def new(cls, *args, **kwargs):
+		print('B.new', cls, args, kwargs)
+		self = super(B, cls).new(cls, *args, **kwargs)
+		B.__init__(self, *args, **kwargs)
+		return self
+	
 	def __new__(cls, *args, **kwargs):
 		print('B.__new__', cls, args, kwargs)
 		self = super(B, cls).new(*args, **kwargs)
@@ -24,5 +31,5 @@ class B(A):
 		print('B.__init__', self, args, kwargs)
 		A.__init__(self, *args, **kwargs)
 
-b = B()
+b = B.new()
 print(b)

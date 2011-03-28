@@ -323,9 +323,33 @@ class GITypelib(types.ModuleType):
 				if PY2: method_name = method_name_bytes
 				elif PY3: method_name = method_name_bytes.decode()
 				
+				#~ # attach method to class dict
+				#~ gifunction = GIFunction(_function_info=_method_function_info)
+				#~ setattr(class_, method_name, gifunction)
+				
 				# attach method to class dict
 				gifunction = GIFunction(_function_info=_method_function_info)
-				setattr(class_, method_name, gifunction)
+				
+				_method_function_info_flags = _girepository.g_function_info_get_flags(_method_function_info)
+				
+				if _method_function_info_flags.value == 0:
+					method = gifunction
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+					
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+					
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_GETTER.value:
+					function = None
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_SETTER.value:
+					function = None
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_WRAPS_VFUNC.value:
+					function = None
+				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_THROWS.value:
+					function = None
+				else:
+					raise GIError('usupported function info flag "%i"' % _method_function_info_flags.value)
+				
+				setattr(class_, method_name, method)
 				
 				#~ # attach method to class dict
 				#~ gifunction = GIFunction(_function_info=_method_function_info)
@@ -837,9 +861,10 @@ class GIFunction(GICallable):
 				# return as single object
 				return_ = obj
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-			#~ pytype = kwargs.pop('_pytype')
-			#~ return_ = pytype(_cself=_retarg[0].v_pointer)
-			return_ = _retarg[0].v_pointer
+			pytype = kwargs.pop('_pytype')
+			cself = _retarg[0].v_pointer
+			pyself = pytype(_cself=cself)
+			return_ = pyself
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_GETTER.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_SETTER.value:

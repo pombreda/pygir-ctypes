@@ -31,5 +31,5 @@ class B(A):
 		print('B.__init__', self, args, kwargs)
 		A.__init__(self, *args, **kwargs)
 
-b = B.new()
+b = B()
 print(b)

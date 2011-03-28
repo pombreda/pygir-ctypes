@@ -1,6 +1,7 @@
 import os
 import sys
 import types
+from . import common
 from . import _girepository
 
 # major python version
@@ -9,7 +10,7 @@ if sys.version_info[0] == 2:
 elif sys.version_info[0] == 3:
 	PY2, PY3 = False, True
 
-# cache used modules and classes
+# cache used for modules and classes
 _pygirepository = None
 _pygirepository_modules = {}
 _pygirepository_classes = {}
@@ -18,8 +19,8 @@ _pygirepository_classes = {}
 _cfunctype_cache = {}
 _cfunctype_last = 0
 
-# default exception class
 class GIError(Exception):
+	# default exception class
 	pass
 
 class GIRepository(object):
@@ -298,7 +299,12 @@ class GITypelib(types.ModuleType):
 			
 			# class dict
 			clsdict = {}
-			clsdict['_object_info'] = _object_info
+			
+			# new class
+			class_ = type(clsname, clsbases, clsdict)
+			
+			# attach _object_info to class
+			setattr(class_, '_object_info', _object_info)
 			
 			# FIXME: parse fields
 			# FIXME: parse properties
@@ -319,7 +325,7 @@ class GITypelib(types.ModuleType):
 				
 				# attach method to class dict
 				gifunction = GIFunction(_function_info=_method_function_info)
-				clsdict[method_name] = gifunction
+				setattr(class_, method_name, gifunction)
 				
 				#~ # attach method to class dict
 				#~ gifunction = GIFunction(_function_info=_method_function_info)
@@ -416,13 +422,12 @@ class GITypelib(types.ModuleType):
 					_handler_id = _girepository.gulong(handler_id)
 					_libgobject.g_signal_handler_unblock(_instance, _handler_id)
 				
-				clsdict['connect'] = connect
-				clsdict['disconnect'] = disconnect
-				clsdict['block'] = block
-				clsdict['unblock'] = unblock
+				setattr(class_, 'connect', connect)
+				setattr(class_, 'disconnect', disconnect)
+				setattr(class_, 'block', block)
+				setattr(class_, 'unblock', unblock)
 			
-			# new class
-			class_ = type(clsname, clsbases, clsdict)
+			# class
 			class_.__module__ = self
 			_pygirepository_classes[namespace_classname] = class_
 			setattr(self, attr, class_)
@@ -704,28 +709,28 @@ class GIFunction(GICallable):
 		#~ 
 		#~ return func
 	
-	def __get__(self, obj, type_=None):
-		print('GIFunction.__get__:', self, obj, type_)
-		_function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
-		
-		if obj is None:
-			def function(*args, **kwargs):
-				print('GIFunction.__get__.function:', self, obj, type_, args, kwargs)
-				_cself = self(*args, **kwargs)
-				cls = type_.__mro__[1]
-				self_ = super(cls, type_).__new__(type_, *args, **kwargs)
-				self_._cself = _cself
-				return self_
-			
-		elif isinstance(obj, type_):
-			if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
-				function = lambda *args, **kwargs: self(obj, *args, **kwargs)
-			elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-				function = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
-			else:
-				function = lambda *args, **kwargs: self(*args, **kwargs)
-		
-		return function
+	#~ def __get__(self, obj, type_=None):
+		#~ print('GIFunction.__get__:', self, obj, type_)
+		#~ _function_info_flags = _girepository.g_function_info_get_flags(self._function_info)
+		#~ 
+		#~ if obj is None:
+			#~ def function(*args, **kwargs):
+				#~ print('GIFunction.__get__.function:', self, obj, type_, args, kwargs)
+				#~ _cself = self(*args, **kwargs)
+				#~ cls = type_.__mro__[1]
+				#~ self_ = super(cls, type_).__new__(type_, *args, **kwargs)
+				#~ self_._cself = _cself
+				#~ return self_
+			#~ 
+		#~ elif isinstance(obj, type_):
+			#~ if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
+				#~ function = lambda *args, **kwargs: self(obj, *args, **kwargs)
+			#~ elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
+				#~ function = lambda *args, **kwargs: self(*args, _pytype=type_, **kwargs)
+			#~ else:
+				#~ function = lambda *args, **kwargs: self(*args, **kwargs)
+		#~ 
+		#~ return function
 	
 	def __call__(self, *args, **kwargs):
 		print('GIFunction.__call__', args, kwargs)

@@ -60,3 +60,4 @@ setattr(B, '__init__', __init__)
 if __name__ == '__main__':
 	b = B()
 	print(b)
+	print(dir(b))

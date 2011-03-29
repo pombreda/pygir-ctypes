@@ -8,4 +8,6 @@ setup(
 	author_email='mtasic85@gmail.com',
 	url='http://code.google.com/p/pygir-ctypes/',
 	packages=['gir'],
+	license='New BSD License',
+	platforms=['Any'],
 )

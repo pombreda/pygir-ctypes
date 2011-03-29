@@ -16,7 +16,7 @@ def cb_button_clicked(button, *args, **kwargs):
 	Gtk.main_quit()
 
 if __name__ == '__main__':
-	Gtk.init(0, [])
+	Gtk.init(len(sys.argv), sys.argv)
 	window = Gtk.Window.new(Gtk.WindowType.toplevel)
 	window.set_title('Test 1')
 	vbox = Gtk.VBox.new(False, 0)

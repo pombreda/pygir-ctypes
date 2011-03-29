@@ -612,7 +612,8 @@ class GIBase(object):
 	_base_info = None
 	
 	def __new__(cls, *args, **kwargs):
-		self = super(GIBase, cls).__new__(cls, *args, **kwargs)
+		# self = super(GIBase, cls).__new__(cls, *args, **kwargs)
+		self = object.__new__(cls)
 		return self
 	
 	def __init__(self, *args, **kwargs):

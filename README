@@ -1,1 +1,12 @@
+Pure Python GObject Introspection Repository (GIR) wrapper using ctypes.
 
+Supported interpreters
+	CPython >= 2.7
+	CPython >= 3.0
+	PyPy? >= 1.4.0
+
+Supported platforms
+	Linux
+	Windows
+	MacOS X
+	other platforms

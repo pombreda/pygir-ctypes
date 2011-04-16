@@ -174,9 +174,8 @@ G_PARAM_STATIC_NICK = GParamFlags(1 << 6)
 G_PARAM_STATIC_BLURB = GParamFlags(1 << 7)
 G_PARAM_DEPRECATED = GParamFlags(1 << 31)
 
-# class GParamSpecTypeInfo(Structure): pass
-
-# class GParamSpecPool(Structure): pass
+class GParamSpecTypeInfo(Structure): pass
+class GParamSpecPool(Structure): pass
 
 #
 # GTypeCValue

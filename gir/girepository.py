@@ -162,9 +162,7 @@ class GITypelib(types.ModuleType):
 			return function
 		elif _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
 			# callback
-			callback = None
-			setattr(self, attr, callback)
-			return callback
+			raise GIError('callback info type is not supported for %s' % (attr,))
 		elif _info_type.value in (_girepository.GI_INFO_TYPE_STRUCT.value, _girepository.GI_INFO_TYPE_BOXED.value):
 			# struct/boxed
 			_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
@@ -1146,9 +1144,11 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
-					# FIXME: implement
+					#~ # FIXME: implement
+					#~ obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
+					#~ raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
+					
 					obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
-					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
 				elif _type.value in (
 					_girepository.G_TYPE_BOXED.value,
 					_girepository.G_TYPE_POINTER.value,
@@ -1366,3 +1366,56 @@ def _convert_gibaseinfo_to_pytype(_gibaseinfo):
 	gitypelib = getattr(girepository, namespace)
 	pytype = getattr(gitypelib, name)
 	return pytype
+
+def _convert_gvalue_to_pyobject(_gvalue, copy_boxed):
+	_gtype = _girepository.G_VALUE_TYPE(_gvalue)
+	_gtype_fundamental = _girepository.G_TYPE_FUNDAMENTAL(_gtype)
+	
+	if _gtype_fundamental.value == _girepository.G_TYPE_CHAR.value:
+		obj = _girepository.g_value_get_char(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_UCHAR.value:
+		obj = _girepository.g_value_get_uchar(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_BOOLEAN.value:
+		obj = _girepository.g_value_get_boolean(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_INT.value:
+		obj = _girepository.g_value_get_int(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_UINT.value:
+		obj = _girepository.g_value_get_uint(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_LONG.value:
+		obj = _girepository.g_value_get_long(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_ULONG.value:
+		obj = _girepository.g_value_get_ulong(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_INT64.value:
+		obj = _girepository.g_value_get_int64(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_UINT64.value:
+		obj = _girepository.g_value_get_uint64(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_ENUM.value:
+		obj = _girepository.g_value_get_enum(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_FLAGS.value:
+		obj = _girepository.g_value_get_flags(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_FLOAT.value:
+		obj = _girepository.g_value_get_float(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_DOUBLE.value:
+		obj = _girepository.g_value_get_double(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_STRING.value:
+		obj = _girepository.g_value_get_string(value).value
+	elif _gtype_fundamental.value == _girepository.G_TYPE_POINTER.value:
+		obj = _girepository.g_value_get_object(value)
+	elif _gtype_fundamental.value == _girepository.G_TYPE_BOXED.value:
+		# FIXME: implement me
+		raise GIError('unsupported GValue')
+	elif _gtype_fundamental.value == _girepository.G_TYPE_PARAM.value:
+		# FIXME: implement me
+		raise GIError('unsupported GValue')
+	elif _gtype_fundamental.value == _girepository.G_TYPE_INTERFACE.value:
+		obj = _girepository.g_value_get_object(value)
+	elif _gtype_fundamental.value == _girepository.G_TYPE_OBJECT.value:
+		obj = _girepository.g_value_get_object(value)
+	else:
+		# FIXME: implement me
+		raise GIError('unsupported GValue')
+	
+	return obj
+
+def _convert_gtype_to_pytype(_type):
+	pass

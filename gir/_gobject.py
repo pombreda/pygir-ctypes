@@ -131,36 +131,35 @@ class GValue(Structure):
 
 #
 # GParamSpec/GValue
-#
-# class GParamSpecBoolean(Structure): pass
-# class GParamSpecChar(Structure): pass
-# class GParamSpecUChar(Structure): pass
-# class GParamSpecInt(Structure): pass
-# class GParamSpecUInt(Structure): pass
-# class GParamSpecLong(Structure): pass
-# class GParamSpecULong(Structure): pass
-# class GParamSpecInt64(Structure): pass
-# class GParamSpecUInt64(Structure): pass
-# class GParamSpecFloat(Structure): pass
-# class GParamSpecDouble(Structure): pass
-# class GParamSpecEnum(Structure): pass
-# class GParamSpecFlags(Structure): pass
-# class GParamSpecString(Structure): pass
-# gchararray = POINTER(gchar_p)
-# class GParamSpecParam(Structure): pass
-# class GParamSpecBoxed(Structure): pass
-# class GParamSpecPointer(Structure): pass
-# class GParamSpecObject(Structure): pass
-# class GParamSpecUnichar(Structure): pass
-# class GParamSpecValueArray(Structure): pass
-# class GParamSpecOverride(Structure): pass
-# class GParamSpecGType(Structure): pass
-# class GParamSpecVariant(Structure): pass
+class GParamSpecBoolean(Structure): pass
+class GParamSpecChar(Structure): pass
+class GParamSpecUChar(Structure): pass
+class GParamSpecInt(Structure): pass
+class GParamSpecUInt(Structure): pass
+class GParamSpecLong(Structure): pass
+class GParamSpecULong(Structure): pass
+class GParamSpecInt64(Structure): pass
+class GParamSpecUInt64(Structure): pass
+class GParamSpecFloat(Structure): pass
+class GParamSpecDouble(Structure): pass
+class GParamSpecEnum(Structure): pass
+class GParamSpecFlags(Structure): pass
+class GParamSpecString(Structure): pass
+gchararray = POINTER(gchar_p)
+class GParamSpecParam(Structure): pass
+class GParamSpecBoxed(Structure): pass
+class GParamSpecPointer(Structure): pass
+class GParamSpecObject(Structure): pass
+class GParamSpecUnichar(Structure): pass
+class GParamSpecValueArray(Structure): pass
+class GParamSpecOverride(Structure): pass
+class GParamSpecGType(Structure): pass
+class GParamSpecVariant(Structure): pass
 
 #
 # GParamSpec
 #
-# class GParamSpec(Structure): pass
+class GParamSpec(Structure): pass
 # class GParamSpecClass(Structure): pass
 
 GParamFlags = gint
@@ -565,12 +564,12 @@ g_type_init()
 #	GType,
 # )
 
-# g_type_fundamental = ctypes_get_func(
-#	libgobject,
-#	'g_type_fundamental',
-#	GType,
-#	GType,
-# )
+g_type_fundamental = ctypes_get_func(
+	libgobject,
+	'g_type_fundamental',
+	GType,
+	GType,
+)
 
 # g_type_create_instance = ctypes_get_func(
 #	libgobject,
@@ -1255,17 +1254,17 @@ g_object_disconnect = ctypes_get_func(
 #	GType,
 # )
 
-# g_value_get_type = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_type',
-#	GType,
-# )
+g_value_get_type = ctypes_get_func(
+	libgobject,
+	'g_value_get_type',
+	GType,
+)
 
-# g_value_array_get_type = ctypes_get_func(
-#	libgobject,
-#	'g_value_array_get_type',
-#	GType,
-# )
+g_value_array_get_type = ctypes_get_func(
+	libgobject,
+	'g_value_array_get_type',
+	GType,
+)
 
 # g_date_get_type = ctypes_get_func(
 #	libgobject,
@@ -1444,20 +1443,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_boolean = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_boolean',
-#	None,
-#	POINTER(GValue),
-#	gboolean,
-# )
+g_value_set_boolean = ctypes_get_func(
+	libgobject,
+	'g_value_set_boolean',
+	None,
+	POINTER(GValue),
+	gboolean,
+)
 
-# g_value_get_boolean = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_boolean',
-#	gboolean,
-#	POINTER(GValue),
-# )
+g_value_get_boolean = ctypes_get_func(
+	libgobject,
+	'g_value_get_boolean',
+	gboolean,
+	POINTER(GValue),
+)
 
 # g_param_spec_char = ctypes_get_func(
 #	libgobject,
@@ -1472,20 +1471,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_char = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_char',
-#	None,
-#	POINTER(GValue),
-#	gchar,
-# )
+g_value_set_char = ctypes_get_func(
+	libgobject,
+	'g_value_set_char',
+	None,
+	POINTER(GValue),
+	gchar,
+)
 
-# g_value_get_char = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_char',
-#	gchar,
-#	POINTER(GValue),
-# )
+g_value_get_char = ctypes_get_func(
+	libgobject,
+	'g_value_get_char',
+	gchar,
+	POINTER(GValue),
+)
 
 # g_param_spec_uchar = ctypes_get_func(
 #	libgobject,
@@ -1500,20 +1499,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_uchar = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_uchar',
-#	None,
-#	POINTER(GValue),
-#	guchar,
-# )
+g_value_set_uchar = ctypes_get_func(
+	libgobject,
+	'g_value_set_uchar',
+	None,
+	POINTER(GValue),
+	guchar,
+)
 
-# g_value_get_uchar = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_uchar',
-#	guchar,
-#	POINTER(GValue),
-# )
+g_value_get_uchar = ctypes_get_func(
+	libgobject,
+	'g_value_get_uchar',
+	guchar,
+	POINTER(GValue),
+)
 
 # g_param_spec_int = ctypes_get_func(
 #	libgobject,
@@ -1528,20 +1527,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_int = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_int',
-#	None,
-#	POINTER(GValue),
-#	gint,
-# )
+g_value_set_int = ctypes_get_func(
+	libgobject,
+	'g_value_set_int',
+	None,
+	POINTER(GValue),
+	gint,
+)
 
-# g_value_get_int = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_int',
-#	gint,
-#	POINTER(GValue),
-# )
+g_value_get_int = ctypes_get_func(
+	libgobject,
+	'g_value_get_int',
+	gint,
+	POINTER(GValue),
+)
 
 # g_param_spec_uint = ctypes_get_func(
 #	libgobject,
@@ -1556,20 +1555,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_uint = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_uint',
-#	None,
-#	POINTER(GValue),
-#	guint,
-# )
+g_value_set_uint = ctypes_get_func(
+	libgobject,
+	'g_value_set_uint',
+	None,
+	POINTER(GValue),
+	guint,
+)
 
-# g_value_get_uint = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_uint',
-#	guint,
-#	POINTER(GValue),
-# )
+g_value_get_uint = ctypes_get_func(
+	libgobject,
+	'g_value_get_uint',
+	guint,
+	POINTER(GValue),
+)
 
 # g_param_spec_long = ctypes_get_func(
 #	libgobject,
@@ -1584,20 +1583,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_long = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_long',
-#	None,
-#	POINTER(GValue),
-#	glong,
-# )
+g_value_set_long = ctypes_get_func(
+	libgobject,
+	'g_value_set_long',
+	None,
+	POINTER(GValue),
+	glong,
+)
 
-# g_value_get_long = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_long',
-#	glong,
-#	POINTER(GValue),
-# )
+g_value_get_long = ctypes_get_func(
+	libgobject,
+	'g_value_get_long',
+	glong,
+	POINTER(GValue),
+)
 
 # g_param_spec_ulong = ctypes_get_func(
 #	libgobject,
@@ -1612,20 +1611,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_ulong = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_ulong',
-#	None,
-#	POINTER(GValue),
-#	gulong,
-# )
+g_value_set_ulong = ctypes_get_func(
+	libgobject,
+	'g_value_set_ulong',
+	None,
+	POINTER(GValue),
+	gulong,
+)
 
-# g_value_get_ulong = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_ulong',
-#	gulong,
-#	POINTER(GValue),
-# )
+g_value_get_ulong = ctypes_get_func(
+	libgobject,
+	'g_value_get_ulong',
+	gulong,
+	POINTER(GValue),
+)
 
 # g_param_spec_int64 = ctypes_get_func(
 #	libgobject,
@@ -1640,20 +1639,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_int64 = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_int64',
-#	None,
-#	POINTER(GValue),
-#	gint64,
-# )
+g_value_set_int64 = ctypes_get_func(
+	libgobject,
+	'g_value_set_int64',
+	None,
+	POINTER(GValue),
+	gint64,
+)
 
-# g_value_get_int64 = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_int64',
-#	gint64,
-#	POINTER(GValue),
-# )
+g_value_get_int64 = ctypes_get_func(
+	libgobject,
+	'g_value_get_int64',
+	gint64,
+	POINTER(GValue),
+)
 
 # g_param_spec_uint64 = ctypes_get_func(
 #	libgobject,
@@ -1668,20 +1667,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_uint64 = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_uint64',
-#	None,
-#	POINTER(GValue),
-#	guint64,
-# )
+g_value_set_uint64 = ctypes_get_func(
+	libgobject,
+	'g_value_set_uint64',
+	None,
+	POINTER(GValue),
+	guint64,
+)
 
-# g_value_get_uint64 = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_uint64',
-#	guint64,
-#	POINTER(GValue),
-# )
+g_value_get_uint64 = ctypes_get_func(
+	libgobject,
+	'g_value_get_uint64',
+	guint64,
+	POINTER(GValue),
+)
 
 # g_param_spec_float = ctypes_get_func(
 #	libgobject,
@@ -1696,20 +1695,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_float = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_float',
-#	None,
-#	POINTER(GValue),
-#	gfloat,
-# )
+g_value_set_float = ctypes_get_func(
+	libgobject,
+	'g_value_set_float',
+	None,
+	POINTER(GValue),
+	gfloat,
+)
 
-# g_value_get_float = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_float',
-#	gfloat,
-#	POINTER(GValue),
-# )
+g_value_get_float = ctypes_get_func(
+	libgobject,
+	'g_value_get_float',
+	gfloat,
+	POINTER(GValue),
+)
 
 # g_param_spec_double = ctypes_get_func(
 #	libgobject,
@@ -1724,20 +1723,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_double = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_double',
-#	None,
-#	POINTER(GValue),
-#	gdouble,
-# )
+g_value_set_double = ctypes_get_func(
+	libgobject,
+	'g_value_set_double',
+	None,
+	POINTER(GValue),
+	gdouble,
+)
 
-# g_value_get_double = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_double',
-#	gdouble,
-#	POINTER(GValue),
-# )
+g_value_get_double = ctypes_get_func(
+	libgobject,
+	'g_value_get_double',
+	gdouble,
+	POINTER(GValue),
+)
 
 # g_param_spec_enum = ctypes_get_func(
 #	libgobject,
@@ -1751,20 +1750,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_enum = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_enum',
-#	None,
-#	POINTER(GValue),
-#	gint,
-# )
+g_value_set_enum = ctypes_get_func(
+	libgobject,
+	'g_value_set_enum',
+	None,
+	POINTER(GValue),
+	gint,
+)
 
-# g_value_get_enum = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_enum',
-#	gint,
-#	POINTER(GValue),
-# )
+g_value_get_enum = ctypes_get_func(
+	libgobject,
+	'g_value_get_enum',
+	gint,
+	POINTER(GValue),
+)
 
 # g_param_spec_flags = ctypes_get_func(
 #	libgobject,
@@ -1778,20 +1777,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_flags = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_flags',
-#	None,
-#	POINTER(GValue),
-#	guint,
-# )
+g_value_set_flags = ctypes_get_func(
+	libgobject,
+	'g_value_set_flags',
+	None,
+	POINTER(GValue),
+	guint,
+)
 
-# g_value_get_flags = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_flags',
-#	guint,
-#	POINTER(GValue),
-# )
+g_value_get_flags = ctypes_get_func(
+	libgobject,
+	'g_value_get_flags',
+	guint,
+	POINTER(GValue),
+)
 
 # g_param_spec_string = ctypes_get_func(
 #	libgobject,
@@ -1804,44 +1803,44 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_string = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_string',
-#	None,
-#	POINTER(GValue),
-#	gchar_p,
-# )
+g_value_set_string = ctypes_get_func(
+	libgobject,
+	'g_value_set_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
 
-# g_value_set_static_string = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_static_string',
-#	None,
-#	POINTER(GValue),
-#	gchar_p,
-# )
+g_value_set_static_string = ctypes_get_func(
+	libgobject,
+	'g_value_set_static_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
 
-# g_value_take_string = ctypes_get_func(
-#	libgobject,
-#	'g_value_take_string',
-#	None,
-#	POINTER(GValue),
-#	gchar_p,
-# )
+g_value_take_string = ctypes_get_func(
+	libgobject,
+	'g_value_take_string',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
 
-# g_value_set_string_take_ownership = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_string_take_ownership',
-#	None,
-#	POINTER(GValue),
-#	gchar_p,
-# )
+g_value_set_string_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_string_take_ownership',
+	None,
+	POINTER(GValue),
+	gchar_p,
+)
 
-# g_value_get_string = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_string',
-#	gchar_p,
-#	POINTER(GValue),
-# )
+g_value_get_string = ctypes_get_func(
+	libgobject,
+	'g_value_get_string',
+	gchar_p,
+	POINTER(GValue),
+)
 
 # g_value_dup_string = ctypes_get_func(
 #	libgobject,
@@ -1861,36 +1860,36 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_param = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_param',
-#	None,
-#	POINTER(GValue),
-#	POINTER(GParamSpec),
-# )
+g_value_set_param = ctypes_get_func(
+	libgobject,
+	'g_value_set_param',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
 
-# g_value_take_param = ctypes_get_func(
-#	libgobject,
-#	'g_value_take_param',
-#	None,
-#	POINTER(GValue),
-#	POINTER(GParamSpec),
-# )
+g_value_take_param = ctypes_get_func(
+	libgobject,
+	'g_value_take_param',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
 
-# g_value_set_param_take_ownership = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_param_take_ownership',
-#	None,
-#	POINTER(GValue),
-#	POINTER(GParamSpec),
-# )
+g_value_set_param_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_param_take_ownership',
+	None,
+	POINTER(GValue),
+	POINTER(GParamSpec),
+)
 
-# g_value_get_param = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_param',
-#	POINTER(GParamSpec),
-#	POINTER(GValue),
-# )
+g_value_get_param = ctypes_get_func(
+	libgobject,
+	'g_value_get_param',
+	POINTER(GParamSpec),
+	POINTER(GValue),
+)
 
 # g_value_dup_param = ctypes_get_func(
 #	libgobject,
@@ -1910,44 +1909,44 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_boxed = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_boxed',
-#	None,
-#	POINTER(GValue),
-#	gconstpointer,
-# )
+g_value_set_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_set_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
 
-# g_value_set_static_boxed = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_static_boxed',
-#	None,
-#	POINTER(GValue),
-#	gconstpointer,
-# )
+g_value_set_static_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_set_static_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
 
-# g_value_take_boxed = ctypes_get_func(
-#	libgobject,
-#	'g_value_take_boxed',
-#	None,
-#	POINTER(GValue),
-#	gconstpointer,
-# )
+g_value_take_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_take_boxed',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
 
-# g_value_set_boxed_take_ownership = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_boxed_take_ownership',
-#	None,
-#	POINTER(GValue),
-#	gconstpointer,
-# )
+g_value_set_boxed_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_boxed_take_ownership',
+	None,
+	POINTER(GValue),
+	gconstpointer,
+)
 
-# g_value_get_boxed = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_boxed',
-#	gpointer,
-#	POINTER(GValue),
-# )
+g_value_get_boxed = ctypes_get_func(
+	libgobject,
+	'g_value_get_boxed',
+	gpointer,
+	POINTER(GValue),
+)
 
 # g_value_dup_boxed = ctypes_get_func(
 #	libgobject,
@@ -1966,26 +1965,26 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_pointer = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_pointer',
-#	None,
-#	POINTER(GValue),
-#	gpointer,
-# )
+g_value_set_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_set_pointer',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
 
-# g_value_get_pointer = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_pointer',
-#	gpointer,
-#	POINTER(GValue),
-# )
+g_value_get_pointer = ctypes_get_func(
+	libgobject,
+	'g_value_get_pointer',
+	gpointer,
+	POINTER(GValue),
+)
 
-# g_gtype_get_type = ctypes_get_func(
-#	libgobject,
-#	'g_gtype_get_type',
-#	GType,
-# )
+g_gtype_get_type = ctypes_get_func(
+	libgobject,
+	'g_gtype_get_type',
+	GType,
+)
 
 # g_param_spec_object = ctypes_get_func(
 #	libgobject,
@@ -1998,36 +1997,36 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_set_object = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_object',
-#	None,
-#	POINTER(GValue),
-#	gpointer,
-# )
+g_value_set_object = ctypes_get_func(
+	libgobject,
+	'g_value_set_object',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
 
-# g_value_take_object = ctypes_get_func(
-#	libgobject,
-#	'g_value_take_object',
-#	None,
-#	POINTER(GValue),
-#	gpointer,
-# )
+g_value_take_object = ctypes_get_func(
+	libgobject,
+	'g_value_take_object',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
 
-# g_value_set_object_take_ownership = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_object_take_ownership',
-#	None,
-#	POINTER(GValue),
-#	gpointer,
-# )
+g_value_set_object_take_ownership = ctypes_get_func(
+	libgobject,
+	'g_value_set_object_take_ownership',
+	None,
+	POINTER(GValue),
+	gpointer,
+)
 
-# g_value_get_object = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_object',
-#	gpointer,
-#	POINTER(GValue),
-# )
+g_value_get_object = ctypes_get_func(
+	libgobject,
+	'g_value_get_object',
+	gpointer,
+	POINTER(GValue),
+)
 
 # g_value_dup_object = ctypes_get_func(
 #	libgobject,
@@ -2077,20 +2076,20 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_get_gtype = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_gtype',
-#	GType,
-#	POINTER(GValue),
-# )
+g_value_get_gtype = ctypes_get_func(
+	libgobject,
+	'g_value_get_gtype',
+	GType,
+	POINTER(GValue),
+)
 
-# g_value_set_gtype = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_gtype',
-#	None,
-#	POINTER(GValue),
-#	GType,
-# )
+g_value_set_gtype = ctypes_get_func(
+	libgobject,
+	'g_value_set_gtype',
+	None,
+	POINTER(GValue),
+	GType,
+)
 
 # g_param_spec_variant = ctypes_get_func(
 #	libgobject,
@@ -2104,12 +2103,12 @@ g_object_disconnect = ctypes_get_func(
 #	GParamFlags,
 # )
 
-# g_value_get_variant = ctypes_get_func(
-#	libgobject,
-#	'g_value_get_variant',
-#	POINTER(GVariant),
-#	POINTER(GValue),
-# )
+g_value_get_variant = ctypes_get_func(
+	libgobject,
+	'g_value_get_variant',
+	POINTER(GVariant),
+	POINTER(GValue),
+)
 
 # g_value_dup_variant = ctypes_get_func(
 #	libgobject,
@@ -2118,13 +2117,13 @@ g_object_disconnect = ctypes_get_func(
 #	POINTER(GValue),
 # )
 
-# g_value_set_variant = ctypes_get_func(
-#	libgobject,
-#	'g_value_set_variant',
-#	None,
-#	POINTER(GValue),
-#	POINTER(GVariant),
-# )
+g_value_set_variant = ctypes_get_func(
+	libgobject,
+	'g_value_set_variant',
+	None,
+	POINTER(GValue),
+	POINTER(GVariant),
+)
 
 # g_value_take_variant = ctypes_get_func(
 #	libgobject,
@@ -3060,35 +3059,35 @@ g_signal_handler_disconnect = ctypes_get_func(
 #
 # GType
 #
-# G_TYPE_FUNDAMENTAL = lambda type_: g_type_fundamental(type_)
-# G_TYPE_FUNDAMENTAL_SHIFT = gint(2)
-# G_TYPE_FUNDAMENTAL_MAX = GType(255 << G_TYPE_FUNDAMENTAL_SHIFT.value)
-# G_TYPE_MAKE_FUNDAMENTAL = lambda x: GType(x.value << G_TYPE_FUNDAMENTAL_SHIFT.value)
-# G_TYPE_IS_ABSTRACT = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_ABSTRACT)
-# G_TYPE_IS_DERIVED = lambda type_: gboolean(type_.value > G_TYPE_FUNDAMENTAL_MAX.value)
-# G_TYPE_IS_FUNDAMENTAL = lambda type_: gboolean(type_.value <= G_TYPE_FUNDAMENTAL_MAX.value)
-# G_TYPE_IS_VALUE_TYPE = lambda type_: g_type_check_is_value_type(type_)
-# G_TYPE_HAS_VALUE_TABLE = lambda type_: bool(g_type_value_table_peek(type_))
-# G_TYPE_IS_CLASSED = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_CLASSED)
-# G_TYPE_IS_INSTANTIATABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_INSTANTIATABLE)
-# G_TYPE_IS_DERIVABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_DERIVABLE)
-# G_TYPE_IS_DEEP_DERIVABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_DEEP_DERIVABLE)
-# G_TYPE_IS_INTERFACE = lambda type_: gboolean(G_TYPE_FUNDAMENTAL(type_).value == G_TYPE_INTERFACE.value)
-# G_TYPE_FROM_INSTANCE = lambda instance: G_TYPE_FROM_CLASS(cast(instance, POINTER(GTypeInstance)).g_class)
-# G_TYPE_FROM_CLASS = lambda g_class: cast(g_class, POINTER(GTypeClass)).g_type
-# G_TYPE_FROM_INTERFACE = lambda g_iface: cast(g_iface, POINTER(GTypeInterface)).g_type
-# G_TYPE_INSTANCE_GET_CLASS = lambda instance, g_type, c_type: _G_TYPE_IGC(instance, g_type, c_type)
-# G_TYPE_INSTANCE_GET_INTERFACE = lambda instance, g_type, c_type: _G_TYPE_IGI(instance, g_type, c_type)
-# G_TYPE_INSTANCE_GET_PRIVATE = lambda instance, g_type, c_type: cast(g_type_instance_get_private(cast(instance, POINTER(GTypeInstance)), g_type), POINTER(c_type))
-# G_TYPE_CLASS_GET_PRIVATE = lambda klass, g_type, c_type: cast(g_type_class_get_private (cast(klass, POINTER(GTypeClass)), g_type), POINTER(c_type))
-# G_TYPE_CHECK_INSTANCE = lambda instance: _G_TYPE_CHI(cast(instance, POINTER(GTypeInstance)))
-# G_TYPE_CHECK_INSTANCE_CAST = lambda instance, g_type, c_type: _G_TYPE_CIC(instance, g_type, c_type)
-# G_TYPE_CHECK_INSTANCE_TYPE = lambda instance, g_type: _G_TYPE_CIT(instance, g_type)
-# G_TYPE_CHECK_CLASS_CAST = lambda g_class, g_type, c_type: _G_TYPE_CCC(g_class, g_type, c_type)
-# G_TYPE_CHECK_CLASS_TYPE = lambda g_class, g_type: _G_TYPE_CCT(g_class, g_type)
-# G_TYPE_CHECK_VALUE = lambda value: _G_TYPE_CHV(value)
-# G_TYPE_CHECK_VALUE_TYPE = lambda value, g_type: _G_TYPE_CVH(value, g_type)
-# G_TYPE_FLAG_RESERVED_ID_BIT = GType(1 << 0)
+G_TYPE_FUNDAMENTAL = lambda type_: g_type_fundamental(type_)
+G_TYPE_FUNDAMENTAL_SHIFT = gint(2)
+G_TYPE_FUNDAMENTAL_MAX = GType(255 << G_TYPE_FUNDAMENTAL_SHIFT.value)
+G_TYPE_MAKE_FUNDAMENTAL = lambda x: GType(x.value << G_TYPE_FUNDAMENTAL_SHIFT.value)
+G_TYPE_IS_ABSTRACT = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_ABSTRACT)
+G_TYPE_IS_DERIVED = lambda type_: gboolean(type_.value > G_TYPE_FUNDAMENTAL_MAX.value)
+G_TYPE_IS_FUNDAMENTAL = lambda type_: gboolean(type_.value <= G_TYPE_FUNDAMENTAL_MAX.value)
+G_TYPE_IS_VALUE_TYPE = lambda type_: g_type_check_is_value_type(type_)
+G_TYPE_HAS_VALUE_TABLE = lambda type_: bool(g_type_value_table_peek(type_))
+G_TYPE_IS_CLASSED = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_CLASSED)
+G_TYPE_IS_INSTANTIATABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_INSTANTIATABLE)
+G_TYPE_IS_DERIVABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_DERIVABLE)
+G_TYPE_IS_DEEP_DERIVABLE = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_DEEP_DERIVABLE)
+G_TYPE_IS_INTERFACE = lambda type_: gboolean(G_TYPE_FUNDAMENTAL(type_).value == G_TYPE_INTERFACE.value)
+G_TYPE_FROM_INSTANCE = lambda instance: G_TYPE_FROM_CLASS(cast(instance, POINTER(GTypeInstance)).g_class)
+G_TYPE_FROM_CLASS = lambda g_class: cast(g_class, POINTER(GTypeClass)).g_type
+G_TYPE_FROM_INTERFACE = lambda g_iface: cast(g_iface, POINTER(GTypeInterface)).g_type
+G_TYPE_INSTANCE_GET_CLASS = lambda instance, g_type, c_type: _G_TYPE_IGC(instance, g_type, c_type)
+G_TYPE_INSTANCE_GET_INTERFACE = lambda instance, g_type, c_type: _G_TYPE_IGI(instance, g_type, c_type)
+G_TYPE_INSTANCE_GET_PRIVATE = lambda instance, g_type, c_type: cast(g_type_instance_get_private(cast(instance, POINTER(GTypeInstance)), g_type), POINTER(c_type))
+G_TYPE_CLASS_GET_PRIVATE = lambda klass, g_type, c_type: cast(g_type_class_get_private (cast(klass, POINTER(GTypeClass)), g_type), POINTER(c_type))
+G_TYPE_CHECK_INSTANCE = lambda instance: _G_TYPE_CHI(cast(instance, POINTER(GTypeInstance)))
+G_TYPE_CHECK_INSTANCE_CAST = lambda instance, g_type, c_type: _G_TYPE_CIC(instance, g_type, c_type)
+G_TYPE_CHECK_INSTANCE_TYPE = lambda instance, g_type: _G_TYPE_CIT(instance, g_type)
+G_TYPE_CHECK_CLASS_CAST = lambda g_class, g_type, c_type: _G_TYPE_CCC(g_class, g_type, c_type)
+G_TYPE_CHECK_CLASS_TYPE = lambda g_class, g_type: _G_TYPE_CCT(g_class, g_type)
+G_TYPE_CHECK_VALUE = lambda value: _G_TYPE_CHV(value)
+G_TYPE_CHECK_VALUE_TYPE = lambda value, g_type: _G_TYPE_CVH(value, g_type)
+G_TYPE_FLAG_RESERVED_ID_BIT = GType(1 << 0)
 
 # G_DEFINE_TYPE = lambda TN, t_n, T_P: G_DEFINE_TYPE_EXTENDED(TN, t_n, T_P, gint(0), None)
 
@@ -3132,34 +3131,34 @@ g_signal_handler_disconnect = ctypes_get_func(
 #	if _C_: _C_()
 #	_G_DEFINE_TYPE_EXTENDED_END()
 
-# G_TYPE_GTYPE = g_gtype_get_type()
-# G_TYPE_INVALID = G_TYPE_MAKE_FUNDAMENTAL(gint(0))
-# G_TYPE_NONE = G_TYPE_MAKE_FUNDAMENTAL(gint(1))
-# G_TYPE_INTERFACE = G_TYPE_MAKE_FUNDAMENTAL(gint(2))
-# G_TYPE_CHAR = G_TYPE_MAKE_FUNDAMENTAL(gint(3))
-# G_TYPE_UCHAR = G_TYPE_MAKE_FUNDAMENTAL(gint(4))
-# G_TYPE_BOOLEAN = G_TYPE_MAKE_FUNDAMENTAL(gint(5))
-# G_TYPE_INT = G_TYPE_MAKE_FUNDAMENTAL(gint(6))
-# G_TYPE_UINT = G_TYPE_MAKE_FUNDAMENTAL(gint(7))
-# G_TYPE_LONG = G_TYPE_MAKE_FUNDAMENTAL(gint(8))
-# G_TYPE_ULONG = G_TYPE_MAKE_FUNDAMENTAL(gint(9))
-# G_TYPE_INT64 = G_TYPE_MAKE_FUNDAMENTAL(gint(10))
-# G_TYPE_UINT64 = G_TYPE_MAKE_FUNDAMENTAL(gint(11))
-# G_TYPE_ENUM = G_TYPE_MAKE_FUNDAMENTAL(gint(12))
-# G_TYPE_FLAGS = G_TYPE_MAKE_FUNDAMENTAL(gint(13))
-# G_TYPE_FLOAT = G_TYPE_MAKE_FUNDAMENTAL(gint(14))
-# G_TYPE_DOUBLE = G_TYPE_MAKE_FUNDAMENTAL(gint(15))
-# G_TYPE_STRING = G_TYPE_MAKE_FUNDAMENTAL(gint(16))
-# G_TYPE_POINTER = G_TYPE_MAKE_FUNDAMENTAL(gint(17))
-# G_TYPE_BOXED = G_TYPE_MAKE_FUNDAMENTAL(gint(18))
-# G_TYPE_PARAM = G_TYPE_MAKE_FUNDAMENTAL(gint(19))
-# G_TYPE_OBJECT = G_TYPE_MAKE_FUNDAMENTAL(gint(20))
-# G_TYPE_VARIANT = G_TYPE_MAKE_FUNDAMENTAL(gint(21))
-# G_TYPE_RESERVED_GLIB_FIRST = G_TYPE_MAKE_FUNDAMENTAL(gint(22))
-# G_TYPE_RESERVED_GLIB_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(31))
-# G_TYPE_RESERVED_BSE_FIRST = G_TYPE_MAKE_FUNDAMENTAL(gint(32))
-# G_TYPE_RESERVED_BSE_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(48))
-# G_TYPE_RESERVED_BSE_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(49))
+G_TYPE_GTYPE = g_gtype_get_type()
+G_TYPE_INVALID = G_TYPE_MAKE_FUNDAMENTAL(gint(0))
+G_TYPE_NONE = G_TYPE_MAKE_FUNDAMENTAL(gint(1))
+G_TYPE_INTERFACE = G_TYPE_MAKE_FUNDAMENTAL(gint(2))
+G_TYPE_CHAR = G_TYPE_MAKE_FUNDAMENTAL(gint(3))
+G_TYPE_UCHAR = G_TYPE_MAKE_FUNDAMENTAL(gint(4))
+G_TYPE_BOOLEAN = G_TYPE_MAKE_FUNDAMENTAL(gint(5))
+G_TYPE_INT = G_TYPE_MAKE_FUNDAMENTAL(gint(6))
+G_TYPE_UINT = G_TYPE_MAKE_FUNDAMENTAL(gint(7))
+G_TYPE_LONG = G_TYPE_MAKE_FUNDAMENTAL(gint(8))
+G_TYPE_ULONG = G_TYPE_MAKE_FUNDAMENTAL(gint(9))
+G_TYPE_INT64 = G_TYPE_MAKE_FUNDAMENTAL(gint(10))
+G_TYPE_UINT64 = G_TYPE_MAKE_FUNDAMENTAL(gint(11))
+G_TYPE_ENUM = G_TYPE_MAKE_FUNDAMENTAL(gint(12))
+G_TYPE_FLAGS = G_TYPE_MAKE_FUNDAMENTAL(gint(13))
+G_TYPE_FLOAT = G_TYPE_MAKE_FUNDAMENTAL(gint(14))
+G_TYPE_DOUBLE = G_TYPE_MAKE_FUNDAMENTAL(gint(15))
+G_TYPE_STRING = G_TYPE_MAKE_FUNDAMENTAL(gint(16))
+G_TYPE_POINTER = G_TYPE_MAKE_FUNDAMENTAL(gint(17))
+G_TYPE_BOXED = G_TYPE_MAKE_FUNDAMENTAL(gint(18))
+G_TYPE_PARAM = G_TYPE_MAKE_FUNDAMENTAL(gint(19))
+G_TYPE_OBJECT = G_TYPE_MAKE_FUNDAMENTAL(gint(20))
+G_TYPE_VARIANT = G_TYPE_MAKE_FUNDAMENTAL(gint(21))
+G_TYPE_RESERVED_GLIB_FIRST = G_TYPE_MAKE_FUNDAMENTAL(gint(22))
+G_TYPE_RESERVED_GLIB_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(31))
+G_TYPE_RESERVED_BSE_FIRST = G_TYPE_MAKE_FUNDAMENTAL(gint(32))
+G_TYPE_RESERVED_BSE_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(48))
+G_TYPE_RESERVED_BSE_LAST = G_TYPE_MAKE_FUNDAMENTAL(gint(49))
 
 #
 # GTypeModule
@@ -3218,14 +3217,14 @@ g_signal_handler_disconnect = ctypes_get_func(
 #
 # GValue
 #
-# G_VALUE_HOLDS = lambda value, type_: G_TYPE_CHECK_VALUE_TYPE(value, type_)
-# G_VALUE_TYPE = lambda value: cast(value, POINTER(GValue)).g_type
-# G_VALUE_TYPE_NAME = lambda value: g_type_name(G_VALUE_TYPE(value))
-# G_TYPE_IS_VALUE = lambda type_: g_type_check_is_value_type(type_)
-# G_TYPE_IS_VALUE_ABSTRACT = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_VALUE_ABSTRACT)
-# G_IS_VALUE = lambda value: G_TYPE_CHECK_VALUE(value)
-# G_TYPE_VALUE = g_value_get_type()
-# G_TYPE_VALUE_ARRAY = g_value_array_get_type()
+G_VALUE_HOLDS = lambda value, type_: G_TYPE_CHECK_VALUE_TYPE(value, type_)
+G_VALUE_TYPE = lambda value: cast(value, POINTER(GValue)).g_type
+G_VALUE_TYPE_NAME = lambda value: g_type_name(G_VALUE_TYPE(value))
+G_TYPE_IS_VALUE = lambda type_: g_type_check_is_value_type(type_)
+G_TYPE_IS_VALUE_ABSTRACT = lambda type_: g_type_test_flags(type_, G_TYPE_FLAG_VALUE_ABSTRACT)
+G_IS_VALUE = lambda value: G_TYPE_CHECK_VALUE(value)
+G_TYPE_VALUE = g_value_get_type()
+G_TYPE_VALUE_ARRAY = g_value_array_get_type()
 
 #
 # GParamSpec/GValue

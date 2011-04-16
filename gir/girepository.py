@@ -1144,17 +1144,13 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
-					#~ # FIXME: implement
-					#~ obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
-					#~ raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
-					
 					obj = _convert_gvalue_to_pyobject(_arg.v_pointer, False)
 				elif _type.value in (
+					_girepository.G_TYPE_NONE.value,
 					_girepository.G_TYPE_BOXED.value,
 					_girepository.G_TYPE_POINTER.value,
-					_girepository.G_TYPE_NONE.value
 				):
-					type_ = _convert_gtype_to_pytype(_type)
+					type_ = _convert_gibaseinfo_to_pytype(_base_info)
 					obj = type_()
 					obj._cself = _arg.v_pointer
 					obj._transfer = _transfer
@@ -1416,6 +1412,3 @@ def _convert_gvalue_to_pyobject(_gvalue, copy_boxed):
 		raise GIError('unsupported GValue')
 	
 	return obj
-
-def _convert_gtype_to_pytype(_type):
-	pass

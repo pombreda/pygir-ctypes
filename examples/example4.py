@@ -1,7 +1,7 @@
 import sys
 sys.path.append('..')
 
-from gir import Gtk
+from gir import Gtk, GObject, GLib
 
 class MainWindow(Gtk.Window):
 	def __new__(cls, *args, **kwargs):
@@ -9,10 +9,10 @@ class MainWindow(Gtk.Window):
 		return self
 	
 	def __init__(self, parent=None):
-		Gtk.Window.__init__(self)
+		# super(Gtk.Window, MainWindow).__init__(self)
 		self.set_resizable(False)
 		self.connect('destroy', lambda *w: Gtk.main_quit())
-
+		
 		vbox = Gtk.VBox.new(False, 5)
 		self.add(vbox)
 		vbox.set_border_width(5)

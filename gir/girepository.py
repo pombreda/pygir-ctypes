@@ -2,6 +2,7 @@ import os
 import sys
 import types
 from . import common
+from . import overrides
 from . import _girepository
 
 # major python version
@@ -104,6 +105,9 @@ class GIRepository(types.ModuleType):
 					
 					i += 1
 			
+			# override module/namespace
+			module = overrides.override(module, namespace)
+			
 			_pygirepository_modules[namespace] = module
 			setattr(self, namespace, module)
 		
@@ -162,7 +166,8 @@ class GITypelib(types.ModuleType):
 			return function
 		elif _info_type.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
 			# callback
-			raise GIError('callback info type is not supported for %s' % (attr,))
+			# raise GIError('callback info type is not supported for %s' % (attr,))
+			pass
 		elif _info_type.value in (_girepository.GI_INFO_TYPE_STRUCT.value, _girepository.GI_INFO_TYPE_BOXED.value):
 			# struct/boxed
 			_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
@@ -594,13 +599,11 @@ class GITypelib(types.ModuleType):
 		for i in range(_n_infos.value):
 			# info
 			_base_info = _girepository.g_irepository_get_info(_repository, _namespace, _girepository.gint(i))
+			
 			_name = _girepository.g_base_info_get_name(_base_info)
 			name_bytes = _name.value
-			
-			if PY2:
-				name = name_bytes
-			elif PY3:
-				name = name_bytes.decode()
+			if PY2: name = name_bytes
+			elif PY3: name = name_bytes.decode()
 			
 			o = self._wrap(name)
 

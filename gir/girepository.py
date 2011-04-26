@@ -793,16 +793,23 @@ class GIFunction(GICallable):
 		# function info flags?
 		if _function_info_flags.value in (0, _girepository.GI_FUNCTION_IS_METHOD.value):
 			_type_info_return = _girepository.g_callable_info_get_return_type(_callable_info)
+			_type_tag_return = _girepository.g_type_info_get_tag(_type_info_return)
 			_transfer_return = _girepository.g_callable_info_get_caller_owns(_callable_info)
 			obj = _convert_giargument_to_pyobject_with_typeinfo_transfer(_retarg[0], _type_info_return, _transfer_return)
 			
 			if _arg_outs:
 				# return as list
-				return_ = [obj]
+				if _type_tag_return.value == _girepository.GI_TYPE_TAG_VOID.value:
+					return_ = []
+				else:
+					return_ = [obj]
 				
 				for _arg, _arg_info in zip(_arg_outs, _arg_info_outs):
 					obj_ = _convert_giargument_to_pyobject_with_arginfo(_arg, _arg_info)
 					return_.append(obj_)
+				
+				if len(return_) == 1:
+					return_ = return_[0]
 			else:
 				# return as single object
 				return_ = obj
@@ -1159,6 +1166,8 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 					obj._transfer = _transfer
 				else:
 					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
+			else:
+				obj = None
 		elif _type_tag.value in (
 			_girepository.GI_INFO_TYPE_ENUM.value,
 			_girepository.GI_INFO_TYPE_FLAGS.value,
@@ -1281,27 +1290,68 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			_arg.v_string = _girepository.gchar_p(obj_bytes)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
 		if obj:
-			_length = _girepository.guint(len(obj))
-			_is_zero_terminated = _girepository.g_type_info_is_zero_terminated(_type_info)
+			_array_type = _girepository.g_type_info_get_array_type(_type_info)
 			_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
 			_param_base_info = _girepository.cast(_param_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
 			
-			_param_size = _get_type_info_size(_param_type_info)
-			_array = _girepository.g_array_sized_new(_is_zero_terminated, _girepository.gboolean(False), _param_size, _length)
-			
-			if _girepository.g_type_info_get_tag(_param_type_info).value == _girepository.GI_TYPE_TAG_UINT8.value:
-				data = ''.join(obj)
-				_array.contents.data = _girepository.gchar_p(data)
-				_array.contents.len = _girepository.guint(len(data))
-			else:
-				_param_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
+			if _array_type.value == _girepository.GI_ARRAY_TYPE_C.value:
+				_param_type_tag = _girepository.g_type_info_get_tag(_param_type_info)
 				
-				for i, n in enumerate(obj):
-					_item = _convert_pyobject_to_giargument_with_typeinfo_transfer(n, _param_type_info, _param_transfer)
-					_girepository.g_array_insert_val(_array, _girepository.guint(i), _item)
-			
-			_array_void = _girepository.cast(_array, _girepository.gpointer)
-			_arg.v_pointer = _array_void
+				if _param_type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT8.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT16.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT16.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT32.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT32.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT64.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT64.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FLOAT.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_DOUBLE.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
+					_obj = (_girepository.GType * len(obj))(*obj)
+					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
+					_arg.v_pointer = _obj_gpointer
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UTF8.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
+					pass
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
+					pass
+				else:
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				
+			elif _array_type.value == _girepository.GI_ARRAY_TYPE_ARRAY.value:
+				print obj, _array_type.value
+			elif _array_type.value == _girepository.GI_ARRAY_TYPE_PTR_ARRAY.value:
+				print obj, _array_type.value
+			elif _array_type.value == _girepository.GI_ARRAY_TYPE_BYTE_ARRAY.value:
+				print obj, _array_type.value
+			else:
+				raise GIError('unsupported array type %i' % _array_type.value)
 			
 			_girepository.g_base_info_unref(_param_base_info)
 		else:
@@ -1336,7 +1386,8 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				else:
-					raise GIError('unsupported type %i' % _type.value)
+					#~ raise GIError('unsupported type %i' % _type.value)
+					_arg.v_pointer = obj._cself
 		elif _info_type.value in (
 			_girepository.GI_INFO_TYPE_ENUM.value,
 			_girepository.GI_INFO_TYPE_FLAGS.value,
@@ -1573,3 +1624,5 @@ def _get_type_tag_size(_type_tag):
 		raise GIError('unable to know the size')
 	else:
 		raise GIError('unknown size')
+	
+	return _size

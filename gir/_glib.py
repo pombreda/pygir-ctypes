@@ -136,3 +136,21 @@ def g_array_index(a, t, i):
 def g_array_insert_val(a, i, v):
 	v_ = cast(pointer(v), gconstpointer)
 	return g_array_insert_vals(a, i, v_, guint(1))
+
+g_malloc0 = ctypes_get_func(
+	libglib,
+	'g_malloc0',
+	gpointer,
+	gsize,
+)
+
+def g_new0(struct_type, n_structs):
+	return _G_NEW(struct_type, n_structs, g_malloc0)
+
+def _G_NEW(struct_type, n_structs, func):
+	# ((struct_type *) func ((n_structs), sizeof (struct_type)))
+	res = func(n_structs * sizeof(struct_type))
+	bt = (struct_type * n_structs)
+	ba = bt()
+	memmove(ba, res, n_structs * sizeof(struct_type))
+	return ba

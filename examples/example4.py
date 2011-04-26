@@ -23,31 +23,32 @@ class MainWindow(Gtk.Window):
 		
 		entry = Gtk.Entry.new()
 		completion = Gtk.EntryCompletion.new()
-		#~ completion_model = self.__create_completion_model()
-		#~ completion.set_model(completion_model)
-		#~ completion.set_text_column(0)
+		completion_model = self.__create_completion_model()
+		completion.set_model(completion_model)
+		completion.set_text_column(0)
 		entry.set_completion(completion)
 		vbox.pack_start(entry, False, False, 0)
 		
 		self.show_all()
-
-	#~ def __create_completion_model(self):
-		#~ store = Gtk.ListStore.newv(1, [GObject.TYPE_STRING])
+	
+	def __create_completion_model(self):
+		store = Gtk.ListStore.newv(2, [GObject.TYPE_STRING, GObject.TYPE_INT])
 		
-		#~ iter = store.append()
+		iter = Gtk.TreeIter()
+		print store.append(iter)
 		#~ store.set(iter, 0, "GNOME")
-		#~ 
+		
 		#~ iter = store.append()
 		#~ store.set(iter, 0, "total")
 		#~ 
 		#~ iter = store.append()
 		#~ store.set(iter, 0, "totally")
 		
-		#~ return store
+		return store
 
 def main():
 	#~ Gtk.init(len(sys.argv), sys.argv)
-	Gtk.init(0, ['a'])
+	Gtk.init(0, None)
 	MainWindow()
 	Gtk.main()
 

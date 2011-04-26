@@ -1247,11 +1247,11 @@ g_object_disconnect = ctypes_get_func(
 #	gchar_p,
 # )
 
-# g_closure_get_type = ctypes_get_func(
-#	libgobject,
-#	'g_closure_get_type',
-#	GType,
-# )
+g_closure_get_type = ctypes_get_func(
+	libgobject,
+	'g_closure_get_type',
+	GType,
+)
 
 g_value_get_type = ctypes_get_func(
 	libgobject,
@@ -3446,6 +3446,6 @@ G_TYPE_VALUE_ARRAY = g_value_array_get_type()
 # def G_CLOSURE_N_NOTIFIERS(cl): pass
 # G_CCLOSURE_SWAP_DATA = lambda cclosure: (cast(cclosure, POINTER(GClosure))).derivative_flag
 # G_CALLBACK = lambda f: cast(f, GCallback)
-# G_TYPE_CLOSURE = g_closure_get_type()
+G_TYPE_CLOSURE = g_closure_get_type()
 # G_TYPE_IO_CHANNEL = g_io_channel_get_type()
 # G_TYPE_IO_CONDITION = g_io_condition_get_type()

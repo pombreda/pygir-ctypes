@@ -39,6 +39,5 @@ class MainWindow(Gtk.Window):
 		Gtk.main_quit()
 
 if __name__ == '__main__':
-	Gtk.init(len(sys.argv), sys.argv)
 	window = MainWindow()
 	Gtk.main()

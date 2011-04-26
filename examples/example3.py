@@ -110,7 +110,6 @@ def expose(da, event=None):
 	stroke_shapes(ctx, 0, 15 * SIZE)
 
 def main():
-	Gtk.init(len(sys.argv), sys.argv)
 	win = Gtk.Window.new(Gtk.WindowType.toplevel)
 	win.connect('destroy', lambda w: Gtk.main_quit())
 	win.set_default_size(450, 550)

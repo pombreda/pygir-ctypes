@@ -685,6 +685,7 @@ class GIFunction(GICallable):
 	
 	def __call__(self, *args, **kwargs):
 		# print('GIFunction.__call__:', args, kwargs)
+		args = list(args)
 		
 		# prepare args for g_function_info_invoke
 		_callable_info = self._callable_info
@@ -716,18 +717,14 @@ class GIFunction(GICallable):
 		# function info flags?
 		if _function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 			# preserve instance
-			self_arg = args[0]
+			# pop first (instance)
+			self_arg = args.pop(0)
 			_self_arg = _girepository.GIArgument()
 			_self_arg.v_pointer = self_arg._cself
-			
-			# pop first (instance)
-			args = args[1:]
 		elif _function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
 			# preserve class
-			cls_arg = args[0]
-			
 			# pop first (class)
-			args = args[1:]
+			cls_arg = args.pop(0)
 		
 		# args
 		_n_args = _girepository.g_callable_info_get_n_args(_callable_info)

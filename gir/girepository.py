@@ -1094,19 +1094,19 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		if not _arg.v_pointer:
 			obj = []
 		else:
-			_array = cast(_arg.v_pointer, POINTER(_girepository.GArray))
+			_array = _girepository.cast(_arg.v_pointer, _girepository.POINTER(_girepository.GArray))
 			_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
-			_param_base_info = _girepository.cast(_param_type_info, POINTER(_girepository.GIBaseInfo))
+			_param_base_info = _girepository.cast(_param_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
 			_param_type_tag = _girepository.g_type_info_get_tag(_param_type_info)
 			_param_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
 			obj = []
 			
-			for i in range(_array.contents.len):
+			for i in range(_array.contents.len.value):
 				is_struct = False
 				
 				if _param_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
 					_item_base_info = _girepository.g_type_info_get_interface(_param_type_info)
-					_item_interface_info = cast(_item_base_info, POINTER(_girepository.GIInterfaceInfo))
+					_item_interface_info = _girepository.cast(_item_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
 					_item_type_tag = _girepository.g_base_info_get_type(_item_base_info)
 					
 					if _item_type_tag.value in (
@@ -1119,9 +1119,9 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 				
 				if is_struct:
 					_item = _girepository.GIArgument()
-					_item.v_pointer = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+					_item.v_pointer = _girepository.g_array_index(_array, _girepository.GIArgument, _girepository.gint(i))
 				else:
-					_item = _girepository.g_array_index(_array, GIArgument, _girepository.gint(i))
+					_item = _girepository.g_array_index(_array, _girepository.GIArgument, _girepository.gint(i))
 				
 				item = _convert_giargument_to_pyobject_with_typeinfo_transfer(_item, _param_type_info, _param_transfer)
 				obj.append(item)
@@ -1299,10 +1299,10 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 				for i, n in enumerate(obj):
 					_item = _convert_pyobject_to_giargument_with_typeinfo_transfer(n, _param_type_info, _param_transfer)
 					_girepository.g_array_insert_val(_array, _girepository.guint(i), _item)
-				
-				#~ _array_void = _girepository.cast(_array, _girepository.gpointer)
-				#~ _arg.v_pointer = _array_void
-				
+			
+			_array_void = _girepository.cast(_array, _girepository.gpointer)
+			_arg.v_pointer = _array_void
+			
 			_girepository.g_base_info_unref(_param_base_info)
 		else:
 			_arg.v_pointer = None

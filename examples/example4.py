@@ -46,7 +46,8 @@ class MainWindow(Gtk.Window):
 		#~ return store
 
 def main():
-	Gtk.init(len(sys.argv), sys.argv)
+	#~ Gtk.init(len(sys.argv), sys.argv)
+	Gtk.init(0, ['a'])
 	MainWindow()
 	Gtk.main()
 

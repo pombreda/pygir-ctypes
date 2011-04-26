@@ -137,6 +137,13 @@ def g_array_insert_val(a, i, v):
 	v_ = cast(pointer(v), gconstpointer)
 	return g_array_insert_vals(a, i, v_, guint(1))
 
+g_malloc = ctypes_get_func(
+	libglib,
+	'g_malloc',
+	gpointer,
+	gsize,
+)
+
 g_malloc0 = ctypes_get_func(
 	libglib,
 	'g_malloc0',

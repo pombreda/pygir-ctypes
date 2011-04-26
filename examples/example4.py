@@ -32,20 +32,17 @@ class MainWindow(Gtk.Window):
 		self.show_all()
 	
 	def create_completion_model(self):
-		store = Gtk.ListStore.newv(2, [GObject.TYPE_STRING, GObject.TYPE_INT])
+		store = Gtk.ListStore.newv(1, [GObject.TYPE_STRING])
 		
-		#~ print Gtk.TreePath.new()
+		iter = Gtk.TreeIter()
+		iter = store.append(iter)
+		store.set_value(iter, 0, 'GNOME')
 		
-		#~ print store.append(iter)
+		iter = store.append(iter)
+		store.set_value(iter, 0, 'total')
 		
-		#~ iter = Gtk.TreeIter()
-		#~ print store.append(iter)
-		#~ store.set(iter, 0, "GNOME")
-		
-		#~ iter = store.append()
-		#~ store.set(iter, 0, "total")
-		#~ iter = store.append()
-		#~ store.set(iter, 0, "totally")
+		iter = store.append(iter)
+		store.set_value(iter, 0, 'totally')
 		
 		return store
 

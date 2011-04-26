@@ -8,21 +8,21 @@ libgobject = CDLL(find_library('gobject-2.0'))
 #
 class GType(gsize): pass
 
-# class GTypeInterface(Structure):
-#	_fields_ = [
-#		('g_type', GType),
-#		('g_instance_type', GType),
-#	]
+class GTypeInterface(Structure):
+	_fields_ = [
+		('g_type', GType),
+		('g_instance_type', GType),
+	]
 
-# class GTypeClass(Structure):
-#	_fields_ = [
-#		('g_type', GType),
-#	]
+class GTypeClass(Structure):
+	_fields_ = [
+		('g_type', GType),
+	]
 
-# class GTypeInstance(Structure):
-#	_fields_ = [
-#		('g_class', POINTER(GTypeClass)),
-#	]
+class GTypeInstance(Structure):
+	_fields_ = [
+		('g_class', POINTER(GTypeClass)),
+	]
 
 # class GTypeInfo(Structure): pass
 
@@ -32,11 +32,11 @@ class GType(gsize): pass
 
 # class GTypeValueTable(Structure): pass
 
-# GTypeDebugFlags = gint
-# G_TYPE_DEBUG_NONE = GTypeDebugFlags(0)
-# G_TYPE_DEBUG_OBJECTS = GTypeDebugFlags(1 << 0)
-# G_TYPE_DEBUG_SIGNALS = GTypeDebugFlags(1 << 1)
-# G_TYPE_DEBUG_MASK = GTypeDebugFlags(0x03)
+GTypeDebugFlags = gint
+G_TYPE_DEBUG_NONE = GTypeDebugFlags(0)
+G_TYPE_DEBUG_OBJECTS = GTypeDebugFlags(1 << 0)
+G_TYPE_DEBUG_SIGNALS = GTypeDebugFlags(1 << 1)
+G_TYPE_DEBUG_MASK = GTypeDebugFlags(0x03)
 
 # class GTypeQuery(Structure):
 #	_fields_ = [
@@ -75,24 +75,24 @@ G_TYPE_FLAG_VALUE_ABSTRACT = GTypeFlags(1 << 5)
 #
 # GObject
 #
-# class GObject(Structure):
-#	_fields_ = [
-#		('g_type_instance', GTypeInstance),
-#		('ref_count', guint),
-#		('qdata', POINTER(GData)),
-#	]
+class GObject(Structure):
+	_fields_ = [
+		('g_type_instance', GTypeInstance),
+		('ref_count', guint),
+		('qdata', POINTER(GData)),
+	]
 
-# class GObjectClass(Structure):
-#	_fields_ = [
-#		('g_type_class', GTypeClass),
-#	]
+class GObjectClass(Structure):
+	_fields_ = [
+		('g_type_class', GTypeClass),
+	]
 
 # class GObjectConstructParam(Structure): pass
 
 # class GInitiallyUnowned(GObject): pass
 # class GInitiallyUnownedClass(GObjectClass): pass
 
-# class GParameter(Structure): pass
+class GParameter(Structure): pass
 
 #
 # GEnum/GFlags
@@ -110,7 +110,7 @@ G_TYPE_FLAG_VALUE_ABSTRACT = GTypeFlags(1 << 5)
 #
 # GValue
 #
-class _GValue_union0(Union):
+class GValue_union0(Union):
 	_fields_ = [
 		('v_int', gint),
 		('v_uint', guint),
@@ -126,7 +126,7 @@ class _GValue_union0(Union):
 class GValue(Structure):
 	_fields_ = [
 		('g_type', GType),
-		('data', _GValue_union0 * 2),
+		('data', GValue_union0 * 2),
 	]
 
 #
@@ -269,19 +269,19 @@ g_type_init = ctypes_get_func(
 #
 g_type_init()
 
-# g_type_init_with_debug_flags = ctypes_get_func(
-#	libgobject,
-#	'g_type_init_with_debug_flags',
-#	None,
-#	GTypeDebugFlags,
-# )
+g_type_init_with_debug_flags = ctypes_get_func(
+	libgobject,
+	'g_type_init_with_debug_flags',
+	None,
+	GTypeDebugFlags,
+)
 
-# g_type_name = ctypes_get_func(
-#	libgobject,
-#	'g_type_name',
-#	gchar_p,
-#	GType,
-# )
+g_type_name = ctypes_get_func(
+	libgobject,
+	'g_type_name',
+	gchar_p,
+	GType,
+)
 
 # g_type_qname = ctypes_get_func(
 #	libgobject,
@@ -570,19 +570,19 @@ g_type_fundamental = ctypes_get_func(
 	GType,
 )
 
-# g_type_create_instance = ctypes_get_func(
-#	libgobject,
-#	'g_type_create_instance',
-#	POINTER(GTypeInstance),
-#	GType,
-# )
+g_type_create_instance = ctypes_get_func(
+	libgobject,
+	'g_type_create_instance',
+	POINTER(GTypeInstance),
+	GType,
+)
 
-# g_type_free_instance = ctypes_get_func(
-#	libgobject,
-#	'g_type_free_instance',
-#	None,
-#	POINTER(GTypeInstance),
-# )
+g_type_free_instance = ctypes_get_func(
+	libgobject,
+	'g_type_free_instance',
+	None,
+	POINTER(GTypeInstance),
+)
 
 # g_type_add_class_cache_func = ctypes_get_func(
 #	libgobject,
@@ -741,186 +741,186 @@ g_type_fundamental = ctypes_get_func(
 #
 # GObject
 #
-# GObjectGetPropertyFunc = CFUNCTYPE(None, POINTER(GObject), guint, POINTER(GValue), POINTER(GParamSpec))
-# GObjectSetPropertyFunc = CFUNCTYPE(None, POINTER(GObject), guint, POINTER(GValue), POINTER(GParamSpec))
-# GObjectFinalizeFunc = CFUNCTYPE(None, POINTER(GObject))
+GObjectGetPropertyFunc = CFUNCTYPE(None, POINTER(GObject), guint, POINTER(GValue), POINTER(GParamSpec))
+GObjectSetPropertyFunc = CFUNCTYPE(None, POINTER(GObject), guint, POINTER(GValue), POINTER(GParamSpec))
+GObjectFinalizeFunc = CFUNCTYPE(None, POINTER(GObject))
 
-# g_object_class_install_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_class_install_property',
-#	None,
-#	POINTER(GObjectClass),
-#	guint,
-#	POINTER(GParamSpec),
-# )
+g_object_class_install_property = ctypes_get_func(
+	libgobject,
+	'g_object_class_install_property',
+	None,
+	POINTER(GObjectClass),
+	guint,
+	POINTER(GParamSpec),
+)
 
-# g_object_class_install_properties = ctypes_get_func(
-#	libgobject,
-#	'g_object_class_install_properties',
-#	None,
-#	POINTER(GObjectClass),
-#	guint,
-#	POINTER(GParamSpec),
-# )
+g_object_class_install_properties = ctypes_get_func(
+	libgobject,
+	'g_object_class_install_properties',
+	None,
+	POINTER(GObjectClass),
+	guint,
+	POINTER(GParamSpec),
+)
 
-# g_object_class_find_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_class_find_property',
-#	POINTER(GParamSpec),
-#	POINTER(GObjectClass),
-#	gchar_p,
-# )
+g_object_class_find_property = ctypes_get_func(
+	libgobject,
+	'g_object_class_find_property',
+	POINTER(GParamSpec),
+	POINTER(GObjectClass),
+	gchar_p,
+)
 
-# g_object_class_list_properties = ctypes_get_func(
-#	libgobject,
-#	'g_object_class_list_properties',
-#	POINTER(POINTER(GParamSpec)),
-#	POINTER(GObjectClass),
-#	POINTER(guint),
-# )
+g_object_class_list_properties = ctypes_get_func(
+	libgobject,
+	'g_object_class_list_properties',
+	POINTER(POINTER(GParamSpec)),
+	POINTER(GObjectClass),
+	POINTER(guint),
+)
 
-# g_object_class_override_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_class_override_property',
-#	None,
-#	POINTER(GObjectClass),
-#	guint,
-#	gchar_p,
-# )
+g_object_class_override_property = ctypes_get_func(
+	libgobject,
+	'g_object_class_override_property',
+	None,
+	POINTER(GObjectClass),
+	guint,
+	gchar_p,
+)
 
-# g_object_interface_install_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_interface_install_property',
-#	None,
-#	gpointer,
-#	POINTER(GParamSpec),
-# )
+g_object_interface_install_property = ctypes_get_func(
+	libgobject,
+	'g_object_interface_install_property',
+	None,
+	gpointer,
+	POINTER(GParamSpec),
+)
 
-# g_object_interface_find_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_interface_find_property',
-#	None,
-#	POINTER(GParamSpec),
-#	gpointer,
-#	gchar_p,
-# )
+g_object_interface_find_property = ctypes_get_func(
+	libgobject,
+	'g_object_interface_find_property',
+	None,
+	POINTER(GParamSpec),
+	gpointer,
+	gchar_p,
+)
 
-# g_object_interface_list_properties = ctypes_get_func(
-#	libgobject,
-#	'g_object_interface_list_properties',
-#	POINTER(POINTER(GParamSpec)),
-#	gpointer,
-#	POINTER(guint),
-# )
+g_object_interface_list_properties = ctypes_get_func(
+	libgobject,
+	'g_object_interface_list_properties',
+	POINTER(POINTER(GParamSpec)),
+	gpointer,
+	POINTER(guint),
+)
 
-# g_object_new = ctypes_get_func(
-#	libgobject,
-#	'g_object_new',
-#	gpointer,
-#	#GType,
-#	#gchar_p,
-#	#...,
-# )
+g_object_new = ctypes_get_func(
+	libgobject,
+	'g_object_new',
+	gpointer,
+	#GType,
+	#gchar_p,
+	#...,
+)
 
-# g_object_newv = ctypes_get_func(
-#	libgobject,
-#	'g_object_newv',
-#	gpointer,
-#	GType,
-#	guint,
-#	POINTER(GParameter),
-# )
+g_object_newv = ctypes_get_func(
+	libgobject,
+	'g_object_newv',
+	gpointer,
+	GType,
+	guint,
+	POINTER(GParameter),
+)
 
-# g_object_ref = ctypes_get_func(
-#	libgobject,
-#	'g_object_ref',
-#	gpointer,
-#	gpointer,
-# )
+g_object_ref = ctypes_get_func(
+	libgobject,
+	'g_object_ref',
+	gpointer,
+	gpointer,
+)
 
-# g_object_unref = ctypes_get_func(
-#	libgobject,
-#	'g_object_unref',
-#	None,
-#	gpointer,
-# )
+g_object_unref = ctypes_get_func(
+	libgobject,
+	'g_object_unref',
+	None,
+	gpointer,
+)
 
-# g_object_ref_sink = ctypes_get_func(
-#	libgobject,
-#	'g_object_ref_sink',
-#	gpointer,
-#	gpointer,
-# )
+g_object_ref_sink = ctypes_get_func(
+	libgobject,
+	'g_object_ref_sink',
+	gpointer,
+	gpointer,
+)
 
-# g_object_is_floating = ctypes_get_func(
-#	libgobject,
-#	'g_object_is_floating',
-#	gpointer,
-#	gpointer,
-# )
+g_object_is_floating = ctypes_get_func(
+	libgobject,
+	'g_object_is_floating',
+	gpointer,
+	gpointer,
+)
 
-# g_object_force_floating = ctypes_get_func(
-#	libgobject,
-#	'g_object_force_floating',
-#	None,
-#	POINTER(GObject),
-# )
+g_object_force_floating = ctypes_get_func(
+	libgobject,
+	'g_object_force_floating',
+	None,
+	POINTER(GObject),
+)
 
-# GWeakNotify = CFUNCTYPE(None, gpointer, POINTER(GObject))
+GWeakNotify = CFUNCTYPE(None, gpointer, POINTER(GObject))
 
-# g_object_weak_ref = ctypes_get_func(
-#	libgobject,
-#	'g_object_weak_ref',
-#	None,
-#	POINTER(GObject),
-#	GWeakNotify,
-#	gpointer,
-# )
+g_object_weak_ref = ctypes_get_func(
+	libgobject,
+	'g_object_weak_ref',
+	None,
+	POINTER(GObject),
+	GWeakNotify,
+	gpointer,
+)
 
-# g_object_weak_unref = ctypes_get_func(
-#	libgobject,
-#	'g_object_weak_unref',
-#	None,
-#	POINTER(GObject),
-#	GWeakNotify,
-#	gpointer,
-# )
+g_object_weak_unref = ctypes_get_func(
+	libgobject,
+	'g_object_weak_unref',
+	None,
+	POINTER(GObject),
+	GWeakNotify,
+	gpointer,
+)
 
-# g_object_add_weak_pointer = ctypes_get_func(
-#	libgobject,
-#	'g_object_add_weak_pointer',
-#	None,
-#	POINTER(GObject),
-#	POINTER(gpointer),
-# )
+g_object_add_weak_pointer = ctypes_get_func(
+	libgobject,
+	'g_object_add_weak_pointer',
+	None,
+	POINTER(GObject),
+	POINTER(gpointer),
+)
 
-# g_object_remove_weak_pointer = ctypes_get_func(
-#	libgobject,
-#	'g_object_remove_weak_pointer',
-#	None,
-#	POINTER(GObject),
-#	POINTER(gpointer),
-# )
+g_object_remove_weak_pointer = ctypes_get_func(
+	libgobject,
+	'g_object_remove_weak_pointer',
+	None,
+	POINTER(GObject),
+	POINTER(gpointer),
+)
 
-# GToggleNotify = CFUNCTYPE(None, gpointer, POINTER(GObject), gboolean)
+GToggleNotify = CFUNCTYPE(None, gpointer, POINTER(GObject), gboolean)
 
-# g_object_add_toggle_ref = ctypes_get_func(
-#	libgobject,
-#	'g_object_add_toggle_ref',
-#	None,
-#	POINTER(GObject),
-#	GToggleNotify,
-#	gpointer,
-# )
+g_object_add_toggle_ref = ctypes_get_func(
+	libgobject,
+	'g_object_add_toggle_ref',
+	None,
+	POINTER(GObject),
+	GToggleNotify,
+	gpointer,
+)
 
-# g_object_remove_toggle_ref = ctypes_get_func(
-#	libgobject,
-#	'g_object_remove_toggle_ref',
-#	None,
-#	POINTER(GObject),
-#	GToggleNotify,
-#	gpointer,
-# )
+g_object_remove_toggle_ref = ctypes_get_func(
+	libgobject,
+	'g_object_remove_toggle_ref',
+	None,
+	POINTER(GObject),
+	GToggleNotify,
+	gpointer,
+)
 
 g_object_connect = ctypes_get_func(
 	libgobject,
@@ -940,189 +940,189 @@ g_object_disconnect = ctypes_get_func(
 	#...,
 )
 
-# g_object_set = ctypes_get_func(
-#	libgobject,
-#	'g_object_set',
-#	None,
-#	#gpointer,
-#	#gchar_p,
-#	#...,
-# )
+g_object_set = ctypes_get_func(
+	libgobject,
+	'g_object_set',
+	None,
+	#gpointer,
+	#gchar_p,
+	#...,
+)
 
-# g_object_get = ctypes_get_func(
-#	libgobject,
-#	'g_object_get',
-#	None,
-#	#gpointer,
-#	#gchar_p,
-#	#...,
-# )
+g_object_get = ctypes_get_func(
+	libgobject,
+	'g_object_get',
+	None,
+	#gpointer,
+	#gchar_p,
+	#...,
+)
 
-# g_object_notify = ctypes_get_func(
-#	libgobject,
-#	'g_object_notify',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-# )
+g_object_notify = ctypes_get_func(
+	libgobject,
+	'g_object_notify',
+	None,
+	POINTER(GObject),
+	gchar_p,
+)
 
-# g_object_notify_by_pspec = ctypes_get_func(
-#	libgobject,
-#	'g_object_notify_by_pspec',
-#	None,
-#	POINTER(GObject),
-#	POINTER(GParamSpec),
-# )
+g_object_notify_by_pspec = ctypes_get_func(
+	libgobject,
+	'g_object_notify_by_pspec',
+	None,
+	POINTER(GObject),
+	POINTER(GParamSpec),
+)
 
-# g_object_freeze_notify = ctypes_get_func(
-#	libgobject,
-#	'g_object_freeze_notify',
-#	None,
-#	POINTER(GObject),
-# )
+g_object_freeze_notify = ctypes_get_func(
+	libgobject,
+	'g_object_freeze_notify',
+	None,
+	POINTER(GObject),
+)
 
-# g_object_thaw_notify = ctypes_get_func(
-#	libgobject,
-#	'g_object_thaw_notify',
-#	None,
-#	POINTER(GObject),
-# )
+g_object_thaw_notify = ctypes_get_func(
+	libgobject,
+	'g_object_thaw_notify',
+	None,
+	POINTER(GObject),
+)
 
-# g_object_get_data = ctypes_get_func(
-#	libgobject,
-#	'g_object_get_data',
-#	gpointer,
-#	POINTER(GObject),
-#	gchar_p,
-# )
+g_object_get_data = ctypes_get_func(
+	libgobject,
+	'g_object_get_data',
+	gpointer,
+	POINTER(GObject),
+	gchar_p,
+)
 
-# g_object_set_data = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_data',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	gpointer,
-# )
+g_object_set_data = ctypes_get_func(
+	libgobject,
+	'g_object_set_data',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	gpointer,
+)
 
-# g_object_set_data_full = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_data_full',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	gpointer,
-#	GDestroyNotify,
-# )
+g_object_set_data_full = ctypes_get_func(
+	libgobject,
+	'g_object_set_data_full',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	gpointer,
+	GDestroyNotify,
+)
 
-# g_object_steal_data = ctypes_get_func(
-#	libgobject,
-#	'g_object_steal_data',
-#	gpointer,
-#	POINTER(GObject),
-#	gchar_p,
-# )
+g_object_steal_data = ctypes_get_func(
+	libgobject,
+	'g_object_steal_data',
+	gpointer,
+	POINTER(GObject),
+	gchar_p,
+)
 
-# g_object_get_qdata = ctypes_get_func(
-#	libgobject,
-#	'g_object_get_qdata',
-#	gpointer,
-#	POINTER(GObject),
-#	GQuark,
-# )
+g_object_get_qdata = ctypes_get_func(
+	libgobject,
+	'g_object_get_qdata',
+	gpointer,
+	POINTER(GObject),
+	GQuark,
+)
 
-# g_object_set_qdata = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_qdata',
-#	None,
-#	POINTER(GObject),
-#	GQuark,
-#	gpointer,
-# )
+g_object_set_qdata = ctypes_get_func(
+	libgobject,
+	'g_object_set_qdata',
+	None,
+	POINTER(GObject),
+	GQuark,
+	gpointer,
+)
 
-# g_object_set_qdata_full = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_qdata_full',
-#	None,
-#	POINTER(GObject),
-#	GQuark,
-#	gpointer,
-#	GDestroyNotify,
-# )
+g_object_set_qdata_full = ctypes_get_func(
+	libgobject,
+	'g_object_set_qdata_full',
+	None,
+	POINTER(GObject),
+	GQuark,
+	gpointer,
+	GDestroyNotify,
+)
 
-# g_object_steal_qdata = ctypes_get_func(
-#	libgobject,
-#	'g_object_steal_qdata',
-#	gpointer,
-#	POINTER(GObject),
-#	GQuark,
-# )
+g_object_steal_qdata = ctypes_get_func(
+	libgobject,
+	'g_object_steal_qdata',
+	gpointer,
+	POINTER(GObject),
+	GQuark,
+)
 
-# g_object_set_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_property',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	POINTER(GValue),
-# )
+g_object_set_property = ctypes_get_func(
+	libgobject,
+	'g_object_set_property',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	POINTER(GValue),
+)
 
-# g_object_get_property = ctypes_get_func(
-#	libgobject,
-#	'g_object_get_property',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	POINTER(GValue),
-# )
+g_object_get_property = ctypes_get_func(
+	libgobject,
+	'g_object_get_property',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	POINTER(GValue),
+)
 
-# g_object_new_valist = ctypes_get_func(
-#	libgobject,
-#	'g_object_new_valist',
-#	POINTER(GObject),
-#	GType,
-#	gchar_p,
-#	gpointer, # va_list
-# )
+g_object_new_valist = ctypes_get_func(
+	libgobject,
+	'g_object_new_valist',
+	POINTER(GObject),
+	GType,
+	gchar_p,
+	gpointer, # va_list
+)
 
-# g_object_set_valist = ctypes_get_func(
-#	libgobject,
-#	'g_object_set_valist',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	gpointer, # va_list
-# )
+g_object_set_valist = ctypes_get_func(
+	libgobject,
+	'g_object_set_valist',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	gpointer, # va_list
+)
 
-# g_object_get_valist = ctypes_get_func(
-#	libgobject,
-#	'g_object_get_valist',
-#	None,
-#	POINTER(GObject),
-#	gchar_p,
-#	gpointer, # va_list
-# )
+g_object_get_valist = ctypes_get_func(
+	libgobject,
+	'g_object_get_valist',
+	None,
+	POINTER(GObject),
+	gchar_p,
+	gpointer, # va_list
+)
 
-# g_object_watch_closure = ctypes_get_func(
-#	libgobject,
-#	'g_object_watch_closure',
-#	None,
-#	POINTER(GObject),
-#	POINTER(GClosure),
-# )
+g_object_watch_closure = ctypes_get_func(
+	libgobject,
+	'g_object_watch_closure',
+	None,
+	POINTER(GObject),
+	POINTER(GClosure),
+)
 
-# g_object_run_dispose = ctypes_get_func(
-#	libgobject,
-#	'g_object_run_dispose',
-#	None,
-#	POINTER(GObject),
-# )
+g_object_run_dispose = ctypes_get_func(
+	libgobject,
+	'g_object_run_dispose',
+	None,
+	POINTER(GObject),
+)
 
-# g_initially_unowned_get_type = ctypes_get_func(
-#	libgobject,
-#	'g_initially_unowned_get_type',
-#	GType,
-# )
+g_initially_unowned_get_type = ctypes_get_func(
+	libgobject,
+	'g_initially_unowned_get_type',
+	GType,
+)
 
 #
 # GEnum/GFlags

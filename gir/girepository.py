@@ -171,12 +171,15 @@ class GITypelib(types.ModuleType):
 		elif _info_type.value in (_girepository.GI_INFO_TYPE_STRUCT.value, _girepository.GI_INFO_TYPE_BOXED.value):
 			# struct/boxed
 			_struct_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIStructInfo))
+			_registered_info = _girepository.cast(_struct_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 			
 			# create class
 			clsname = namespace_classname
 			clsbases = (GIStruct,)
-			clsdict = {}
-			clsdict['_struct_info'] = _struct_info
+			clsdict = {
+				'_struct_info': _struct_info,
+				'_registered_info': _registered_info,
+			}
 			
 			# FIXME: parse fields
 			
@@ -207,12 +210,15 @@ class GITypelib(types.ModuleType):
 		elif _info_type.value in (_girepository.GI_INFO_TYPE_ENUM.value, _girepository.GI_INFO_TYPE_FLAGS.value):
 			# enum/flags
 			_enum_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
+			_registered_info = _girepository.cast(_enum_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 			
 			# class/type args
 			clsname = namespace_classname
 			clsbases = (GIEnum,)
-			clsdict = {}
-			clsdict['_enum_info'] = _enum_info
+			clsdict = {
+				'_enum_info': _enum_info,
+				'_registered_info': _registered_info,
+			}
 			
 			# values
 			_n_values = _girepository.g_enum_info_get_n_values(_enum_info)
@@ -242,6 +248,7 @@ class GITypelib(types.ModuleType):
 		elif _info_type.value == _girepository.GI_INFO_TYPE_OBJECT.value:
 			# object
 			_object_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIObjectInfo))
+			_registered_info = _girepository.cast(_object_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 			
 			# class name
 			clsname = namespace_classname
@@ -302,13 +309,13 @@ class GITypelib(types.ModuleType):
 			clsbases = tuple([clsbase for clsbase in _mro(clsbases) if clsbase in clsbases])
 			
 			# class dict
-			clsdict = {}
+			clsdict = {
+				'_object_info': _object_info,
+				'_registered_info': _registered_info,
+			}
 			
 			# new class
 			class_ = type(clsname, clsbases, clsdict)
-			
-			# attach _object_info to class
-			setattr(class_, '_object_info', _object_info)
 			
 			# FIXME: parse fields
 			# FIXME: parse properties
@@ -441,6 +448,7 @@ class GITypelib(types.ModuleType):
 		elif _info_type.value == _girepository.GI_INFO_TYPE_INTERFACE.value:
 			# interface
 			_interface_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIInterfaceInfo))
+			_registered_info = _girepository.cast(_interface_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 			
 			# class name
 			clsname = namespace_classname
@@ -480,8 +488,10 @@ class GITypelib(types.ModuleType):
 			clsbases = tuple([clsbase for clsbase in _mro(clsbases) if clsbase in clsbases])
 			
 			# class dict
-			clsdict = {}
-			clsdict['_interface_info'] = _interface_info
+			clsdict = {
+				'_interface_info': _interface_info,
+				'_registered_info': _registered_info,
+			}
 			
 			# FIXME: parse properties
 			
@@ -529,12 +539,15 @@ class GITypelib(types.ModuleType):
 		elif _info_type.value == _girepository.GI_INFO_TYPE_UNION.value:
 			# union
 			_union_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIUnionInfo))
+			_registered_info = _girepository.cast(_union_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
 			
 			# create class
 			clsname = namespace_classname
 			clsbases = (GIUnion,)
-			clsdict = {}
-			clsdict['_union_info'] = _union_info
+			clsdict = {
+				'_union_info': _union_info,
+				'_registered_info': _registered_info,
+			}
 			
 			# FIXME: parse fields
 			
@@ -733,8 +746,13 @@ class GIFunction(GICallable):
 			# arg
 			_arg_info = _girepository.g_callable_info_get_arg(_callable_info, _girepository.gint(i))
 			_direction = _girepository.g_arg_info_get_direction(_arg_info)
-			arg = args[i]
-			_arg = _convert_pyobject_to_giargument_with_arginfo(arg, _arg_info)
+			_is_optional = _girepository.g_arg_info_is_optional(_arg_info)
+			
+			if i < len(args):
+				arg = args[i]
+				_arg = _convert_pyobject_to_giargument_with_arginfo(arg, _arg_info)
+			else:
+				raise GIError('too few arguments')
 			
 			# arg in or out according to direction
 			if _direction.value == _girepository.GI_DIRECTION_IN.value:
@@ -859,78 +877,54 @@ class GIRegisteredType(GIBase):
 	_registered_info = None
 	
 	def __init__(self, _registered_info=None, *args, **kwargs):
-		try:
-			_registered_info = kwargs.pop('_registered_info')
-			_base_info = _girepository.cast(_registered_info, _girepository.POINTER(_girepository.GIBaseInfo))
-			GIBase.__init__(self, _base_info=_base_info, *args, **kwargs)
-			self._registered_info = _registered_info
-		except KeyError:
-			GIBase.__init__(self, *args, **kwargs)
+		GIBase.__init__(self, *args, **kwargs)
 		
 		try:
 			self._transfer = kwargs.pop('_transfer')
 		except KeyError:
 			self._transfer = _girepository.GI_TRANSFER_NOTHING
+		
+		#~ if not self._cself:
+			#~ _g_type = _girepository.g_registered_type_info_get_g_type(self._registered_info)
+			#~ self._cself = _girepository.g_type_create_instance(_g_type)
+			#~ self._cself = _girepository.g_object_new(_g_type)
+		
+		#~ print self, self._registered_info
+		#~ print self, dict(self.__dict__), dict(self.__class__.__dict__)
 
 class GIEnum(GIRegisteredType):
 	_enum_info = None
 	
 	def __init__(self, _enum_info=None, *args, **kwargs):
-		try:
-			_enum_info = kwargs.pop('_enum_info')
-			_registered_type_info = _girepository.cast(_enum_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
-			self._enum_info = _enum_info
-		except KeyError:
-			GIRegisteredType.__init__(self, *args, **kwargs)
+		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIInterface(GIRegisteredType):
 	_interface_info = None
 	
 	def __init__(self, _interface_info=None, *args, **kwargs):
-		try:
-			_interface_info = kwargs.pop('_interface_info')
-			_registered_type_info = _girepository.cast(_interface_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
-			self._interface_info = _interface_info
-		except KeyError:
-			GIRegisteredType.__init__(self, *args, **kwargs)
+		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIObject(GIRegisteredType):
 	_object_info = None
 	
 	def __init__(self, *args, **kwargs):
-		try:
-			_object_info = kwargs.pop('_object_info')
-			_registered_type_info = _girepository.cast(_object_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
-			self._object_info = _object_info
-		except KeyError:
-			GIRegisteredType.__init__(self, *args, **kwargs)
+		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIStruct(GIRegisteredType):
 	_struct_info = None
 	
 	def __init__(self, *args, **kwargs):
-		try:
-			_struct_info = kwargs.pop('_struct_info')
-			_registered_type_info = _girepository.cast(_struct_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
-			self._struct_info = _struct_info
-		except KeyError:
-			GIRegisteredType.__init__(self, *args, **kwargs)
+		GIRegisteredType.__init__(self, *args, **kwargs)
+		
+		if self._struct_info:
+			_size = _girepository.g_struct_info_get_size(self._struct_info)
+			self._cself = _girepository.cast(_girepository.g_malloc0(_size), _girepository.gpointer)
 
 class GIUnion(GIRegisteredType):
 	_union_info = None
 	
 	def __init__(self, *args, **kwargs):
-		try:
-			_union_info = kwargs.pop('_union_info')
-			_registered_type_info = _girepository.cast(_union_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
-			GIRegisteredType.__init__(self, _registered_type_info=_registered_type_info, *args, **kwargs)
-			self._union_info = _union_info
-		except KeyError:
-			GIRegisteredType.__init__(self, *args, **kwargs)
+		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIArg(GIBase):
 	_arg_info = None
@@ -1162,7 +1156,11 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 					obj._cself = _arg.v_pointer
 					obj._transfer = _transfer
 				else:
-					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
+					# raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
+					type_ = _convert_gibaseinfo_to_pytype(_base_info)
+					obj = type_()
+					obj._cself = _arg.v_pointer
+					obj._transfer = _transfer
 			else:
 				obj = None
 		elif _type_tag.value in (
@@ -1372,14 +1370,11 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				
 				if _type.value == _girepository.G_TYPE_VALUE.value:
-					# FIXME: implement
-					raise GIError('unsupported type %i' % _type.value)
+					_value = _convert_pyobject_to_gvalue(obj)
+					_arg.v_pointer = _girepository.cast(_girepository.pointer(_value), _girepository.gpointer)
 				elif _type.value == _girepository.G_TYPE_CLOSURE.value:
 					_arg.v_pointer = obj._cself
 				elif _type.value == _girepository.G_TYPE_BOXED.value:
-					# FIXME: implement
-					raise GIError('unsupported type %i' % _type.value)
-				elif _type.value == _girepository.G_TYPE_VALUE.value:
 					# FIXME: implement
 					raise GIError('unsupported type %i' % _type.value)
 				else:
@@ -1486,6 +1481,19 @@ def _convert_gvalue_to_pyobject(_gvalue, copy_boxed):
 		raise GIError('unsupported GValue')
 	
 	return obj
+
+def _convert_pyobject_to_gvalue(obj):
+	_value = _girepository.GValue()
+	_data = _girepository.GValue_union0()
+	
+	if isinstance(obj, types.NoneType):
+		_value.g_type = _girepository.G_TYPE_NONE
+	else:
+		_value.g_type = _girepository.G_TYPE_STRING
+		_data.v_pointer = _girepository.cast(_girepository.gchar_p(obj), _girepository.gpointer)
+		_value.data[0] = _data
+	
+	return _value	
 
 def _get_type_info_size(_type_info):
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)

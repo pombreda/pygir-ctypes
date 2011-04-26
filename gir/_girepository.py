@@ -823,28 +823,28 @@ g_arg_info_get_direction = ctypes_get_func(
 g_arg_info_is_caller_allocates = ctypes_get_func(
 	libgirepository,
 	'g_arg_info_is_caller_allocates',
-	gint,
+	gboolean,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_is_return_value = ctypes_get_func(
 	libgirepository,
 	'g_arg_info_is_return_value',
-	gint,
+	gboolean,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_is_optional = ctypes_get_func(
 	libgirepository,
 	'g_arg_info_is_optional',
-	gint,
+	gboolean,
 	POINTER(GIArgInfo),
 )
 
 g_arg_info_may_be_null = ctypes_get_func(
 	libgirepository,
 	'g_arg_info_may_be_null',
-	gint,
+	gboolean,
 	POINTER(GIArgInfo),
 )
 

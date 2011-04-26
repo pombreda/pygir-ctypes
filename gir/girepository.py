@@ -1488,11 +1488,26 @@ def _convert_pyobject_to_gvalue(obj):
 	
 	if isinstance(obj, types.NoneType):
 		_value.g_type = _girepository.G_TYPE_NONE
-	else:
+		_data.v_pointer = None
+	elif isinstance(obj, bool):
+		_value.g_type = _girepository.G_TYPE_BOOLEAN
+		_data.v_int = _girepository.gint(obj)
+	elif isinstance(obj, int):
+		_value.g_type = _girepository.G_TYPE_INT
+		_data.v_long = _girepository.glong(obj)
+	elif isinstance(obj, float):
+		_value.g_type = _girepository.G_TYPE_DOUBLE
+		_data.v_double = _girepository.gdouble(obj)
+	elif (PY2 and isinstance(obj, basestring)) or (PY3 and (isinstance(obj, str) or isinstance(obj, bytes))):
 		_value.g_type = _girepository.G_TYPE_STRING
 		_data.v_pointer = _girepository.cast(_girepository.gchar_p(obj), _girepository.gpointer)
-		_value.data[0] = _data
+	elif hasattr(obj, '_cself'):
+		_value.g_type = _girepository.G_TYPE_OBJECT
+		_data.v_pointer = obj._cself
+	else:
+		raise GIError('unsupported object type "%s"' % obj.__class__.__name__)
 	
+	_value.data[0] = _data
 	return _value	
 
 def _get_type_info_size(_type_info):

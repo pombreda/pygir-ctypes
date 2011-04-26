@@ -10,6 +10,7 @@ class MainWindow(Gtk.Window):
 	
 	def __init__(self, parent=None):
 		# super(Gtk.Window, MainWindow).__init__(self)
+		self.set_title(__file__)
 		self.set_resizable(False)
 		self.connect('destroy', lambda *w: Gtk.main_quit())
 		
@@ -33,10 +34,10 @@ class MainWindow(Gtk.Window):
 	
 	def create_completion_model(self):
 		store = Gtk.ListStore.newv(1, [GObject.TYPE_STRING])
-		
 		iter = Gtk.TreeIter()
+		
 		iter = store.append(iter)
-		store.set_value(iter, 0, 'GNOME')
+		store.set_value(iter, 0, 'gnome')
 		
 		iter = store.append(iter)
 		store.set_value(iter, 0, 'total')

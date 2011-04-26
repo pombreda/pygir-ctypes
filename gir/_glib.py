@@ -70,8 +70,69 @@ GDestroyNotify = CFUNCTYPE(None, gpointer)
 GCompareFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer)
 GCompareDataFunc = CFUNCTYPE(gint, gconstpointer, gconstpointer, gpointer)
 
+g_array_new = ctypes_get_func(
+	libglib,
+	'g_array_new',
+	POINTER(GArray),
+	gboolean,
+	gboolean,
+	guint,
+)
+
+g_array_sized_new = ctypes_get_func(
+	libglib,
+	'g_array_sized_new',
+	POINTER(GArray),
+	gboolean,
+	gboolean,
+	guint,
+	guint,
+)
+
+g_array_ref = ctypes_get_func(
+	libglib,
+	'g_array_ref',
+	POINTER(GArray),
+	POINTER(GArray),
+)
+
+g_array_unref = ctypes_get_func(
+	libglib,
+	'g_array_unref',
+	None,
+	POINTER(GArray),
+)
+
+g_array_get_element_size = ctypes_get_func(
+	libglib,
+	'g_array_get_element_size',
+	guint,
+	POINTER(GArray),
+)
+
+g_array_insert_vals = ctypes_get_func(
+	libglib,
+	'g_array_insert_vals',
+	POINTER(GArray),
+	POINTER(GArray),
+	guint,
+	gconstpointer,
+	guint,
+)
+
+def g_array_elt_len(a, i):
+	# ((a)->elt_size * (i))
+	return guint(g_array_get_element_size(a).value * i.value)
+
 def g_array_index(a, t, i):
 	# return ((t*)(void *)(a)->data)[i]
-	ba = (t * (a.contents.len.value // sizeof(t)))()
-	memmove(ba, a.contents.data, a.contents.len.value)
+	al = g_array_elt_len(a, a.contents.len).value
+	bl = al // sizeof(t)
+	bt = (t * bl)
+	ba = bt()
+	memmove(ba, a.contents.data, al)
 	return ba[i.value]
+
+def g_array_insert_val(a, i, v):
+	v_ = cast(pointer(v), gconstpointer)
+	return g_array_insert_vals(a, i, v_, guint(1))

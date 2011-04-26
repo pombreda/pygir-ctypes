@@ -1280,9 +1280,32 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			obj_bytes = obj.encode()
 			_arg.v_string = _girepository.gchar_p(obj_bytes)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
-		# raise GIError('unsupported type tag %i' % _type_tag.value)
-		# FIXME: implement
-		pass
+		if obj:
+			_length = _girepository.guint(len(obj))
+			_is_zero_terminated = _girepository.g_type_info_is_zero_terminated(_type_info)
+			_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
+			_param_base_info = _girepository.cast(_param_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			
+			_param_size = _get_type_info_size(_param_type_info)
+			_array = _girepository.g_array_sized_new(_is_zero_terminated, _girepository.gboolean(False), _param_size, _length)
+			
+			if _girepository.g_type_info_get_tag(_param_type_info).value == _girepository.GI_TYPE_TAG_UINT8.value:
+				data = ''.join(obj)
+				_array.contents.data = _girepository.gchar_p(data)
+				_array.contents.len = _girepository.guint(len(data))
+			else:
+				_param_transfer = _girepository.GI_TRANSFER_NOTHING if _transfer.value == _girepository.GI_TRANSFER_CONTAINER.value else _transfer
+				
+				for i, n in enumerate(obj):
+					_item = _convert_pyobject_to_giargument_with_typeinfo_transfer(n, _param_type_info, _param_transfer)
+					_girepository.g_array_insert_val(_array, _girepository.guint(i), _item)
+				
+				#~ _array_void = _girepository.cast(_array, _girepository.gpointer)
+				#~ _arg.v_pointer = _array_void
+				
+			_girepository.g_base_info_unref(_param_base_info)
+		else:
+			_arg.v_pointer = None
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
 		_base_info = _girepository.g_type_info_get_interface(_type_info)
 		_registered_type_info = _girepository.cast(_base_info, _girepository.POINTER(_girepository.GIRegisteredTypeInfo))
@@ -1415,3 +1438,138 @@ def _convert_gvalue_to_pyobject(_gvalue, copy_boxed):
 		raise GIError('unsupported GValue')
 	
 	return obj
+
+def _get_type_info_size(_type_info):
+	_type_tag = _girepository.g_type_info_get_tag(_type_info)
+	
+	if _type_tag.value in (
+		_girepository.GI_TYPE_TAG_BOOLEAN.value,
+		_girepository.GI_TYPE_TAG_INT8.value,
+		_girepository.GI_TYPE_TAG_UINT8.value,
+		_girepository.GI_TYPE_TAG_INT16.value,
+		_girepository.GI_TYPE_TAG_UINT16.value,
+		_girepository.GI_TYPE_TAG_INT32.value,
+		_girepository.GI_TYPE_TAG_UINT32.value,
+		_girepository.GI_TYPE_TAG_INT64.value,
+		_girepository.GI_TYPE_TAG_UINT64.value,
+		_girepository.GI_TYPE_TAG_FLOAT.value,
+		_girepository.GI_TYPE_TAG_DOUBLE.value,
+		_girepository.GI_TYPE_TAG_GTYPE.value,
+		# UNSUPPORTED: _girepository.GI_TYPE_TAG_UNICHAR.value,
+	):
+		if _girepository.g_type_info_is_pointer(_type_info).value:
+			_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+		else:
+			_size = _get_type_tag_size(_type_tag)
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+		_interface_base_info = _girepository.g_type_info_get_interface(_type_info)
+		_interface_info_type = _girepository.g_base_info_get_type(_interface_base_info)
+		
+		if _interface_info_type.value == _girepository.GI_INFO_TYPE_STRUCT.value:
+			if _girepository.g_type_info_is_pointer(_type_info).value:
+				_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+			else:
+				_interface_struct_info = _girepository.cast(_interface_base_info, _girepository.POINTER(_girepository.GIStructInfo))
+				_size = _girepository.guint(g_struct_info_get_size(_interface_struct_info))
+		elif _interface_info_type.value == _girepository.GI_INFO_TYPE_UNION.value:
+			if _girepository.g_type_info_is_pointer(_type_info).value:
+				_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+			else:
+				_interface_union_info = _girepository.cast(_interface_base_info, _girepository.POINTER(_girepository.GIUnionInfo))
+				_size = _girepository.guint(g_struct_info_get_size(_interface_union_info))
+		elif _interface_info_type.value in (
+			_girepository.GI_INFO_TYPE_ENUM.value,
+			_girepository.GI_INFO_TYPE_FLAGS.value,
+		):
+			if _girepository.g_type_info_is_pointer(_type_info).value:
+				_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+			else:
+				_interface_enum_info = _girepository.cast(_interface_base_info, _girepository.POINTER(_girepository.GIEnumInfo))
+				_type_tag = _girepository.g_enum_info_get_storage_type(_interface_enum_info)
+				_size = _get_type_tag_size(_type_tag)
+		elif _interface_info_type.value in (
+			_girepository.GI_INFO_TYPE_BOXED.value,
+			_girepository.GI_INFO_TYPE_OBJECT.value,
+			_girepository.GI_INFO_TYPE_INTERFACE.value,
+			_girepository.GI_INFO_TYPE_CALLBACK.value,
+		):
+			_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+		elif _interface_info_type.value in (
+			_girepository.GI_INFO_TYPE_VFUNC.value,
+			_girepository.GI_INFO_TYPE_INVALID.value,
+			_girepository.GI_INFO_TYPE_FUNCTION.value,
+			_girepository.GI_INFO_TYPE_CONSTANT.value,
+			_girepository.GI_INFO_TYPE_ERROR_DOMAIN.value,
+			_girepository.GI_INFO_TYPE_VALUE.value,
+			_girepository.GI_INFO_TYPE_SIGNAL.value,
+			_girepository.GI_INFO_TYPE_PROPERTY.value,
+			_girepository.GI_INFO_TYPE_FIELD.value,
+			_girepository.GI_INFO_TYPE_ARG.value,
+			_girepository.GI_INFO_TYPE_TYPE.value,
+			_girepository.GI_INFO_TYPE_UNRESOLVED.value,
+		):
+			raise GIError('unsupported info type %i' % _interface_info_type.value)
+		
+		_girepository.g_base_info_unref(_interface_base_info)
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_ARRAY.value,
+		_girepository.GI_TYPE_TAG_VOID.value,
+		_girepository.GI_TYPE_TAG_UTF8.value,
+		_girepository.GI_TYPE_TAG_FILENAME.value,
+		_girepository.GI_TYPE_TAG_GLIST.value,
+		_girepository.GI_TYPE_TAG_GSLIST.value,
+		_girepository.GI_TYPE_TAG_GHASH.value,
+		_girepository.GI_TYPE_TAG_ERROR.value,
+	):
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+	else:
+		_size = _girepository.guint(0)
+	
+	return _size
+
+def _get_type_tag_size(_type_tag):
+	if _type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gpointer))
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_INT8.value,
+		_girepository.GI_TYPE_TAG_UINT8.value,
+	):
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gint8))
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_INT16.value,
+		_girepository.GI_TYPE_TAG_UINT16.value,
+	):
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gint16))
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_INT32.value,
+		_girepository.GI_TYPE_TAG_UINT32.value,
+	):
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gint32))
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_INT64.value,
+		_girepository.GI_TYPE_TAG_UINT64.value,
+	):
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gint64))
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_FLOAT.value:
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gfloat))
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_DOUBLE.value:
+		_size = _girepository.guint(_girepository.sizeof(_girepository.gdouble))
+	elif _type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
+		_size = _girepository.guint(_girepository.sizeof(_girepository.GType))
+	# UNSUPPORTED:
+	# elif _type_tag.value == _girepository.GI_TYPE_TAG_UNICHAR.value:
+	#	_size = _girepository.guint(_girepository.sizeof(_girepository.gunichar))
+	elif _type_tag.value in (
+		_girepository.GI_TYPE_TAG_VOID.value,
+		_girepository.GI_TYPE_TAG_UTF8.value,
+		_girepository.GI_TYPE_TAG_FILENAME.value,
+		_girepository.GI_TYPE_TAG_ARRAY.value,
+		_girepository.GI_TYPE_TAG_INTERFACE.value,
+		_girepository.GI_TYPE_TAG_GLIST.value,
+		_girepository.GI_TYPE_TAG_GSLIST.value,
+		_girepository.GI_TYPE_TAG_GHASH.value,
+		_girepository.GI_TYPE_TAG_ERROR.value,
+	):
+		raise GIError('unable to know the size')
+	else:
+		raise GIError('unknown size')

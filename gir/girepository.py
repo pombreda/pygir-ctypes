@@ -1293,69 +1293,42 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			_array_type = _girepository.g_type_info_get_array_type(_type_info)
 			_param_type_info = _girepository.g_type_info_get_param_type(_type_info, _girepository.gint(0))
 			_param_base_info = _girepository.cast(_param_type_info, _girepository.POINTER(_girepository.GIBaseInfo))
+			_param_type_tag = _girepository.g_type_info_get_tag(_param_type_info)
 			
 			if _array_type.value == _girepository.GI_ARRAY_TYPE_C.value:
-				_param_type_tag = _girepository.g_type_info_get_tag(_param_type_info)
-				
 				if _param_type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
 					# FIXME: implement
 					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
 					_obj = (_girepository.gboolean * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
 					_obj = (_girepository.gint8 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT8.value:
 					_obj = (_girepository.guint8 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT16.value:
 					_obj = (_girepository.gint16 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT16.value:
 					_obj = (_girepository.guint16 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT32.value:
 					_obj = (_girepository.gint32 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT32.value:
 					_obj = (_girepository.guint32 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT64.value:
 					_obj = (_girepository.gint64 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT64.value:
 					_obj = (_girepository.guint64 * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FLOAT.value:
 					_obj = (_girepository.gfloat * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_DOUBLE.value:
 					_obj = (_girepository.gdouble * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
 					_obj = (_girepository.GType * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
+					_size = _girepository.sizeof(_girepository.GType)
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UTF8.value:
 					_obj = (_girepository.gchar_p * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
+					_size = _girepository.sizeof(_girepository.gchar_p)
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
 					_obj = (_girepository.gchar_p * len(obj))(*obj)
-					_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
-					_arg.v_pointer = _obj_gpointer
 				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
 					# FIXME: implement
 					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
@@ -1377,9 +1350,65 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 				else:
 					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
 				
+				_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
+				_arg.v_pointer = _obj_gpointer
+				
 			elif _array_type.value == _girepository.GI_ARRAY_TYPE_ARRAY.value:
-				# FIXME: implement
-				raise GIError('unsupported array type %i' % _array_type.value)
+				if _param_type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
+					_obj = (_girepository.gboolean * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
+					_obj = (_girepository.gint8 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT8.value:
+					_obj = (_girepository.guint8 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT16.value:
+					_obj = (_girepository.gint16 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT16.value:
+					_obj = (_girepository.guint16 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT32.value:
+					_obj = (_girepository.gint32 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT32.value:
+					_obj = (_girepository.guint32 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INT64.value:
+					_obj = (_girepository.gint64 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UINT64.value:
+					_obj = (_girepository.guint64 * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FLOAT.value:
+					_obj = (_girepository.gfloat * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_DOUBLE.value:
+					_obj = (_girepository.gdouble * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GTYPE.value:
+					_obj = (_girepository.GType * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_UTF8.value:
+					_obj = (_girepository.gchar_p * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_FILENAME.value:
+					_obj = (_girepository.gchar_p * len(obj))(*obj)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_ARRAY.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_INTERFACE.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GLIST.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GSLIST.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_GHASH.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				elif _param_type_tag.value == _girepository.GI_TYPE_TAG_ERROR.value:
+					# FIXME: implement
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				else:
+					raise GIError('unsupported param type tag %i' % _param_type_tag.value)
+				
+				_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
+				_arg.v_pointer = _obj_gpointer
+					
 			elif _array_type.value == _girepository.GI_ARRAY_TYPE_PTR_ARRAY.value:
 				# FIXME: implement
 				raise GIError('unsupported array type %i' % _array_type.value)

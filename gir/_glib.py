@@ -161,3 +161,12 @@ def _G_NEW(struct_type, n_structs, func):
 	ba = bt()
 	memmove(ba, res, n_structs * sizeof(struct_type))
 	return ba
+
+g_array_append_vals = ctypes_get_func(
+	libglib,
+	'g_array_append_vals',
+	POINTER(GArray),
+	POINTER(GArray),
+	gconstpointer,
+	guint,
+)

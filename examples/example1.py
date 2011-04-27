@@ -17,9 +17,9 @@ def cb_button_clicked(button, *args, **kwargs):
 
 if __name__ == '__main__':
 	window = Gtk.Window.new(Gtk.WindowType.toplevel)
-	window.set_title('Test 1')
-	vbox = Gtk.VBox.new(False, 0)
-	label = Gtk.Label.new('Hello world!')
+	window.set_title(__file__)
+	vbox = Gtk.VBox(homogeneous=False, spacing=0)
+	label = Gtk.Label(label='Hello world!')
 	vbox.pack_start(label, True, True, 10)
 	button = Gtk.Button.new_from_stock('gtk-quit')
 	button.connect('clicked', cb_button_clicked)

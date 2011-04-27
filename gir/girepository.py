@@ -368,12 +368,12 @@ class GITypelib(types.ModuleType):
 			if namespace_classname == 'GObject.Object':
 				_libgobject = _girepository.libgobject
 				
-				def __new__(cls, *args, **kwargs):
-					self = super(class_, cls).__new__(cls, *args, **kwargs)
-					return self
+				#~ def __new__(cls, *args, **kwargs):
+					#~ self = super(class_, cls).__new__(cls, *args, **kwargs)
+					#~ return self
 				
-				def __init__(self, *args, **kwargs):
-					pass
+				#~ def __init__(self, *args, **kwargs):
+					#~ pass
 				
 				def connect(instance, detailed_signal, py_handler, *args, **kwargs):
 					global _cfunctype_cache
@@ -433,8 +433,8 @@ class GITypelib(types.ModuleType):
 					_handler_id = _girepository.gulong(handler_id)
 					_libgobject.g_signal_handler_unblock(_instance, _handler_id)
 				
-				setattr(class_, '__new__', __new__)
-				setattr(class_, '__init__', __init__)
+				#~ setattr(class_, '__new__', __new__)
+				#~ setattr(class_, '__init__', __init__)
 				setattr(class_, 'connect', connect)
 				setattr(class_, 'disconnect', disconnect)
 				setattr(class_, 'block', block)
@@ -829,10 +829,11 @@ class GIFunction(GICallable):
 				# return as single object
 				return_ = obj
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-			if PY2:
-				pyself = super(self._pytype, cls_arg).__new__.im_func(cls_arg)
-			elif PY3:
-				pyself = super(self._pytype, cls_arg).__new__(cls_arg)
+			#~ if PY2:
+				#~ pyself = super(self._pytype, cls_arg).__new__.im_func(cls_arg)
+			#~ elif PY3:
+				#~ pyself = super(self._pytype, cls_arg).__new__(cls_arg)
+			pyself = super(self._pytype, cls_arg).__new__(cls_arg)
 			
 			pyself._cself = _retarg[0].v_pointer
 			return_ = pyself
@@ -894,29 +895,53 @@ class GIRegisteredType(GIBase):
 
 class GIEnum(GIRegisteredType):
 	_enum_info = None
+	_registered_info = None
 	
 	def __init__(self, _enum_info=None, *args, **kwargs):
 		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIInterface(GIRegisteredType):
 	_interface_info = None
+	_registered_info = None
 	
 	def __init__(self, _interface_info=None, *args, **kwargs):
 		GIRegisteredType.__init__(self, *args, **kwargs)
 
 class GIObject(GIRegisteredType):
 	_object_info = None
+	_registered_info = None
 	
 	def __init__(self, *args, **kwargs):
 		GIRegisteredType.__init__(self, *args, **kwargs)
 		
 		if self._object_info:
-			print self._object_info
-			# FIXME: implement
-			self._cself = None
+			_g_type = _girepository.g_registered_type_info_get_g_type(self._registered_info)
+			
+			#~ # prepare arguments for g_object_new
+			#~ _args = []
+			#~ 
+			#~ for k, v in kwargs.items():
+				#~ #print k, v
+				#~ _args.append(_girepository.gchar_p(k))
+				#~ _args.append(_convert_pyobject_to_gvalue(v))
+			#~ 
+			#~ _args.append(None)
+			#~ print _args
+			
+			# new gobject
+			self._cself = _girepository.g_object_new(_g_type, None)
+			_cself_gobject = _girepository.cast(self._cself, _girepository.POINTER(_girepository.GObject))
+			
+			for k, v in kwargs.items():
+				_girepository.g_object_set_property(
+					_cself_gobject,
+					_girepository.gchar_p(k.encode('utf-8')),
+					_convert_pyobject_to_gvalue(v),
+				)
 
 class GIStruct(GIRegisteredType):
 	_struct_info = None
+	_registered_info = None
 	
 	def __init__(self, *args, **kwargs):
 		GIRegisteredType.__init__(self, *args, **kwargs)
@@ -927,6 +952,7 @@ class GIStruct(GIRegisteredType):
 
 class GIUnion(GIRegisteredType):
 	_union_info = None
+	_registered_info = None
 	
 	def __init__(self, *args, **kwargs):
 		GIRegisteredType.__init__(self, *args, **kwargs)
@@ -1408,13 +1434,14 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 				
 				_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
 				_arg.v_pointer = _obj_gpointer
-					
+				
 			elif _array_type.value == _girepository.GI_ARRAY_TYPE_PTR_ARRAY.value:
 				# FIXME: implement
 				raise GIError('unsupported array type %i' % _array_type.value)
 			elif _array_type.value == _girepository.GI_ARRAY_TYPE_BYTE_ARRAY.value:
-				# FIXME: implement
-				raise GIError('unsupported array type %i' % _array_type.value)
+				_obj = _girepository.gchar_p(''.join(obj))
+				_obj_gpointer = _girepository.cast(_obj, _girepository.gpointer)
+				_arg.v_pointer = _obj_gpointer
 			else:
 				raise GIError('unsupported array type %i' % _array_type.value)
 			

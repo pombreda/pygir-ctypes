@@ -115,7 +115,7 @@ def main():
 	win.set_default_size(450, 550)
 	
 	drawingarea = Gtk.DrawingArea.new()
-	drawingarea.connect('expose_event', expose)
+	# drawingarea.connect('expose_event', expose)
 	win.add(drawingarea)
 	
 	win.show_all()

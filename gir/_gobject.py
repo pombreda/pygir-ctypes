@@ -92,8 +92,6 @@ class GObjectClass(Structure):
 # class GInitiallyUnowned(GObject): pass
 # class GInitiallyUnownedClass(GObjectClass): pass
 
-class GParameter(Structure): pass
-
 #
 # GEnum/GFlags
 #
@@ -127,6 +125,12 @@ class GValue(Structure):
 	_fields_ = [
 		('g_type', GType),
 		('data', GValue_union0 * 2),
+	]
+
+class GParameter(Structure):
+	_fields_ = [
+		('name', gchar_p),
+		('value', GValue),
 	]
 
 #

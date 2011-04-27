@@ -4,26 +4,22 @@ sys.path.append('..')
 from gir import Gtk, GObject, GLib
 
 class MainWindow(Gtk.Window):
-	def __new__(cls, *args, **kwargs):
-		self = super(MainWindow, cls).new(Gtk.WindowType.toplevel)
-		return self
-	
 	def __init__(self, parent=None):
-		# super(Gtk.Window, MainWindow).__init__(self)
+		Gtk.Window.__init__(self)
 		self.set_title(__file__)
 		self.set_resizable(False)
 		self.connect('destroy', lambda *w: Gtk.main_quit())
 		
-		vbox = Gtk.VBox.new(False, 5)
+		vbox = Gtk.VBox(homogeneous=False, spacing=0)
 		self.add(vbox)
 		vbox.set_border_width(5)
 		
-		label = Gtk.Label.new('')
+		label = Gtk.Label(label='')
 		label.set_markup("Completion demo, try writing <b>total</b> or <b>gnome</b> for example.")
 		vbox.pack_start(label, False, False, 0)
 		
-		entry = Gtk.Entry.new()
-		completion = Gtk.EntryCompletion.new()
+		entry = Gtk.Entry()
+		completion = Gtk.EntryCompletion()
 		completion_model = self.create_completion_model()
 		completion.set_model(completion_model)
 		completion.set_text_column(0)

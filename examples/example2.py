@@ -1,9 +1,7 @@
 import sys
 sys.path.append('..')
 
-import gir
-rep = gir.GIRepository()
-Gtk = rep.Gtk
+from gir import Gtk
 
 class MainWindow(Gtk.Window):
 	def __new__(cls, *args, **kwargs):

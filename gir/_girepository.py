@@ -1,9 +1,4 @@
-try:
-	exec('from ._gobject import *', globals(), locals())
-except SyntaxError:
-	from _gobject import *
-except ImportError:
-	from _gobject import *
+from ._gobject import *
 
 # girepository - C library
 libgirepository = CDLL(find_library('girepository-1.0'))

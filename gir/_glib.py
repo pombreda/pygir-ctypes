@@ -1,9 +1,4 @@
-try:
-	exec('from ._common import *', globals(), locals())
-except SyntaxError:
-	from _common import *
-except ImportError:
-	from _common import *
+from ._common import *
 
 # glib - C library
 libglib = CDLL(find_library('glib-2.0'))

@@ -1,16 +1,8 @@
 import os
 import sys
 import types
-
-try:
-	exec('from . import common', globals(), locals())
-	exec('from . import _girepository', globals(), locals())
-except SyntaxError:
-	import common
-	import _girepository
-except ImportError:
-	import common
-	import _girepository
+from . import common
+from . import _girepository
 
 # major python version
 if sys.version_info[0] == 2:
@@ -31,19 +23,20 @@ class GIError(Exception):
 	# default exception class
 	pass
 
-class GIRepository(object):
-	def __new__(cls):
+class GIRepository(types.ModuleType):
+	def __new__(cls, *args, **kwargs):
 		global _pygirepository
 		
 		# act as singleton
 		if not _pygirepository:
 			# default/single instance of GIRepository
-			_pygirepository = object.__new__(cls)
+			_pygirepository = super(GIRepository, cls).__new__(cls, *args, **kwargs)
 			cls.__init__(_pygirepository)
 		
 		return _pygirepository
 	
-	def __init__(self):
+	def __init__(self, modulename='GIRepository', moduledoc=''):
+		types.ModuleType.__init__(self, modulename, moduledoc)
 		self._repository = _girepository.g_irepository_get_default()
 	
 	def __getattr__(self, attr):

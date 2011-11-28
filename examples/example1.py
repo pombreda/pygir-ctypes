@@ -1,9 +1,7 @@
 import sys
 sys.path.append('..')
 
-import gir
-rep = gir.GIRepository()
-Gtk = rep.Gtk
+from gir import Gtk
 
 def cb_window_delete_event(window, *args, **kwargs):
 	print('cb_window_delete_event:', window, args, kwargs)

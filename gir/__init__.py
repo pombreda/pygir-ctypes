@@ -1,6 +1,10 @@
+import os
+import sys
+from .girepository import *
+
+# HACK: override "gir" package to be instance of GIRepository
 try:
-	exec('from .girepository import *', globals(), locals())
-except SyntaxError:
-	from girepository import *
-except ImportError:
-	from girepository import *
+	sys.modules[__package__] = GIRepository()
+except NameError:
+	sys.modules[__name__] = GIRepository()
+	

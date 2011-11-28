@@ -323,13 +323,11 @@ class GITypelib(types.ModuleType):
 				if PY2: method_name = method_name_bytes
 				elif PY3: method_name = method_name_bytes.decode()
 				
-				#~ # attach method to class dict
-				#~ gifunction = GIFunction(_function_info=_method_function_info)
-				#~ setattr(class_, method_name, gifunction)
-				
-				# attach method to class dict
+				# new gifunction, and preserve class
 				gifunction = GIFunction(_function_info=_method_function_info)
+				gifunction._pytype = class_
 				
+				# 'switch' method function info flags
 				_method_function_info_flags = _girepository.g_function_info_get_flags(_method_function_info)
 				
 				if _method_function_info_flags.value == 0:
@@ -337,7 +335,6 @@ class GITypelib(types.ModuleType):
 				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_METHOD.value:
 					method = common.instancemethod(gifunction)
 				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-					gifunction._pytype = class_
 					method = classmethod(gifunction)
 				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_IS_GETTER.value:
 					method = None
@@ -348,10 +345,11 @@ class GITypelib(types.ModuleType):
 				elif _method_function_info_flags.value & _girepository.GI_FUNCTION_THROWS.value:
 					method = None
 				else:
-					raise GIError('usupported function info flag "%i"' % _method_function_info_flags.value)
+					raise GIError('usupported function info flag "%i" for "%s.%s"' % (_method_function_info_flags.value, clsname, method_name))
 				
+				# attach method to class dict
 				setattr(class_, method_name, method)
-						
+			
 			# FIXME: parse signals
 			# FIXME: parse constant
 			
@@ -1055,13 +1053,9 @@ def _convert_pyobject_to_giargument_with_arginfo(obj, _arg_info):
 
 def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _transfer):
 	_type_tag = _girepository.g_type_info_get_tag(_type_info)
-	obj = None
 	
 	if _type_tag.value == _girepository.GI_TYPE_TAG_VOID.value:
-		_is_pointer = _girepository.g_type_info_is_pointer(_type_info)
-		
-		if _is_pointer.value:
-			obj = _arg.v_pointer
+		obj = None
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_BOOLEAN.value:
 		obj = bool(_arg.v_boolean.value)
 	elif _type_tag.value == _girepository.GI_TYPE_TAG_INT8.value:
@@ -1138,7 +1132,6 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		
 		if _type_tag.value == _girepository.GI_INFO_TYPE_CALLBACK.value:
 			# FIXME: implement
-			# obj = lambda *args: None
 			raise GIError('unsupported type tag %i' % _type_tag.value)
 		elif _type_tag.value in (
 			_girepository.GI_INFO_TYPE_BOXED.value,
@@ -1158,7 +1151,9 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 					_girepository.G_TYPE_NONE.value
 				):
 					type_ = _convert_gtype_to_pytype(_type)
-					obj = type_(_cself=_arg.v_pointer, _transfer=_transfer)
+					obj = type_()
+					obj._cself = _arg.v_pointer
+					obj._transfer = _transfer
 				else:
 					raise GIError('structure type "%s" is not supported yet' % _girepository.g_type_name(_type).value)
 		elif _type_tag.value in (
@@ -1174,7 +1169,8 @@ def _convert_giargument_to_pyobject_with_typeinfo_transfer(_arg, _type_info, _tr
 		):
 			if _arg.v_pointer:
 				type_ = _convert_gibaseinfo_to_pytype(_base_info)
-				obj = type_(_cself=_arg.v_pointer)
+				obj = type_()
+				obj._cself = _arg.v_pointer
 			else:
 				obj = None
 		else:
@@ -1298,7 +1294,7 @@ def _convert_pyobject_to_giargument_with_typeinfo_transfer(obj, _type_info, _tra
 			_girepository.GI_INFO_TYPE_UNION.value,
 		):
 			if obj is None:
-				_arg.v_pointer = _girepository.gpointer(0)
+				_arg.v_pointer = _girepository.gpointer(None)
 			else:
 				_type = _girepository.g_registered_type_info_get_g_type(_registered_type_info)
 				

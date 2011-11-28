@@ -11,9 +11,11 @@ class MainWindow(Gtk.Window):
 		self = super(MainWindow, cls).new(Gtk.WindowType.toplevel)
 		return self
 	
-	def __init__(self, *args, **kwargs):
-		print('MainWindow.__init__', self, args, kwargs)
-		Gtk.Window.__init__(self, *args, **kwargs)
+	def __init__(self):
+		print('MainWindow.__init__', self)
+		Gtk.Window.__init__(self)
+		screen = self.get_screen()
+		self.set_screen(screen)
 		self.set_title('Test 1')
 		vbox = Gtk.VBox.new(False, 0)
 		label = Gtk.Label.new('Hello world!')

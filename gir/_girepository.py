@@ -1,4 +1,4 @@
-from ._gobject import *
+exec('from ._gobject import *', globals(), locals())
 
 # girepository - C library
 libgirepository = CDLL(find_library('girepository-1.0'))

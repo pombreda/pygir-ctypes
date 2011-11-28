@@ -1,8 +1,8 @@
 import os
 import sys
 import types
-from . import common
-from . import _girepository
+exec('from . import common', globals(), locals())
+exec('from . import _girepository', globals(), locals())
 
 # major python version
 if sys.version_info[0] == 2:
@@ -804,10 +804,12 @@ class GIFunction(GICallable):
 				# return as single object
 				return_ = obj
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_CONSTRUCTOR.value:
-			pytype = cls_arg
-			cself = _retarg[0].v_pointer
-			pyself = super(self._pytype, pytype).__new__(pytype)
-			pyself._cself = cself
+			if PY2:
+				pyself = super(self._pytype, cls_arg).__new__.im_func(cls_arg)
+			elif PY3:
+				pyself = super(self._pytype, cls_arg).__new__(cls_arg)
+			
+			pyself._cself = _retarg[0].v_pointer
 			return_ = pyself
 		elif _function_info_flags.value == _girepository.GI_FUNCTION_IS_GETTER.value:
 			raise GIError('unsupported GIFunctionInfoFlags "%i"' % _function_info_flags.value)

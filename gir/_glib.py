@@ -1,4 +1,4 @@
-from ._common import *
+exec('from ._common import *', globals(), locals())
 
 # glib - C library
 libglib = CDLL(find_library('glib-2.0'))

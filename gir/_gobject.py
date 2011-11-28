@@ -1,4 +1,4 @@
-from ._glib import *
+exec('from ._glib import *', globals(), locals())
 
 # gobject - C library
 libgobject = CDLL(find_library('gobject-2.0'))

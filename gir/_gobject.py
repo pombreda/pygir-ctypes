@@ -1,5 +1,10 @@
-exec('from ._glib import *', globals(), locals())
-
+try:
+	exec('from ._glib import *', globals(), locals())
+except SyntaxError:
+	from _glib import *
+except ImportError:
+	from _glib import *
+	
 # gobject - C library
 libgobject = CDLL(find_library('gobject-2.0'))
 

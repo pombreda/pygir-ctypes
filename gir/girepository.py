@@ -1,8 +1,16 @@
 import os
 import sys
 import types
-exec('from . import common', globals(), locals())
-exec('from . import _girepository', globals(), locals())
+
+try:
+	exec('from . import common', globals(), locals())
+	exec('from . import _girepository', globals(), locals())
+except SyntaxError:
+	import common
+	import _girepository
+except ImportError:
+	import common
+	import _girepository
 
 # major python version
 if sys.version_info[0] == 2:
